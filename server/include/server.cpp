@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Tue Mar 25 19:33:46 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Wed Mar 25 23:37:10 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Thu Mar 26 00:18:05 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "server.hpp"
@@ -52,6 +52,7 @@ void Server::init_server(int ac, char **av)
 //https://stackoverflow.com/questions/71572056/multithreaded-server-c-socket-programming
 // POS x y              -> Update position    - Client Send
 // DEC id               -> Player disconnect  - Client Send
+// MOV id x y           -> Update players pos - Server Send
 // JON id name          -> Player Join        - Server Send
 // NBP nb               -> Nb players         - Server Send
 // DED id               -> Player who dead    - Server Send
@@ -62,13 +63,34 @@ void Server::handlePlayerCommands(Player *player)
 {
     char memory[1024] = { 0 };
     std::string command;
+    std::smatch m;
     int n;
     
     while ((n = recv(player->getPlayerSocket(), memory, 1024, 0))) {
         command = std::string(memory);
+        command.erase(std::remove(command.begin(), command.end(), '\n'), command.end());
+        command.erase(std::remove(command.begin(), command.end(), '\r'), command.end());
         if (command.substr(0,3) == "PAU") {
             if (player->getSalon() != nullptr)
                 player->getSalon()->CreateMessage("PAUSE", Type::PAUSE, player->getID());
+        }
+        if (command.substr(0,3) == "POS") {
+            std::regex const e{"^POS\\s+(-?\\d+(?:\\.\\d+)?)\\s+(-?\\d+(?:\\.\\d+)?)$"};
+            if (std::regex_search(command, m, e)) {
+                player->setPosition(std::pair<float, float> {std::stof(m[1]), std::stof(m[2])});
+            }
+            // Que debug 
+            if (player->getSalon() != nullptr)
+                player->getSalon()->CreateMessage(std::string("Nouvelle position du joueur " + std::to_string(player->getID()) + " : " + std::to_string(player->getPosition().first) + " " + std::to_string(player->getPosition().second)), Type::POSITION, player->getID());
+        }
+        if (command.substr(0,3) == "DEC") {
+            std::regex const e{"^DEC\\s+(\\d+)$"};
+            if (std::regex_search(command, m, e)) {
+                player->getSalon()->Quit(player->getObserver());
+            }
+            // il faudra trouver comment le supprimer du PlayersManager vu que le client va se déco
+            // La notif vers l'autre joueur est géré (via observer)
+            // Peut être ajouter tt ça dans le destructeur du joueur
         }
         std::cout << "From Player " << player->getID() << " : " << memory;
     }

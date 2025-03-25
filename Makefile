@@ -8,8 +8,7 @@
 NAME_SERVER	=	jetpack_server
 NAME_CLIENT	=	jetpack_client
 
-SRC_SERVER	=	server/src/*.cpp	\
-				server/include/*.cpp
+SRC_SERVER	=	server/src/*.cpp server/include/*.cpp
 SRC_CLIENT	=	client/*.cpp
 
 all:	server	client
@@ -19,7 +18,7 @@ $(NAME_CLIENT): $(SRC_CLIENT)
 	@echo "\033[32m= = = = =  COMPILATION COMPLETED  = = = = =\033[0m"
 
 $(NAME_SERVER): $(SRC_SERVER)
-	g++ -o $(NAME_SERVER) $(SRC_SERVER) -I include/
+	g++ -o $(NAME_SERVER) $(SRC_SERVER) -I server/include/
 	@echo "\033[32m= = = = =  COMPILATION COMPLETED  = = = = =\033[0m"
 
 client: $(NAME_CLIENT)

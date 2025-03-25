@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Tue Mar 25 14:00:39 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Wed Mar 25 23:34:31 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Thu Mar 26 00:00:55 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #ifndef NETWORK_HPP_
@@ -21,7 +21,9 @@ enum Type {
     DIE = 4,
     WIN = 5,
     PAUSE = 6,
-    RESTART = 7
+    RESTART = 7,
+    NB_PLAYERS = 8,
+    POSITION = 9
 };
 
 struct Message {

@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Tue Mar 25 14:00:10 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Wed Mar 25 21:19:22 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Thu Mar 26 00:09:56 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #ifndef SERVER_HPP_
@@ -17,6 +17,7 @@
 #include <thread>
 #include <string>
 #include <iostream>
+#include <regex>
 
 class Server {
     public:
@@ -25,6 +26,7 @@ class Server {
         
         void init_server(int ac, char **av);
         void start_server();
+        
     protected:
         void handlePlayerCommands(Player *player);
     private:
