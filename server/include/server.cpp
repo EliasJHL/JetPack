@@ -1,0 +1,120 @@
+/*
+** server.cpp for B-NWP-400-MPL-4-1-jetpack-elias-josue.hajjar-llauquen in /home/elias/Documents/Epitech/JetPack/B-NWP-400-MPL-4-1-jetpack-elias-josue.hajjar-llauquen/server/include
+**
+** Made by Elias Josué HAJJAR LLAUQUEN
+** Login   <elias-josue.hajjar-llauquen@epitech.eu>
+**
+** Started on  Tue Mar 25 19:33:46 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Wed Mar 25 23:37:10 2025 Elias Josué HAJJAR LLAUQUEN
+*/
+
+#include "server.hpp"
+
+Server::Server() 
+{
+};
+
+Server::~Server()
+{
+};
+
+void Server::init_server(int ac, char **av)
+{
+    if (ac < 3)
+        throw std::runtime_error("Usage : ./jetpack_server -p <port> -m <map> [-d]");
+    mServerSocket = socket(AF_INET, SOCK_STREAM, 0);
+    if (mServerSocket < 0)
+        throw std::runtime_error("Init error : Socket");
+    
+    mServerAddressControl.sin_family = AF_INET;
+    mServerAddressControl.sin_port = htons(std::atoi(av[1]));
+    mServerAddressControl.sin_addr.s_addr = INADDR_ANY;
+
+    int on = 1;
+    if (setsockopt(mServerSocket, SOL_SOCKET,  SO_REUSEADDR, (char *)&on, sizeof(on)) < 0)
+        throw std::runtime_error("Error with setsockopt");
+        
+    if (bind(mServerSocket, (struct sockaddr*)&mServerAddressControl, sizeof(mServerAddressControl)) < 0)
+        throw std::runtime_error("Init error : bind");
+
+    if (listen(mServerSocket, 5) < 0)
+        throw std::runtime_error("Error with listen");
+        
+    mPoll.push_back({
+        .fd = mServerSocket,
+        .events = POLLIN
+    });
+
+    mPlayerManager = mPlayerManager->getInstance();
+    mRooms.push_back(new NetworkSalon("Default"));
+}
+
+//https://stackoverflow.com/questions/71572056/multithreaded-server-c-socket-programming
+// POS x y              -> Update position    - Client Send
+// DEC id               -> Player disconnect  - Client Send
+// JON id name          -> Player Join        - Server Send
+// NBP nb               -> Nb players         - Server Send
+// DED id               -> Player who dead    - Server Send
+// WIN id               -> Player who win     - Server Send
+// PAU                  -> Pause              - Server / Client Send
+// RET                  -> Restart Game       - Server Send
+void Server::handlePlayerCommands(Player *player)
+{
+    char memory[1024] = { 0 };
+    std::string command;
+    int n;
+    
+    while ((n = recv(player->getPlayerSocket(), memory, 1024, 0))) {
+        command = std::string(memory);
+        if (command.substr(0,3) == "PAU") {
+            if (player->getSalon() != nullptr)
+                player->getSalon()->CreateMessage("PAUSE", Type::PAUSE, player->getID());
+        }
+        std::cout << "From Player " << player->getID() << " : " << memory;
+    }
+}
+
+// pour poll
+// https://www.ibm.com/docs/en/i/7.1?topic=designs-using-poll-instead-select
+// multi thread
+// https://eli.thegreenplace.net/2017/concurrent-servers-part-1-introduction/
+// mutex pour l'accès aux données (createplayer, etc)
+// https://bousk.developpez.com/cours/multi-thread-mutex/
+void Server::start_server()
+{
+    while (true) {
+        int rc = poll(mPoll.data(), mPoll.size(), 180000);
+
+        if (rc < 0)
+            throw std::runtime_error("loop error : poll");
+
+        if (mPoll[0].revents == POLLIN) {
+            socklen_t client_len = sizeof(mClientAddr);
+            int new_player_socket = accept(mServerSocket, (struct sockaddr*) &mClientAddr, &client_len);
+
+            if (new_player_socket < 0) {
+                std::cerr << "New client connection failed" << std::endl;
+                continue;
+            }
+
+            mPoll.push_back({
+                .fd = new_player_socket
+            });
+            
+            int new_player_id = mPlayerManager->createPlayer("Dummy", new_player_socket);
+            std::cout << "Connection from " << inet_ntoa(mClientAddr.sin_addr) << ":" << ntohs(mClientAddr.sin_port) << std::endl;
+            mPlayerManager->getPlayer(new_player_id)->setSalon(*mRooms[0]);
+            std::thread t(&Server::handlePlayerCommands, this, mPlayerManager->getPlayer(new_player_id));
+            t.detach();
+            mPoolThread.push_back(std::move(t));
+        }
+        
+        for (int i = 0; i < mPoll.size(); i++) {
+            if (mPoll[i].revents == 0)
+                continue;
+            if (mPoll[i].revents == POLLIN) {
+                // à voir si nécessaire
+            }
+        }
+    }
+}
