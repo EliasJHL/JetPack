@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Tue Apr 1 20:30:56 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Wed Apr 1 21:33:18 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Wed Apr 1 21:59:34 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 // basé sur le sigleton
@@ -15,8 +15,9 @@
 
 #include <unordered_map>
 #include <vector>
-#include "Player.hpp"
 #include <memory>
+#include <mutex>
+#include "Player.hpp"
 
 class PlayersManager {
     public:
@@ -33,6 +34,7 @@ class PlayersManager {
         void operator=(const PlayersManager &) = delete;
         std::unordered_map<unsigned int, std::unique_ptr<Player>> mPlayers;
         static PlayersManager *mPlayersManager;
+        static std::mutex mMutex;
 };
 
 #endif /* !PLAYERSMANAGER_HPP_ */
