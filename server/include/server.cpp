@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Tue Mar 25 19:33:46 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Thu Mar 26 00:18:05 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Wed Apr 1 15:11:45 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "server.hpp"
@@ -59,6 +59,11 @@ void Server::init_server(int ac, char **av)
 // WIN id               -> Player who win     - Server Send
 // PAU                  -> Pause              - Server / Client Send
 // RET                  -> Restart Game       - Server Send
+//---------------------Startup Client ----------------------
+// OBS nb_obstacles         -> envoi de ça pour dire combien de fois listen
+// CON nb_coins             -> mm chose
+// POB pos_x_obs pos_y_obs  -> for nb_obstacles send POB[i]
+// PCO pos_x_con pos_y_con  -> mm chose
 void Server::handlePlayerCommands(Player *player)
 {
     char memory[1024] = { 0 };
@@ -81,7 +86,7 @@ void Server::handlePlayerCommands(Player *player)
             }
             // Que debug 
             if (player->getSalon() != nullptr)
-                player->getSalon()->CreateMessage(std::string("Nouvelle position du joueur " + std::to_string(player->getID()) + " : " + std::to_string(player->getPosition().first) + " " + std::to_string(player->getPosition().second)), Type::POSITION, player->getID());
+                player->getSalon()->CreateMessage(std::string("MOV " + std::to_string(player->getID()) + " " + std::to_string(player->getPosition().first) + " " + std::to_string(player->getPosition().second)), Type::POSITION, player->getID());
         }
         if (command.substr(0,3) == "DEC") {
             std::regex const e{"^DEC\\s+(\\d+)$"};

@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Tue Mar 25 14:00:39 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Thu Mar 26 00:00:55 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Wed Apr 1 15:17:40 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #ifndef NETWORK_HPP_
@@ -13,6 +13,7 @@
 #include <string>
 #include <list>
 #include <iostream>
+#include <unistd.h>
 
 enum Type {
     MOVE = 1,
@@ -96,9 +97,10 @@ class NetworkSalon : public INetwork {
 
 class NetworkObserver : public INetworkObserver {
     public:
-        NetworkObserver(NetworkSalon &salon) : mNetworkSalon(salon) {
+        NetworkObserver(NetworkSalon &salon, int PlayerSocket) : mNetworkSalon(salon) {
             this->mNetworkSalon.Join(this);
             this->mNumber = mNumber++;
+            this->mSocket = mSocket;
             std::cout << "Hi new player, welcome into salon " << salon.getSalonName() << " \n";
         };
         virtual ~NetworkObserver() {
@@ -106,6 +108,7 @@ class NetworkObserver : public INetworkObserver {
         };
         void Update(const Message &message) override {
             mMessageFromSubject = message;
+            write(mSocket, message.message.c_str(), message.message.length());
             std::cout << "New message : " << message.message << std::endl;
         };
         void RemoveMe() {
@@ -118,6 +121,7 @@ class NetworkObserver : public INetworkObserver {
         Message mMessageFromSubject;
         NetworkSalon &mNetworkSalon;
         static int mNumber;
+        int mSocket;
 };
 
 #endif /* !NETWORK_HPP_ */

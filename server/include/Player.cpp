@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Tue Mar 25 11:43:11 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Wed Mar 25 23:34:27 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Wed Apr 1 15:18:51 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "Player.hpp"
@@ -71,7 +71,7 @@ void Player::setSalon(NetworkSalon &salon) {
         mObserver->RemoveMe();
         delete mObserver;
     }
-    mObserver = new NetworkObserver(salon);
+    mObserver = new NetworkObserver(salon, mPlayerSocket);
 }
 
 int Player::getPlayerSocket() {
