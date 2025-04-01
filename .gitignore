@@ -1,3 +1,4 @@
 *.o
 jetpack_*
 .vscode/
+.jetpack/

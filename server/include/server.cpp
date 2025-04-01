@@ -9,6 +9,7 @@
 */
 
 #include "server.hpp"
+#include <fstream>
 
 Server::Server() 
 {
@@ -20,26 +21,59 @@ Server::~Server()
 
 void Server::init_server(int ac, char **av)
 {
-    if (ac < 3)
+    if (ac < 5 || ac > 6)
         throw std::runtime_error("Usage : ./jetpack_server -p <port> -m <map> [-d]");
+
+    std::string port;
+    std::string map_file;
+    bool debug_mode = false;
+
+    for (int i = 1; i < ac; ++i) {
+        if (std::string(av[i]) == "-p" && i + 1 < ac) {
+            port = av[++i];
+        } else if (std::string(av[i]) == "-m" && i + 1 < ac) {
+            map_file = av[++i];
+        } else if (std::string(av[i]) == "-d") {
+            debug_mode = true;
+        } else {
+            throw std::runtime_error("Invalid arguments. Usage : ./jetpack_server -p <port> -m <map> [-d]");
+        }
+    }
+
+    if (port.empty())
+        throw std::runtime_error("Missing -p <port> argument.");
+    if (map_file.empty())
+        throw std::runtime_error("Missing -m <map> argument.");
+
+    // Vérification si le fichier de la carte existe
+    std::ifstream map(map_file);
+    if (!map.good())
+        throw std::runtime_error("Map file not found: " + map_file);
+
+    // Conversion du port en entier
+    int port_number = std::stoi(port);
+    if (port_number <= 0 || port_number > 65535)
+        throw std::runtime_error("Invalid port number: " + port);
+
+    // Initialisation du socket
     mServerSocket = socket(AF_INET, SOCK_STREAM, 0);
     if (mServerSocket < 0)
         throw std::runtime_error("Init error : Socket");
-    
+
     mServerAddressControl.sin_family = AF_INET;
-    mServerAddressControl.sin_port = htons(std::atoi(av[1]));
+    mServerAddressControl.sin_port = htons(port_number);
     mServerAddressControl.sin_addr.s_addr = INADDR_ANY;
 
     int on = 1;
-    if (setsockopt(mServerSocket, SOL_SOCKET,  SO_REUSEADDR, (char *)&on, sizeof(on)) < 0)
+    if (setsockopt(mServerSocket, SOL_SOCKET, SO_REUSEADDR, (char *)&on, sizeof(on)) < 0)
         throw std::runtime_error("Error with setsockopt");
-        
-    if (bind(mServerSocket, (struct sockaddr*)&mServerAddressControl, sizeof(mServerAddressControl)) < 0)
+
+    if (bind(mServerSocket, (struct sockaddr *)&mServerAddressControl, sizeof(mServerAddressControl)) < 0)
         throw std::runtime_error("Init error : bind");
 
     if (listen(mServerSocket, 5) < 0)
         throw std::runtime_error("Error with listen");
-        
+
     mPoll.push_back({
         .fd = mServerSocket,
         .events = POLLIN
@@ -47,6 +81,10 @@ void Server::init_server(int ac, char **av)
 
     mPlayerManager = mPlayerManager->getInstance();
     mRooms.push_back(new NetworkSalon("Default"));
+
+    if (debug_mode) {
+        std::cout << "Debug mode enabled." << std::endl;
+    }
 }
 
 //https://stackoverflow.com/questions/71572056/multithreaded-server-c-socket-programming
