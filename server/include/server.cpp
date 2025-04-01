@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Tue Mar 25 19:33:46 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Wed Apr 1 20:30:41 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Wed Apr 1 23:03:48 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "server.hpp"
@@ -47,6 +47,11 @@ void Server::init_server(int ac, char **av)
 
     mPlayerManager = mPlayerManager->getInstance();
     mRooms.push_back(new NetworkSalon("Default"));
+    mRooms.push_back(new NetworkSalon("Salon 1"));
+    mRooms.push_back(new NetworkSalon("Salon 2"));
+    mRooms.push_back(new NetworkSalon("Salon 3"));
+    mRooms.push_back(new NetworkSalon("Salon 4"));
+    mRooms.push_back(new NetworkSalon("Salon 5"));
 }
 
 //https://stackoverflow.com/questions/71572056/multithreaded-server-c-socket-programming

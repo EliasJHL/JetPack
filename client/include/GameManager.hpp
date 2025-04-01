@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Tue Apr 1 20:37:24 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Wed Apr 1 21:59:32 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Wed Apr 1 22:48:14 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #ifndef GAMEMANAGER_HPP_
@@ -37,9 +37,13 @@ class GameManager {
         sf::Event mEvent;
         int mPlayerID; // Que pour le client sur le jeu (pas les autres en réseau)
         int mPlayerSocket;
+        std::string mPlayerUsername;
         struct sockaddr_in mAddressControl;
         PlayersManager *mPlayerManager;
         bool mHasUsername;
+        sf::Font mFont;
+        sf::String mInput;
+        sf::Text mPlayerInputDisplay;
 };
 
 #endif /* !GAMEMANAGER_HPP_ */

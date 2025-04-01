@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Tue Apr 1 20:46:11 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Wed Apr 1 21:59:40 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Wed Apr 1 22:52:51 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "GameManager.hpp"
@@ -28,6 +28,11 @@ void GameManager::init_game(int ac, char **av)
 
     mPlayerID = std::atoi(std::string(data).substr(3).c_str());
     mPlayerManager = mPlayerManager->getInstance();
+    mHasUsername = false;
+    mFont.loadFromFile("./client/font/font.ttf");
+    mPlayerInputDisplay.setFont(mFont);
+    mPlayerInputDisplay.setCharacterSize(15);
+    mPlayerInputDisplay.setString("");
 }
 
 void GameManager::close_connection(void)
@@ -54,7 +59,28 @@ void GameManager::handle_events(void)
     while (mWindow.pollEvent(mEvent)) {
         if (mEvent.type == sf::Event::Closed)
             mWindow.close();
-        //if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Q)
+        if (mEvent.type == sf::Event::TextEntered && !mHasUsername) {
+            if (mEvent.text.unicode == '\b' && !mInput.isEmpty()) {
+                mInput.erase(mInput.getSize() - 1, 1);
+            } else if (mEvent.text.unicode != '\b' && mEvent.text.unicode != '\n' && mEvent.text.unicode != '\r' && mInput.getSize() < 20) {
+                mInput += mEvent.text.unicode;
+            }
+            mPlayerInputDisplay.setPosition((mWindow.getSize().x - mPlayerInputDisplay.getGlobalBounds().width) / 2, 300);
+            mPlayerInputDisplay.setString(mInput);
+        }
+        if (mEvent.type == sf::Event::KeyPressed && mEvent.key.code == sf::Keyboard::Return && !mHasUsername) {
+            if (mInput.isEmpty()) {
+                std::cout << "Username required" << std::endl;
+                continue;
+            }
+            if (mInput.getSize() < 5) {
+                std::cout << "Username too short" << std::endl;
+                continue;
+            }
+            mPlayerUsername = std::string(mInput);
+            std::cout << "OK : " << mPlayerUsername << std::endl;
+            mHasUsername = true;
+        }
     }
 }
 
@@ -66,5 +92,8 @@ void GameManager::handle_server(void)
 void GameManager::draw(void)
 {
     mWindow.clear(sf::Color::Black);
+    if (!mHasUsername) {
+        mWindow.draw(mPlayerInputDisplay);
+    }
     mWindow.display();
 }
