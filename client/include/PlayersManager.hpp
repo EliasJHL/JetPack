@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Tue Apr 1 20:30:56 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Wed Apr 1 20:38:48 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Wed Apr 1 21:15:14 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 // basé sur le sigleton
@@ -23,11 +23,10 @@ class PlayersManager {
         PlayersManager();
         ~PlayersManager();
         static PlayersManager *getInstance(void);
-        int createPlayer(const std::string &name, int socket);
+        void createPlayer(const std::string &name, int id);
         void removePlayer(int id);
         Player *getPlayer(int id);
         std::vector<Player *> getAllPlayers(void);
-        std::vector<Player *> getAllPlayers(void) const;
     private:
         PlayersManager() {};
         ~PlayersManager() = default;

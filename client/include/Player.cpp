@@ -5,12 +5,12 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Tue Apr 1 20:51:49 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Wed Apr 1 21:01:02 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Wed Apr 1 21:10:02 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "Player.hpp"
 
-Player::Player()
+Player::Player(int id, std::string &name)
 {
     // Création du sprite du joueur avec la position de départ
 }
