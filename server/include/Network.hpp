@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Tue Mar 25 14:00:39 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Wed Apr 1 15:17:40 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Wed Apr 1 16:13:06 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #ifndef NETWORK_HPP_
@@ -100,7 +100,7 @@ class NetworkObserver : public INetworkObserver {
         NetworkObserver(NetworkSalon &salon, int PlayerSocket) : mNetworkSalon(salon) {
             this->mNetworkSalon.Join(this);
             this->mNumber = mNumber++;
-            this->mSocket = mSocket;
+            this->mSocket = PlayerSocket;
             std::cout << "Hi new player, welcome into salon " << salon.getSalonName() << " \n";
         };
         virtual ~NetworkObserver() {
@@ -108,8 +108,7 @@ class NetworkObserver : public INetworkObserver {
         };
         void Update(const Message &message) override {
             mMessageFromSubject = message;
-            write(mSocket, message.message.c_str(), message.message.length());
-            std::cout << "New message : " << message.message << std::endl;
+            write(mSocket, std::string(message.message + "\r\n").c_str(), message.message.length() + 2);
         };
         void RemoveMe() {
             mNetworkSalon.Quit(this);

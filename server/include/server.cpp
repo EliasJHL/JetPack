@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Tue Mar 25 19:33:46 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Wed Apr 1 15:11:45 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Wed Apr 1 16:20:32 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "server.hpp"
@@ -58,8 +58,9 @@ void Server::init_server(int ac, char **av)
 // DED id               -> Player who dead    - Server Send
 // WIN id               -> Player who win     - Server Send
 // PAU                  -> Pause              - Server / Client Send
+// EPU                  -> End Pause          - Client Send
 // RET                  -> Restart Game       - Server Send
-//---------------------Startup Client ----------------------
+// --------------------Startup Client ----------------------
 // OBS nb_obstacles         -> envoi de ça pour dire combien de fois listen
 // CON nb_coins             -> mm chose
 // POB pos_x_obs pos_y_obs  -> for nb_obstacles send POB[i]
@@ -83,19 +84,17 @@ void Server::handlePlayerCommands(Player *player)
             std::regex const e{"^POS\\s+(-?\\d+(?:\\.\\d+)?)\\s+(-?\\d+(?:\\.\\d+)?)$"};
             if (std::regex_search(command, m, e)) {
                 player->setPosition(std::pair<float, float> {std::stof(m[1]), std::stof(m[2])});
-            }
-            // Que debug 
-            if (player->getSalon() != nullptr)
                 player->getSalon()->CreateMessage(std::string("MOV " + std::to_string(player->getID()) + " " + std::to_string(player->getPosition().first) + " " + std::to_string(player->getPosition().second)), Type::POSITION, player->getID());
+            }
         }
         if (command.substr(0,3) == "DEC") {
             std::regex const e{"^DEC\\s+(\\d+)$"};
             if (std::regex_search(command, m, e)) {
+                player->getSalon()->CreateMessage(std::string("DEC " + std::to_string(player->getID())), Type::DISCONNECT, player->getID());
                 player->getSalon()->Quit(player->getObserver());
+                mPlayerManager->removePlayer(player->getID());
+                return;
             }
-            // il faudra trouver comment le supprimer du PlayersManager vu que le client va se déco
-            // La notif vers l'autre joueur est géré (via observer)
-            // Peut être ajouter tt ça dans le destructeur du joueur
         }
         std::cout << "From Player " << player->getID() << " : " << memory;
     }
@@ -130,6 +129,7 @@ void Server::start_server()
             
             int new_player_id = mPlayerManager->createPlayer("Dummy", new_player_socket);
             std::cout << "Connection from " << inet_ntoa(mClientAddr.sin_addr) << ":" << ntohs(mClientAddr.sin_port) << std::endl;
+            write(mPlayerManager->getPlayer(new_player_id)->getPlayerSocket(), "Welcome\r\n", 9);
             mPlayerManager->getPlayer(new_player_id)->setSalon(*mRooms[0]);
             std::thread t(&Server::handlePlayerCommands, this, mPlayerManager->getPlayer(new_player_id));
             t.detach();

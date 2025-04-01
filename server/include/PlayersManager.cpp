@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Tue Mar 25 11:21:17 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Wed Mar 25 21:29:40 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Wed Apr 1 16:14:34 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "PlayersManager.hpp"
@@ -30,6 +30,10 @@ int PlayersManager::createPlayer(const std::string &name, int socket) {
 
 void PlayersManager::removePlayer(int id) {
     std::lock_guard<std::mutex> guard(mMutex);
+    auto it = mPlayers.find(id);
+    if (it != mPlayers.end()) {
+        close(it->second.get()->getPlayerSocket());
+    }
     mPlayers.erase(id);
 }
 
