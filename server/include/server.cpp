@@ -45,17 +45,14 @@ void Server::init_server(int ac, char **av)
     if (map_file.empty())
         throw std::runtime_error("Missing -m <map> argument.");
 
-    // Vérification si le fichier de la carte existe
     std::ifstream map(map_file);
     if (!map.good())
         throw std::runtime_error("Map file not found: " + map_file);
 
-    // Conversion du port en entier
     int port_number = std::stoi(port);
     if (port_number <= 0 || port_number > 65535)
         throw std::runtime_error("Invalid port number: " + port);
 
-    // Initialisation du socket
     mServerSocket = socket(AF_INET, SOCK_STREAM, 0);
     if (mServerSocket < 0)
         throw std::runtime_error("Init error : Socket");
