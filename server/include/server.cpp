@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Tue Mar 25 19:33:46 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Wed Apr 1 16:20:32 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Wed Apr 1 16:30:21 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "server.hpp"
@@ -80,6 +80,9 @@ void Server::handlePlayerCommands(Player *player)
             if (player->getSalon() != nullptr)
                 player->getSalon()->CreateMessage("PAUSE", Type::PAUSE, player->getID());
         }
+        if (command.substr(0,3) == "EPU") {
+            
+        }
         if (command.substr(0,3) == "POS") {
             std::regex const e{"^POS\\s+(-?\\d+(?:\\.\\d+)?)\\s+(-?\\d+(?:\\.\\d+)?)$"};
             if (std::regex_search(command, m, e)) {
@@ -129,7 +132,8 @@ void Server::start_server()
             
             int new_player_id = mPlayerManager->createPlayer("Dummy", new_player_socket);
             std::cout << "Connection from " << inet_ntoa(mClientAddr.sin_addr) << ":" << ntohs(mClientAddr.sin_port) << std::endl;
-            write(mPlayerManager->getPlayer(new_player_id)->getPlayerSocket(), "Welcome\r\n", 9);
+            std::string message = std::string("IDP" + std::to_string(new_player_id) + "\r\n");
+            write(mPlayerManager->getPlayer(new_player_id)->getPlayerSocket(), message.c_str(), message.length());
             mPlayerManager->getPlayer(new_player_id)->setSalon(*mRooms[0]);
             std::thread t(&Server::handlePlayerCommands, this, mPlayerManager->getPlayer(new_player_id));
             t.detach();
