@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Tue Mar 25 10:56:51 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Wed Apr 1 16:20:43 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Wed Apr 1 16:41:32 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #ifndef PLAYER_HPP_
@@ -31,6 +31,7 @@ class Player {
         void setConnection(bool connexion);
         void setSalon(NetworkSalon &salon);
         void setPlayerSocket(int fd);
+        void setPlayerName(const std::string &name);
         
     private:
         int mPlayerID;

@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Tue Mar 25 19:33:46 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Wed Apr 1 16:30:21 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Wed Apr 1 20:28:39 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "server.hpp"
@@ -60,6 +60,7 @@ void Server::init_server(int ac, char **av)
 // PAU                  -> Pause              - Server / Client Send
 // EPU                  -> End Pause          - Client Send
 // RET                  -> Restart Game       - Server Send
+// SNA name             -> Set Username       - Client Send
 // --------------------Startup Client ----------------------
 // OBS nb_obstacles         -> envoi de ça pour dire combien de fois listen
 // CON nb_coins             -> mm chose
@@ -82,6 +83,26 @@ void Server::handlePlayerCommands(Player *player)
         }
         if (command.substr(0,3) == "EPU") {
             
+        }
+        if (command.substr(0,3) == "DED") {
+            std::regex const e{"^DED\\s+(\\d+)$"};
+            if (std::regex_search(command, m, e)) {
+                player->getSalon()->CreateMessage(command, Type::DIE, player->getID());
+            }
+        }
+        if (command.substr(0,3) == "WIN") {
+            std::regex const e{"^WIN\\s+(\\d+)$"};
+            if (std::regex_search(command, m, e)) {
+                player->getSalon()->CreateMessage(command, Type::WIN, player->getID());
+            }
+            
+        }
+        if (command.substr(0,3) == "SNA") {
+            std::regex const e{"^SNA\\s+([A-Za-z0-9]+)$"};
+            if (std::regex_search(command, m, e)) {
+                player->setPlayerName(m[1]);
+                player->getSalon()->CreateMessage(std::string("JON " + std::to_string(player->getID()) + " " + m[1].str()), Type::CONNECT, player->getID());
+            }
         }
         if (command.substr(0,3) == "POS") {
             std::regex const e{"^POS\\s+(-?\\d+(?:\\.\\d+)?)\\s+(-?\\d+(?:\\.\\d+)?)$"};
@@ -132,7 +153,7 @@ void Server::start_server()
             
             int new_player_id = mPlayerManager->createPlayer("Dummy", new_player_socket);
             std::cout << "Connection from " << inet_ntoa(mClientAddr.sin_addr) << ":" << ntohs(mClientAddr.sin_port) << std::endl;
-            std::string message = std::string("IDP" + std::to_string(new_player_id) + "\r\n");
+            std::string message = std::string("IDP " + std::to_string(new_player_id) + "\r\n");
             write(mPlayerManager->getPlayer(new_player_id)->getPlayerSocket(), message.c_str(), message.length());
             mPlayerManager->getPlayer(new_player_id)->setSalon(*mRooms[0]);
             std::thread t(&Server::handlePlayerCommands, this, mPlayerManager->getPlayer(new_player_id));
