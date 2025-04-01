@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Tue Apr 1 20:33:17 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Wed Apr 1 21:09:47 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Wed Apr 1 21:34:14 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #ifndef PLAYER_HPP_
@@ -18,7 +18,7 @@
 
 class Player {
     public:
-        Player(int id, std::string &name);
+        Player(int id, std::string name);
         ~Player();
         
         int getID(void) const;

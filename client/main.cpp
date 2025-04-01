@@ -104,17 +104,6 @@ int display(Client *client, Game *game) {
     int size = 0;
     char data[2048];
 
-    // auto future = std::async(std::launch::async, 
-    //     [client, game]() {
-    //     check_send_pos(client, game);
-    // });
-
-    // Protocol game
-    // 430 Update position (x, y)
-    // 250 New player (id, name)
-    // 300 Player update (nb_player, x, y)
-    // 550 Request player pos
-    // <- 200 New pos (x, y)
     game->create_window();
     while (game->is_Open()) {
         game->handle_events();

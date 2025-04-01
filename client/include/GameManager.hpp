@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Tue Apr 1 20:37:24 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Wed Apr 1 21:05:40 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Wed Apr 1 21:42:59 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #ifndef GAMEMANAGER_HPP_
@@ -14,25 +14,32 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 #include <SFML/System.hpp>
-#include "Player.hpp"
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <iostream>
 #include "PlayersManager.hpp"
 
 class GameManager {
     public:
-        GameManager();
-        ~GameManager();
+        GameManager() {};
+        ~GameManager() {};
         void init_game(int ac, char **av);
         void run_game(void);
         void close_connection(void);
-    private:
+    protected:
         void create_window(void);
         void handle_events(void);
         void handle_server(void);
         void draw(void);
+    private:
         sf::RenderWindow mWindow;
         sf::Event mEvent;
         int mPlayerID; // Que pour le client sur le jeu (pas les autres en réseau)
         int mPlayerSocket;
+        struct sockaddr_in mAddressControl;
+        PlayersManager *mPlayerManager;
+        bool mHasUsername;
 };
 
 #endif /* !GAMEMANAGER_HPP_ */

@@ -5,12 +5,12 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Tue Apr 1 20:40:07 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Wed Apr 1 21:05:05 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Wed Apr 1 21:39:58 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include <string>
 #include <iostream>
-#include "GameManager.cpp"
+#include "GameManager.hpp"
 
 int main(int ac, char **av)
 {

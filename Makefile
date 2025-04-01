@@ -9,7 +9,7 @@ NAME_SERVER	=	jetpack_server
 NAME_CLIENT	=	jetpack_client
 
 SRC_SERVER	=	server/src/*.cpp server/include/*.cpp
-SRC_CLIENT	=	client/*.cpp
+SRC_CLIENT	=	client/src/*.cpp client/include/*.cpp
 
 SFML_FLAGS	=	-lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio -lsfml-network
 

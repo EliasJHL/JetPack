@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Tue Mar 25 11:43:11 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Wed Apr 1 16:53:26 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Wed Apr 1 21:32:19 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "Player.hpp"
@@ -23,7 +23,7 @@ Player::~Player() {
     }
 }
 
-unsigned int Player::getID(void) const
+int Player::getID(void) const
 {
     return mPlayerID;
 }

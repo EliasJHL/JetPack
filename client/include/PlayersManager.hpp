@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Tue Apr 1 20:30:56 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Wed Apr 1 21:15:14 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Wed Apr 1 21:33:18 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 // basé sur le sigleton
@@ -20,8 +20,6 @@
 
 class PlayersManager {
     public:
-        PlayersManager();
-        ~PlayersManager();
         static PlayersManager *getInstance(void);
         void createPlayer(const std::string &name, int id);
         void removePlayer(int id);
