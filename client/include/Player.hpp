@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Tue Apr 1 20:33:17 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Wed Apr 1 22:01:40 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Wed Apr 1 23:18:14 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #ifndef PLAYER_HPP_
@@ -31,6 +31,7 @@ class Player {
         int mPlayerID;
         sf::Sprite mSprite;
         sf::Vector2f mPos;
+        sf::Texture mTexture;
         std::string mPlayerName;
 };
 

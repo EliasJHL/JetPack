@@ -5,18 +5,26 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Tue Apr 1 20:51:49 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Wed Apr 1 22:01:35 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Wed Apr 1 23:30:25 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "Player.hpp"
 
 Player::Player(int id, std::string name)
 {
-    // Création du sprite du joueur avec la position de départ
+    mPlayerID = id;
+    mPlayerName = name;
+    mTexture.loadFromFile("./client/ressources/Sprites/b.jpg");
+    mSprite.setTexture(mTexture);
+    mSprite.setScale(0.05, 0.05);
+    mPos.x = 350;
+    mPos.y = 570;
+    mSprite.setPosition(mPos);
 }
 
 Player::~Player()
 {
+    
 }
 
 int Player::getID(void) const
@@ -38,6 +46,11 @@ void Player::setPosition(std::pair<float, float> pos)
 {
     mPos.x = pos.first;
     mPos.y = pos.second;
+    if (mPos.y > 570)
+        mPos.y = 570;
+    if (mPos.y < 0)
+        mPos.y = 0;
+    mSprite.setPosition(mPos);
 }
 
 sf::Sprite Player::getPlayerSprite(void)

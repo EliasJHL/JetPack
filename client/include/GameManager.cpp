@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Tue Apr 1 20:46:11 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Wed Apr 1 22:52:51 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Wed Apr 1 23:38:52 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "GameManager.hpp"
@@ -29,7 +29,7 @@ void GameManager::init_game(int ac, char **av)
     mPlayerID = std::atoi(std::string(data).substr(3).c_str());
     mPlayerManager = mPlayerManager->getInstance();
     mHasUsername = false;
-    mFont.loadFromFile("./client/font/font.ttf");
+    mFont.loadFromFile("./client/ressources/font/font.ttf");
     mPlayerInputDisplay.setFont(mFont);
     mPlayerInputDisplay.setCharacterSize(15);
     mPlayerInputDisplay.setString("");
@@ -44,6 +44,14 @@ void GameManager::run_game(void)
     create_window();
     while (mWindow.isOpen()) {
         handle_events();
+        if (mHasUsername) {
+            std::pair<float, float> pos = mPlayerManager->getPlayer(mPlayerID)->getPosition();
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
+                pos.second -= 0.05;
+            else
+                pos.second += 0.03;
+            mPlayerManager->getPlayer(mPlayerID)->setPosition({pos.first, pos.second});
+        }
         draw();
     }
 }
@@ -79,6 +87,7 @@ void GameManager::handle_events(void)
             }
             mPlayerUsername = std::string(mInput);
             std::cout << "OK : " << mPlayerUsername << std::endl;
+            mPlayerManager->createPlayer(mPlayerUsername, mPlayerID);
             mHasUsername = true;
         }
     }
@@ -94,6 +103,11 @@ void GameManager::draw(void)
     mWindow.clear(sf::Color::Black);
     if (!mHasUsername) {
         mWindow.draw(mPlayerInputDisplay);
+    } else {
+        Player* player = mPlayerManager->getPlayer(mPlayerID);
+        if (player == nullptr)
+            std::cout << "NULL" << std::endl;
+        mWindow.draw(player->getPlayerSprite());
     }
     mWindow.display();
 }
