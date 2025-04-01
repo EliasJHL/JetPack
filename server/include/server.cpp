@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Tue Mar 25 19:33:46 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Wed Apr 1 20:28:39 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Wed Apr 1 20:30:41 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "server.hpp"
@@ -95,7 +95,6 @@ void Server::handlePlayerCommands(Player *player)
             if (std::regex_search(command, m, e)) {
                 player->getSalon()->CreateMessage(command, Type::WIN, player->getID());
             }
-            
         }
         if (command.substr(0,3) == "SNA") {
             std::regex const e{"^SNA\\s+([A-Za-z0-9]+)$"};

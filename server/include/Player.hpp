@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Tue Mar 25 10:56:51 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Wed Apr 1 16:41:32 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Wed Apr 1 20:35:04 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #ifndef PLAYER_HPP_
@@ -19,7 +19,7 @@ class Player {
         Player(int id, const std::string &name, int socket);
         ~Player();
         
-        unsigned int getID(void) const;
+        int getID(void) const;
         const std::string &getName(void) const;
         bool isConnected(void) const;
         NetworkObserver *getObserver();
