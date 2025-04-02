@@ -84,11 +84,6 @@ void Server::init_server(int ac, char **av)
 
     mPlayerManager = mPlayerManager->getInstance();
     mRooms.push_back(new NetworkSalon("Default"));
-    mRooms.push_back(new NetworkSalon("Salon 1"));
-    mRooms.push_back(new NetworkSalon("Salon 2"));
-    mRooms.push_back(new NetworkSalon("Salon 3"));
-    mRooms.push_back(new NetworkSalon("Salon 4"));
-    mRooms.push_back(new NetworkSalon("Salon 5"));
 
     if (this->mDebugMode) {
         std::cout << "Debug mode enabled." << std::endl;
