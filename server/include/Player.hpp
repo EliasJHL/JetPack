@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Tue Mar 25 10:56:51 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Wed Apr 1 20:35:04 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Thu Apr 2 11:46:08 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #ifndef PLAYER_HPP_
@@ -25,6 +25,7 @@ class Player {
         NetworkObserver *getObserver();
         NetworkSalon *getSalon();
         int getPlayerSocket();
+        int getCoins();
 
         const std::pair<float, float> &getPosition(void) const;
         void setPosition(std::pair<float, float> pos);
@@ -32,10 +33,12 @@ class Player {
         void setSalon(NetworkSalon &salon);
         void setPlayerSocket(int fd);
         void setPlayerName(const std::string &name);
+        void addCoins(int nb);
         
     private:
         int mPlayerID;
         int mPlayerSocket;
+        int mPlayerCoin;
         std::string mPlayerName;
         std::pair<float, float> mCoordinates;
         bool mConnected;
