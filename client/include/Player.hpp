@@ -15,6 +15,7 @@
 #include <SFML/Window.hpp>
 #include <SFML/System.hpp>
 #include <string>
+#include "SpriteAnimator.hpp"
 
 class Player {
     public:
@@ -27,12 +28,16 @@ class Player {
         sf::Sprite getPlayerSprite(void);
         
         void setPosition(std::pair<float, float> pos);
+        void updateAnimation();
+        void setAction(int action);
+
     private:
         int mPlayerID;
         sf::Sprite mSprite;
         sf::Vector2f mPos;
         sf::Texture mTexture;
         std::string mPlayerName;
+        SpriteAnimator mAnimator;
 };
 
 #endif /* !PLAYER_HPP_ */

@@ -45,12 +45,21 @@ void GameManager::run_game(void)
     while (mWindow.isOpen()) {
         handle_events();
         if (mHasUsername) {
-            std::pair<float, float> pos = mPlayerManager->getPlayer(mPlayerID)->getPosition();
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
+            Player* player = mPlayerManager->getPlayer(mPlayerID);
+            std::pair<float, float> pos = player->getPosition();
+
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
                 pos.second -= 0.05;
-            else
+                player->setAction(1);
+            } else if (pos.second < FLOOR) {
                 pos.second += 0.03;
-            mPlayerManager->getPlayer(mPlayerID)->setPosition({pos.first, pos.second});
+                player->setAction(-3);
+            } else {
+                pos.second += 0.03;
+                player->setAction(0);
+            }
+            player->setPosition({pos.first, pos.second});
+            player->updateAnimation();
         }
         draw();
     }

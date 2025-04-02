@@ -20,6 +20,9 @@
 #include <iostream>
 #include "PlayersManager.hpp"
 
+#define FLOOR 450
+#define CEILING 0
+
 class GameManager {
     public:
         GameManager() {};

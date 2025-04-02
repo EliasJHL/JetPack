@@ -9,52 +9,61 @@
 */
 
 #include "Player.hpp"
+#include "GameManager.hpp"
 
 Player::Player(int id, std::string name)
+    : mPlayerID(id), mPlayerName(name), mAnimator(mSprite, 134.5, 133.83, 6)
 {
-    mPlayerID = id;
-    mPlayerName = name;
-    mTexture.loadFromFile("./client/ressources/Sprites/b.jpg");
+    if (!mTexture.loadFromFile("./client/ressources/Sprites/player_sprite_sheet.png")) {
+        throw std::runtime_error("Failed to load spritesheet");
+    }
     mSprite.setTexture(mTexture);
-    mSprite.setScale(0.05, 0.05);
+    mSprite.setScale(1.0, 1.0);
+    mAnimator.setFramesPerAction(4);
     mPos.x = 350;
     mPos.y = 570;
     mSprite.setPosition(mPos);
 }
 
-Player::~Player()
-{
-    
-}
+Player::~Player() {}
 
-int Player::getID(void) const
-{
+int Player::getID(void) const {
     return mPlayerID;
 }
 
-std::string Player::getName(void) const
-{
+std::string Player::getName(void) const {
     return mPlayerName;
 }
 
-std::pair<float, float> Player::getPosition(void) const
-{
+std::pair<float, float> Player::getPosition(void) const {
     return {mPos.x, mPos.y};
 }
 
-void Player::setPosition(std::pair<float, float> pos)
-{
+void Player::setPosition(std::pair<float, float> pos) {
     mPos.x = pos.first;
     mPos.y = pos.second;
-    if (mPos.y > 570)
-        mPos.y = 570;
-    if (mPos.y < 0)
-        mPos.y = 0;
+    if (mPos.y > FLOOR)
+        mPos.y = FLOOR;
+    if (mPos.y < CEILING)
+        mPos.y = CEILING;
     mSprite.setPosition(mPos);
 }
 
-sf::Sprite Player::getPlayerSprite(void)
-{
-    mSprite.setPosition(mPos);
+sf::Sprite Player::getPlayerSprite(void) {
     return mSprite;
+}
+
+void Player::updateAnimation() {
+    mAnimator.nextFrame();
+    mSprite.setTextureRect(mAnimator.getTextureRect());
+}
+
+void Player::setAction(int action) {
+    if (action == -1) {
+        mAnimator.setDefaultAction();
+    } else if (action < 0) {
+        mAnimator.setOneAction(-action, 0);
+    } else {
+        mAnimator.setAction(action);
+    }
 }
