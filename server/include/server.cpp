@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Tue Mar 25 19:33:46 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Wed Apr 1 23:05:00 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Thu Apr 2 10:57:19 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "server.hpp"
@@ -67,6 +67,8 @@ void Server::init_server(int ac, char **av)
 // RET                  -> Restart Game       - Server Send
 // SNA name             -> Set Username       - Client Send
 // --------------------Startup Client ----------------------
+// SZX size_x               -> envoie la taille de la map X
+// SZY size_y               -> envoie la taille de la map Y
 // OBS nb_obstacles         -> envoi de ça pour dire combien de fois listen
 // CON nb_coins             -> mm chose
 // POB pos_x_obs pos_y_obs  -> for nb_obstacles send POB[i]

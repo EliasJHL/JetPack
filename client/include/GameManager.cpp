@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Tue Apr 1 20:46:11 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Wed Apr 1 23:38:52 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Thu Apr 2 10:17:53 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "GameManager.hpp"
@@ -81,7 +81,7 @@ void GameManager::handle_events(void)
                 std::cout << "Username required" << std::endl;
                 continue;
             }
-            if (mInput.getSize() < 5) {
+            if (mInput.getSize() < 2) {
                 std::cout << "Username too short" << std::endl;
                 continue;
             }
@@ -95,7 +95,6 @@ void GameManager::handle_events(void)
 
 void GameManager::handle_server(void)
 {
-    
 }
 
 void GameManager::draw(void)
