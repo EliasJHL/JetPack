@@ -10,6 +10,7 @@
 
 #include "server.hpp"
 #include <fstream>
+#include <cctype>
 
 Server::Server() 
 {
@@ -26,15 +27,16 @@ void Server::init_server(int ac, char **av)
 
     std::string port;
     std::string map_file;
-    bool debug_mode = false;
 
     for (int i = 1; i < ac; ++i) {
         if (std::string(av[i]) == "-p" && i + 1 < ac) {
             port = av[++i];
+            if (port.empty() || !std::all_of(port.begin(), port.end(), ::isdigit))
+                throw std::runtime_error("Invalid port number: " + port);
         } else if (std::string(av[i]) == "-m" && i + 1 < ac) {
             map_file = av[++i];
         } else if (std::string(av[i]) == "-d") {
-            debug_mode = true;
+            this->mDebugMode = true;
         } else {
             throw std::runtime_error("Invalid arguments. Usage : ./jetpack_server -p <port> -m <map> [-d]");
         }
@@ -52,8 +54,9 @@ void Server::init_server(int ac, char **av)
     mMapContent.assign((std::istreambuf_iterator<char>(map)),
                        std::istreambuf_iterator<char>());
 
-    int port_number = std::stoi(port);
-    if (port_number <= 0 || port_number > 65535)
+    
+    this->mPort = std::stoi(port);
+    if (this->mPort <= 0 || this->mPort > 65535)
         throw std::runtime_error("Invalid port number: " + port);
 
     mServerSocket = socket(AF_INET, SOCK_STREAM, 0);
@@ -61,7 +64,7 @@ void Server::init_server(int ac, char **av)
         throw std::runtime_error("Init error : Socket");
 
     mServerAddressControl.sin_family = AF_INET;
-    mServerAddressControl.sin_port = htons(port_number);
+    mServerAddressControl.sin_port = htons(this->mPort);
     mServerAddressControl.sin_addr.s_addr = INADDR_ANY;
 
     int on = 1;
@@ -82,7 +85,7 @@ void Server::init_server(int ac, char **av)
     mPlayerManager = mPlayerManager->getInstance();
     mRooms.push_back(new NetworkSalon("Default"));
 
-    if (debug_mode) {
+    if (this->mDebugMode) {
         std::cout << "Debug mode enabled." << std::endl;
     }
 }

@@ -19,5 +19,6 @@ int main(int ac, char **av)
         serv.start_server();
     } catch (std::runtime_error &e) {
         std::cerr << e.what() << std::endl;
+        return 84;
     }
 }
