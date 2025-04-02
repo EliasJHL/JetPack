@@ -48,6 +48,9 @@ void Server::init_server(int ac, char **av)
     std::ifstream map(map_file);
     if (!map.good())
         throw std::runtime_error("Map file not found: " + map_file);
+    
+    mMapContent.assign((std::istreambuf_iterator<char>(map)),
+                       std::istreambuf_iterator<char>());
 
     int port_number = std::stoi(port);
     if (port_number <= 0 || port_number > 65535)

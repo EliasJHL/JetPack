@@ -32,6 +32,7 @@ class Server {
     private:
         int mServerSocket;
         bool mDebugMode;
+        std::string mMapContent;
         std::vector<NetworkSalon *> mRooms;
         PlayersManager *mPlayerManager;
         struct sockaddr_in mServerAddressControl;
