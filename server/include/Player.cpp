@@ -5,14 +5,14 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Tue Mar 25 11:43:11 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Wed Apr 1 21:32:19 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Thu Apr 2 11:48:48 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "Player.hpp"
 
 Player::Player(int id, const std::string &name, int socket)
     : mPlayerID(id), mPlayerName(name), mPlayerSocket(socket),
-      mCoordinates({0, 0}), mConnected(true), mObserver(nullptr)
+      mCoordinates({0, 0}), mConnected(true), mObserver(nullptr), mPlayerCoin(0)
 {
 }
 
@@ -26,6 +26,16 @@ Player::~Player() {
 int Player::getID(void) const
 {
     return mPlayerID;
+}
+
+int Player::getCoins()
+{
+    return mPlayerCoin;
+}
+
+void Player::addCoins(int nb)
+{
+    mPlayerCoin += nb;
 }
 
 const std::string &Player::getName(void) const

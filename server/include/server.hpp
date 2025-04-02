@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Tue Mar 25 14:00:10 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Thu Apr 2 10:19:50 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Thu Apr 2 11:40:24 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #ifndef SERVER_HPP_
@@ -29,9 +29,12 @@ class Server {
         
     protected:
         void handlePlayerCommands(Player *player);
+        void updatePlayersInfo();
     private:
         int mServerSocket;
         bool mDebugMode;
+        std::string mMapContent;
+        int mPort;
         std::vector<NetworkSalon *> mRooms;
         PlayersManager *mPlayerManager;
         struct sockaddr_in mServerAddressControl;
