@@ -17,7 +17,7 @@ public:
 
     void setAction(int action);
 
-    void setDefaultAction();
+    void setDefaultAction(int action);
 
     void setOneAction(int action, int frame);
 
@@ -28,12 +28,7 @@ public:
     sf::IntRect getTextureRect() const;
 
 private:
-    void updateTextureRect() {
-        int left = mCurrentFrame * mFrameWidth; // Calculate the X position of the frame
-        int top = mCurrentAction * mFrameHeight; // Calculate the Y position of the action
-        mSprite.setTextureRect(sf::IntRect(left, top, mFrameWidth, mFrameHeight));
-    }
-
+    void updateTextureRect();
     sf::Sprite &mSprite;
     int mFrameWidth; // Width of a single frame
     int mFrameHeight; // Height of a single frame

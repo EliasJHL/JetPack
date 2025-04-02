@@ -39,8 +39,7 @@ void GameManager::close_connection(void)
 {
 }
 
-void GameManager::run_game(void)
-{
+void GameManager::run_game(void) {
     create_window();
     while (mWindow.isOpen()) {
         handle_events();
@@ -50,16 +49,17 @@ void GameManager::run_game(void)
 
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
                 pos.second -= 0.05;
-                player->setAction(1);
+                player->setAction(1, 2); // Jump action (second row)
             } else if (pos.second < FLOOR) {
                 pos.second += 0.03;
-                player->setAction(-3);
+                player->setAction(1, 1); // Default action
             } else {
                 pos.second += 0.03;
-                player->setAction(0);
+                player->setAction(0, 0); // Idle action (first row)
             }
+
             player->setPosition({pos.first, pos.second});
-            player->updateAnimation();
+            player->updateAnimation(); // Ensure this is called
         }
         draw();
     }

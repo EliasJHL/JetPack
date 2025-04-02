@@ -6,28 +6,31 @@
 */
 
 #include "SpriteAnimator.hpp"
+#include <iostream>
+
 
 SpriteAnimator::SpriteAnimator(sf::Sprite &sprite, int frameWidth, int frameHeight, int actions)
     : mSprite(sprite), mFrameWidth(frameWidth), mFrameHeight(frameHeight), mActions(actions), mCurrentFrame(0), mCurrentAction(0), mFramesPerAction(4)
 {
 }
 
-void SpriteAnimator::setAction(int action)
-{
+void SpriteAnimator::setAction(int action) {
     if (action >= 0 && action < mActions) {
         mCurrentAction = action;
-        mCurrentFrame = 0;
+        // mCurrentFrame = 0; // Reset to the first frame of the action
         mDefaultMode = false;
-        mOneActionMode = false;
+        mOneActionMode = false; // Ensure one-action mode is disabled
         updateTextureRect();
     }
 }
 
-void SpriteAnimator::setDefaultAction()
-{
+void SpriteAnimator::setDefaultAction(int action) {
+    if (action >= 0 && action < mActions) {
+        mCurrentAction = action;
+    }
     mDefaultMode = true;
-    mOneActionMode = false;
-    mCurrentFrame = 0;
+    mOneActionMode = false; // Ensure one-action mode is disabled
+    // mCurrentFrame = 0; // Start from the first frame
     updateTextureRect();
 }
 
@@ -42,34 +45,40 @@ void SpriteAnimator::setOneAction(int action, int frame)
     }
 }
 
-void SpriteAnimator::nextFrame()
-{
+void SpriteAnimator::nextFrame() {
     if (mDefaultMode) {
-        if (mCurrentFrame < mFramesPerAction - 1) {
-            mCurrentFrame++;
-        } else {
-            // End of the row
-            if (mCurrentAction < mActions - 1) {
-                mCurrentAction++;
-                mCurrentFrame = 0;
-            } else {
-                mCurrentAction = 0;
-                mCurrentFrame = 1;
-            }
-        }
-    } else if (mOneActionMode) {
-    } else {
+        // Default mode: Loop through all frames in the current row (0 to last frame)
         mCurrentFrame = (mCurrentFrame + 1) % mFramesPerAction;
+    } else if (mOneActionMode) {
+        // One-action mode: Stay on the same frame
+        // Do nothing, as we are looping a single frame
+    } else {
+        // Normal mode: Loop through frames of the current action (1 to last frame, excluding 0)
+        mCurrentFrame = (mCurrentFrame + 1) % mFramesPerAction;
+        if (mCurrentFrame == 0) {
+            mCurrentFrame = 1; // Skip frame 0
+        }
     }
+
+    std::cout << "Switching to frame " << mCurrentFrame << " of action " << mCurrentAction << std::endl;
     updateTextureRect();
 }
 
-void SpriteAnimator::setFramesPerAction(int frames)
-{
-    mFramesPerAction = frames;
+void SpriteAnimator::setFramesPerAction(int frames) {
+    if (frames > 0) {
+        mFramesPerAction = frames;
+    } else {
+        throw std::runtime_error("Frames per action must be greater than 0");
+    }
 }
 
 sf::IntRect SpriteAnimator::getTextureRect() const
 {
     return sf::IntRect(mCurrentFrame * mFrameWidth, mCurrentAction * mFrameHeight, mFrameWidth, mFrameHeight);
+}
+
+void SpriteAnimator::updateTextureRect() {
+    int left = mCurrentFrame * mFrameWidth; // Calculate the X position of the frame
+    int top = mCurrentAction * mFrameHeight; // Calculate the Y position of the action
+    mSprite.setTextureRect(sf::IntRect(left, top, mFrameWidth, mFrameHeight));
 }

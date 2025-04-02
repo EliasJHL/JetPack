@@ -12,14 +12,14 @@
 #include "GameManager.hpp"
 
 Player::Player(int id, std::string name)
-    : mPlayerID(id), mPlayerName(name), mAnimator(mSprite, 134.5, 133.83, 6)
+    : mPlayerID(id), mPlayerName(name), mAnimator(mSprite, 134.5, 133.83, 6) // Initialize mAnimator
 {
     if (!mTexture.loadFromFile("./client/ressources/Sprites/player_sprite_sheet.png")) {
         throw std::runtime_error("Failed to load spritesheet");
     }
     mSprite.setTexture(mTexture);
     mSprite.setScale(1.0, 1.0);
-    mAnimator.setFramesPerAction(4);
+    mAnimator.setFramesPerAction(4); // Assuming 4 frames per action
     mPos.x = 350;
     mPos.y = 570;
     mSprite.setPosition(mPos);
@@ -54,15 +54,19 @@ sf::Sprite Player::getPlayerSprite(void) {
 }
 
 void Player::updateAnimation() {
-    mAnimator.nextFrame();
+    if (mAnimationClock.getElapsedTime().asSeconds() >= mAnimationInterval) { // Change frame every 0.3 seconds
+        mAnimator.nextFrame();
+        mAnimationClock.restart(); // Restart the clock
+    }
     mSprite.setTextureRect(mAnimator.getTextureRect());
 }
 
-void Player::setAction(int action) {
-    if (action == -1) {
-        mAnimator.setDefaultAction();
-    } else if (action < 0) {
-        mAnimator.setOneAction(-action, 0);
+void Player::setAction(int action, int mode) {
+    // si action == 1 et que mDefaultMode == true, on fait
+    if (mode == 0) {
+        mAnimator.setDefaultAction(action);
+    } else if (mode == 1) {
+        mAnimator.setOneAction(action, 0);
     } else {
         mAnimator.setAction(action);
     }

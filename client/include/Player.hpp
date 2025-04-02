@@ -29,7 +29,7 @@ class Player {
         
         void setPosition(std::pair<float, float> pos);
         void updateAnimation();
-        void setAction(int action);
+        void setAction(int action, int mode);
 
     private:
         int mPlayerID;
@@ -38,6 +38,8 @@ class Player {
         sf::Texture mTexture;
         std::string mPlayerName;
         SpriteAnimator mAnimator;
+        sf::Clock mAnimationClock; // Clock to control animation timing
+        float mAnimationInterval = 0.3f; // Time (in seconds) between frames
 };
 
 #endif /* !PLAYER_HPP_ */
