@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Tue Apr 1 20:46:11 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Fri Apr 3 14:32:59 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Fri Apr 3 15:15:11 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "GameManager.hpp"
@@ -39,7 +39,7 @@ void GameManager::test_server(void)
         std::string command(buffer);
         std::smatch m;
         std::regex const e{"PLY\\s+(\\d+)\\s+([\\d.-]+)\\s+([\\d.-]+)\\s+(\\d+)"};
-        if (std::regex_search(command, m, e)) {
+        if (std::regex_search(command, m, e) && mHasUsername) {
             int id = std::atoi(m[1].str().c_str());
             float x = std::atof(m[2].str().c_str());
             float y = std::atof(m[3].str().c_str());
@@ -59,11 +59,9 @@ void GameManager::test_server(void)
             int id = std::atoi(m[1].str().c_str());
             std::string name = m[2].str();
             Player *player = mPlayerManager->getPlayer(id);
-            if (player == nullptr) {
-                std::cout << "test" << std::endl;
+            std::cout << command << std::endl;
+            if (player == nullptr && mPlayerID != id && mPlayerUsername != m[2].str()) {
                 mPlayerManager->createPlayer(name, id);
-            } else {
-                player->setName(name);
             }
         }
     }
@@ -82,10 +80,11 @@ void GameManager::init_game(int ac, char **av)
     if (connect(mPlayerSocket, (struct sockaddr *)&mAddressControl, sizeof(mAddressControl)) == -1)
         throw std::runtime_error("Impossible to connect");
     
+    read(mPlayerSocket, data, sizeof(data));
     int size = read(mPlayerSocket, data, sizeof(data));
     data[size] = '\0';
 
-    mPlayerID = std::atoi(std::string(data).substr(3).c_str());
+    mPlayerID = std::atoi(std::string(data).substr(4).c_str());
     mPlayerManager = mPlayerManager->getInstance();
     mHasUsername = false;
     mFont.loadFromFile("./client/ressources/font/font.ttf");
