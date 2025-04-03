@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Tue Apr 1 20:46:11 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Fri Apr 3 14:28:43 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Fri Apr 3 14:32:59 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "GameManager.hpp"
@@ -50,12 +50,7 @@ void GameManager::test_server(void)
                 mPlayerManager->createPlayer("Dummy", id);
                 player = mPlayerManager->getPlayer(id);
             }
-            
-            if (mPlayerID == id) {
-                continue;
-            }
-            
-            if (player) {
+            if (mPlayerID != id && player) {
                 player->setPosition({x, y});
             }
         }
@@ -65,6 +60,7 @@ void GameManager::test_server(void)
             std::string name = m[2].str();
             Player *player = mPlayerManager->getPlayer(id);
             if (player == nullptr) {
+                std::cout << "test" << std::endl;
                 mPlayerManager->createPlayer(name, id);
             } else {
                 player->setName(name);
