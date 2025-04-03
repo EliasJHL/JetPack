@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Tue Apr 1 20:46:11 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Fri Apr 3 13:31:05 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Fri Apr 3 13:38:07 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "GameManager.hpp"
@@ -38,9 +38,8 @@ void GameManager::test_server(void)
         buffer[bytes] = '\0';
         std::string command(buffer);
         std::smatch m;
-        std::regex const e{"^PLY\\s+(\\d+)\\s+(-?[0-9]*\\.?[0-9]+)\\s+(-?[0-9]*\\.?[0-9]+)\\s+(\\d+)$"};
+        std::regex const e{"PLY\\s+(\\d+)\\s+([\\d.-]+)\\s+([\\d.-]+)\\s+(\\d+)"};
         if (std::regex_search(command, m, e)) {
-            std::cout << "OKOKOKOK" << std::endl;
             int id = std::atoi(m[1].str().c_str());
             float x = std::atof(m[2].str().c_str());
             float y = std::atof(m[3].str().c_str());
@@ -50,7 +49,6 @@ void GameManager::test_server(void)
             if (player == nullptr || mPlayerID == id) {
                 continue;
             }
-            std::cout << "Update pos" << std::endl;
             player->setPosition({x, y});
             //player->addCoins(coins);
         }
