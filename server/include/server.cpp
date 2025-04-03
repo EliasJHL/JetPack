@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Tue Mar 25 19:33:46 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Fri Apr 3 13:36:25 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Fri Apr 3 14:19:23 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "server.hpp"
@@ -181,6 +181,7 @@ void Server::updatePlayersInfo()
             x = players[i]->getPosition().first;
             y = players[i]->getPosition().second;
             message = std::string("PLY " + std::to_string(players[i]->getID()) + " " + std::to_string(x) + " " + std::to_string(y) + " " + std::to_string(players[i]->getCoins()));
+            std::cout << message << std::endl;
             players[i]->getSalon()->CreateMessage(message, Type::POSITION, players[i]->getID());
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(50));

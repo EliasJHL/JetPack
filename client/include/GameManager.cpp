@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Tue Apr 1 20:46:11 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Fri Apr 3 14:01:15 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Fri Apr 3 14:28:43 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "GameManager.hpp"
@@ -44,19 +44,22 @@ void GameManager::test_server(void)
             float x = std::atof(m[2].str().c_str());
             float y = std::atof(m[3].str().c_str());
             int coins = std::atoi(m[4].str().c_str());
-
+        
             Player *player = mPlayerManager->getPlayer(id);
             if (player == nullptr) {
-                std::cout << "New player to create " << id << std::endl;
                 mPlayerManager->createPlayer("Dummy", id);
                 player = mPlayerManager->getPlayer(id);
             }
-            if (mPlayerID == id)
+            
+            if (mPlayerID == id) {
                 continue;
-            player->setPosition({x, y});
-            //player->addCoins(coins);
+            }
+            
+            if (player) {
+                player->setPosition({x, y});
+            }
         }
-        std::regex const e2{"^JON\\s+(\\d+)\\s+([A-Za-z0-9_-]+)\r\n$"};
+        std::regex const e2{"JON\\s+(\\d+)\\s+([A-Za-z0-9_-]+)"};
         if (std::regex_search(command, m, e2)) {
             int id = std::atoi(m[1].str().c_str());
             std::string name = m[2].str();
@@ -184,10 +187,8 @@ void GameManager::draw(void)
     if (!mHasUsername) {
         mWindow.draw(mPlayerInputDisplay);
     } else {
-        for (int i = 0; i < players.size(); i++) {
-            //std::cout << players[i]->getPosition().first << " " << players[i]->getPosition().second << std::endl;
-            mWindow.draw(players[i]->getPlayerSprite());
-            //std::cout << "Dessin du joueur " << players[i]->getID() << std::endl;
+        for (Player* player : players) {
+            mWindow.draw(player->getPlayerSprite());
         }
     }
     mWindow.display();
