@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Tue Apr 1 20:46:11 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Fri Apr 3 13:38:07 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Fri Apr 3 13:45:47 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "GameManager.hpp"
@@ -46,9 +46,13 @@ void GameManager::test_server(void)
             int coins = std::atoi(m[4].str().c_str());
 
             Player *player = mPlayerManager->getPlayer(id);
-            if (player == nullptr || mPlayerID == id) {
+            if (player == nullptr) {
+                std::cout << "New player to create " + id << std::endl;
+                mPlayerManager->createPlayer("Dummy", id);
                 continue;
             }
+            if (mPlayerID == id)
+                continue;
             player->setPosition({x, y});
             //player->addCoins(coins);
         }
@@ -108,21 +112,27 @@ void GameManager::run_game(void) {
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && mWindow.hasFocus()) {
                 pos.second -= 0.05;
                 player->setAction(1, 2);
+            } else if (pos.second < FLOOR) {
+                pos.second += 0.03;
+                player->setAction(1, 1);
+            } else {
+                pos.second += 0.03;
+                player->setAction(0, 0);
             }
             player->setPosition({pos.first, pos.second});
         }
-        std::vector<Player*> players = mPlayerManager->getAllPlayers();
-        for (int i = 0; i < players.size(); i++) {
-            std::pair<float, float> pos = players[i]->getPosition();
-            if (pos.second < FLOOR) {
-                pos.second += 0.03;
-                players[i]->setAction(1, 1);
-            } else {
-                pos.second += 0.03;
-                players[i]->setAction(0, 0);
-            }
-            players[i]->updateAnimation();
-        }
+        // std::vector<Player*> players = mPlayerManager->getAllPlayers();
+        // for (int i = 0; i < players.size(); i++) {
+        //     std::pair<float, float> pos = players[i]->getPosition();
+        //     if (pos.second < FLOOR) {
+        //         pos.second += 0.03;
+        //         players[i]->setAction(1, 1);
+        //     } else {
+        //         pos.second += 0.03;
+        //         players[i]->setAction(0, 0);
+        //     }
+        //     players[i]->updateAnimation();
+        // }
         draw();
     }
 }
