@@ -18,6 +18,9 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <iostream>
+#include <thread>
+#include <string.h>
+#include <regex>
 #include "PlayersManager.hpp"
 
 #define FLOOR 450
@@ -28,6 +31,8 @@ class GameManager {
         GameManager() {};
         ~GameManager() {};
         void init_game(int ac, char **av);
+        void test_server(void);
+        void test_send(void);
         void run_game(void);
         void close_connection(void);
     protected:
@@ -47,6 +52,7 @@ class GameManager {
         sf::Font mFont;
         sf::String mInput;
         sf::Text mPlayerInputDisplay;
+        std::vector<std::thread> mPoolThread;
 };
 
 #endif /* !GAMEMANAGER_HPP_ */

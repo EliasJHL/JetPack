@@ -35,6 +35,10 @@ std::string Player::getName(void) const {
     return mPlayerName;
 }
 
+void Player::setName(std::string name) {
+    mPlayerName = name;
+}
+
 std::pair<float, float> Player::getPosition(void) const {
     return {mPos.x, mPos.y};
 }

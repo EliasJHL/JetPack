@@ -10,6 +10,64 @@
 
 #include "GameManager.hpp"
 
+void GameManager::test_send(void)
+{
+    while (true) {
+        float x, y;
+        x = mPlayerManager->getPlayer(mPlayerID)->getPosition().first;
+        y = mPlayerManager->getPlayer(mPlayerID)->getPosition().second;
+        std::string position_message = "POS " + std::to_string(x) + " " + std::to_string(y);
+        write(mPlayerSocket, position_message.c_str(), position_message.size());
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    }
+}
+
+void GameManager::test_server(void)
+{
+    char buffer[2048];
+
+    while (true) {
+        int bytes = recv(mPlayerSocket, buffer, sizeof(buffer), 0);
+        if (bytes == -1) {
+            std::cerr << "Error: Failed to receive data from server." << std::endl;
+            break;
+        } else if (bytes == 0) {
+            std::cout << "Server closed the connection." << std::endl;
+            break;
+        }
+        buffer[bytes] = '\0';
+        std::cout << "serv: " << buffer << std::endl;
+        std::string command(buffer);
+        std::smatch m;
+
+        std::regex const e{"^PLY (\\d) ([0-9]*\\.[0-9]+) ([0-9]*\\.[0-9]+) (\\d)$"};
+        if (std::regex_search(command, m, e)) {
+            int id = std::atoi(m[1].str().c_str()); // id
+            float x = std::atof(m[2].str().c_str()); // x
+            float y = std::atof(m[3].str().c_str()); // y
+            int coins = std::atoi(m[4].str().c_str()); // coins
+
+            Player *player = mPlayerManager->getPlayer(id);
+            if (player == nullptr || mPlayerID != id) {
+                continue;
+            }
+            player->setPosition({x, y});
+            //player->addCoins(coins);
+        }
+        std::regex const e2{"JON \d [A-Za-z]+$"};
+        if (std::regex_search(command, m, e2)) {
+            int id = std::atoi(m[1].str().c_str());
+            std::string name = m[2].str();
+            Player *player = mPlayerManager->getPlayer(id);
+            if (player == nullptr) {
+                mPlayerManager->createPlayer(name, id);
+            } else {
+                player->setName(name);
+            }
+        }
+    }
+}
+
 void GameManager::init_game(int ac, char **av)
 {
     // gérer le -h -p et -d
@@ -33,6 +91,8 @@ void GameManager::init_game(int ac, char **av)
     mPlayerInputDisplay.setFont(mFont);
     mPlayerInputDisplay.setCharacterSize(15);
     mPlayerInputDisplay.setString("");
+    std::thread t(&GameManager::test_server, this);
+    t.detach();
 }
 
 void GameManager::close_connection(void)
@@ -98,6 +158,8 @@ void GameManager::handle_events(void)
             std::cout << "OK : " << mPlayerUsername << std::endl;
             mPlayerManager->createPlayer(mPlayerUsername, mPlayerID);
             mHasUsername = true;
+            std::thread s(&GameManager::test_send, this);
+            s.detach();
         }
     }
 }

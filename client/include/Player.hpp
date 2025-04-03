@@ -24,6 +24,7 @@ class Player {
         
         int getID(void) const;
         std::string getName(void) const;
+        void setName(std::string name);
         std::pair<float, float> getPosition(void) const;
         sf::Sprite getPlayerSprite(void);
         

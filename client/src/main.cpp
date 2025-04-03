@@ -10,6 +10,7 @@
 
 #include <string>
 #include <iostream>
+#include <thread>
 #include "GameManager.hpp"
 
 int main(int ac, char **av)
@@ -18,7 +19,8 @@ int main(int ac, char **av)
 
     try {
         manager.init_game(ac, av);
-        manager.run_game();
+        std::thread g(&GameManager::run_game, &manager);
+        g.join();
         manager.close_connection();
     } catch (std::runtime_error &e) {
         std::cerr << e.what() << std::endl;
