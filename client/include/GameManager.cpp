@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Tue Apr 1 20:46:11 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Thu Apr 2 10:17:53 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Fri Apr 3 11:14:38 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "GameManager.hpp"
@@ -98,6 +98,7 @@ void GameManager::handle_events(void)
             std::cout << "OK : " << mPlayerUsername << std::endl;
             mPlayerManager->createPlayer(mPlayerUsername, mPlayerID);
             mHasUsername = true;
+            // thread
         }
     }
 }

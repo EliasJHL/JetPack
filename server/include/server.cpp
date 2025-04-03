@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Tue Mar 25 19:33:46 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Fri Apr 3 10:29:09 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Fri Apr 3 11:25:31 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "server.hpp"
@@ -94,7 +94,8 @@ void Server::init_server(int ac, char **av)
 // ---------------------Server side-------------------------
 // PLR id x y coin      -> Update envoyé      - Server Send
 // DEC id               -> Player disconnect  - Server Send
-// RDY                  -> Player Join        - Server Send
+// JON id name          -> Player Connect     - Server Send
+// RDY                  -> Player Ready       - Server Send
 // SRT                  -> Start Game         - Server Send
 // DED id               -> Player who dead    - Server Send
 // WIN id               -> Player who win     - Server Send
@@ -150,7 +151,6 @@ void Server::handlePlayerCommands(Player *player)
                 std::regex const e{"^POS\\s+(-?\\d+(?:\\.\\d+)?)\\s+(-?\\d+(?:\\.\\d+)?)$"};
                 if (std::regex_search(command, m, e)) {
                     player->setPosition(std::pair<float, float> {std::stof(m[1]), std::stof(m[2])});
-                    player->getSalon()->CreateMessage(std::string("MOV " + std::to_string(player->getID()) + " " + std::to_string(player->getPosition().first) + " " + std::to_string(player->getPosition().second)), Type::POSITION, player->getID());
                 }
             }
             if (command.substr(0,3) == "DEC") {
@@ -180,7 +180,9 @@ void Server::updatePlayersInfo()
             x = players[i]->getPosition().first;
             y = players[i]->getPosition().second;
             message = std::string("PLY " + std::to_string(players[i]->getID()) + " " + std::to_string(x) + " " + std::to_string(y) + " " + std::to_string(players[i]->getCoins()));
+            players[i]->getSalon()->CreateMessage(message, Type::POSITION, players[i]->getID());
         }
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
 }
 

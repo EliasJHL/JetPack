@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Tue Mar 25 11:06:30 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Wed Apr 1 21:53:24 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Fri Apr 3 10:42:27 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #ifndef PLAYERSMANAGER_HPP_
@@ -24,7 +24,7 @@ class PlayersManager {
         std::vector<Player *> getAllPlayers(void);
         std::vector<Player *> getAllPlayers(void) const;
     private:
-        PlayersManager() {};
+        PlayersManager() {mNextPlayerID = 0;};
         ~PlayersManager() = default;
 
         PlayersManager(PlayersManager &other) = delete;
