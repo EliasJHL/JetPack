@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Tue Apr 1 20:46:11 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Fri Apr 3 11:14:38 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Fri Apr 3 11:41:15 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "GameManager.hpp"
@@ -18,7 +18,7 @@ void GameManager::test_send(void)
         y = mPlayerManager->getPlayer(mPlayerID)->getPosition().second;
         std::string position_message = "POS " + std::to_string(x) + " " + std::to_string(y);
         write(mPlayerSocket, position_message.c_str(), position_message.size());
-        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
 }
 
@@ -48,13 +48,13 @@ void GameManager::test_server(void)
             int coins = std::atoi(m[4].str().c_str()); // coins
 
             Player *player = mPlayerManager->getPlayer(id);
-            if (player == nullptr || mPlayerID != id) {
+            if (player == nullptr || mPlayerID == id) {
                 continue;
             }
             player->setPosition({x, y});
             //player->addCoins(coins);
         }
-        std::regex const e2{"JON \d [A-Za-z]+$"};
+        std::regex const e2{"JON \\d [A-Za-z]+$"};
         if (std::regex_search(command, m, e2)) {
             int id = std::atoi(m[1].str().c_str());
             std::string name = m[2].str();
