@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Tue Mar 25 19:33:46 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Fri Apr 3 11:25:31 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Fri Apr 3 15:01:50 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "server.hpp"
@@ -144,6 +144,7 @@ void Server::handlePlayerCommands(Player *player)
                 std::regex const e{"^SNA\\s+([A-Za-z0-9]+)$"};
                 if (std::regex_search(command, m, e)) {
                     player->setPlayerName(m[1]);
+                    std::cout << std::string("JON " + std::to_string(player->getID()) + " " + m[1].str()) << std::endl;
                     player->getSalon()->CreateMessage(std::string("JON " + std::to_string(player->getID()) + " " + m[1].str()), Type::CONNECT, player->getID());
                 }
             }
@@ -162,7 +163,7 @@ void Server::handlePlayerCommands(Player *player)
                     return;
                 }
             }
-            std::cout << "From Player " << player->getID() << " : " << memory;
+            //std::cout << "From Player " << player->getID() << " : " << memory << std::endl;
         }
     }
 }
@@ -177,9 +178,12 @@ void Server::updatePlayersInfo()
     while (true) {
         players = mPlayerManager->getAllPlayers();
         for (int i = 0; i < players.size(); i++) {
+            if (players[i]->getName() == "Dummy")
+                continue;
             x = players[i]->getPosition().first;
             y = players[i]->getPosition().second;
             message = std::string("PLY " + std::to_string(players[i]->getID()) + " " + std::to_string(x) + " " + std::to_string(y) + " " + std::to_string(players[i]->getCoins()));
+            std::cout << message << std::endl;
             players[i]->getSalon()->CreateMessage(message, Type::POSITION, players[i]->getID());
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(50));

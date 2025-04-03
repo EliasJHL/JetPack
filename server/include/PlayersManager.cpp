@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Tue Mar 25 11:21:17 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Fri Apr 3 10:35:49 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Fri Apr 3 15:10:17 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "PlayersManager.hpp"
@@ -23,7 +23,8 @@ PlayersManager *PlayersManager::getInstance() {
 
 int PlayersManager::createPlayer(const std::string &name, int socket) {
     std::lock_guard<std::mutex> guard(mMutex);
-    int id = mNextPlayerID++;
+    int id = mNextPlayerID;
+    mNextPlayerID++;
     mPlayers[id] = std::make_unique<Player>(id, name, socket);
     return id;
 }

@@ -5,10 +5,11 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Tue Apr 1 21:05:44 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Fri Apr 3 11:01:32 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Fri Apr 3 14:55:12 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "PlayersManager.hpp"
+#include <iostream>
 
 std::mutex PlayersManager::mMutex;
 PlayersManager* PlayersManager::mPlayersManager = nullptr;
@@ -24,6 +25,12 @@ PlayersManager *PlayersManager::getInstance()
 void PlayersManager::createPlayer(const std::string &name, int id)
 {
     std::lock_guard<std::mutex> lock(mMutex);
+    std::cout << id << std::endl;
+    auto it = mPlayers.find(id);
+    if (it != mPlayers.end()) {
+        std::cout << "Attention: Un joueur avec l'ID " << id << " existe déjà!" << std::endl;
+        return;
+    }
     mPlayers[id] = std::make_unique<Player>(id, name);
 }
 
