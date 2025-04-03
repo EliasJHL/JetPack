@@ -16,7 +16,7 @@ void GameManager::test_send(void)
         float x, y;
         x = mPlayerManager->getPlayer(mPlayerID)->getPosition().first;
         y = mPlayerManager->getPlayer(mPlayerID)->getPosition().second;
-        std::string position_message = "POS " + std::to_string(x) + " " + std::to_string(y);
+        std::string position_message = "POS " + std::to_string(x) + " " + std::to_string(y) + "\n";
         write(mPlayerSocket, position_message.c_str(), position_message.size());
         std::this_thread::sleep_for(std::chrono::milliseconds(20));
     }
@@ -48,13 +48,14 @@ void GameManager::test_server(void)
             int coins = std::atoi(m[4].str().c_str()); // coins
 
             Player *player = mPlayerManager->getPlayer(id);
+            std::cout << "ID receive: " << id << "my ID: " << mPlayerID << std::endl;
             if (player == nullptr || mPlayerID != id) {
                 continue;
             }
             player->setPosition({x, y});
             //player->addCoins(coins);
         }
-        std::regex const e2{"JON \d [A-Za-z]+$"};
+        std::regex const e2{"JON \\d [A-Za-z]+$"};
         if (std::regex_search(command, m, e2)) {
             int id = std::atoi(m[1].str().c_str());
             std::string name = m[2].str();
@@ -107,7 +108,7 @@ void GameManager::run_game(void) {
             Player* player = mPlayerManager->getPlayer(mPlayerID);
             std::pair<float, float> pos = player->getPosition();
 
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && mWindow.hasFocus()) {
                 pos.second -= 0.05;
                 player->setAction(1, 2); // Jump action (second row)
             } else if (pos.second < FLOOR) {
