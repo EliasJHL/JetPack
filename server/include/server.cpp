@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Tue Mar 25 19:33:46 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Thu Apr 2 11:52:15 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Fri Apr 3 10:29:09 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "server.hpp"
@@ -215,6 +215,7 @@ void Server::start_server()
             
             int new_player_id = mPlayerManager->createPlayer("Dummy", new_player_socket);
             std::cout << "Connection from " << inet_ntoa(mClientAddr.sin_addr) << ":" << ntohs(mClientAddr.sin_port) << std::endl;
+            write(mPlayerManager->getPlayer(new_player_id)->getPlayerSocket(), "Welcome\r\n", std::string("Welcome\r\n").length());
             std::string message = std::string("IDP " + std::to_string(new_player_id) + "\r\n");
             write(mPlayerManager->getPlayer(new_player_id)->getPlayerSocket(), message.c_str(), message.length());
             mPlayerManager->getPlayer(new_player_id)->setSalon(*mRooms[0]);
