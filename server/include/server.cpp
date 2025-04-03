@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Tue Mar 25 19:33:46 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Fri Apr 3 11:37:56 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Fri Apr 3 13:26:19 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "server.hpp"
@@ -144,6 +144,7 @@ void Server::handlePlayerCommands(Player *player)
                 std::regex const e{"^SNA\\s+([A-Za-z0-9]+)$"};
                 if (std::regex_search(command, m, e)) {
                     player->setPlayerName(m[1]);
+                    std::cout << std::string("JON " + std::to_string(player->getID()) + " " + m[1].str()) << std::endl;
                     player->getSalon()->CreateMessage(std::string("JON " + std::to_string(player->getID()) + " " + m[1].str()), Type::CONNECT, player->getID());
                 }
             }
@@ -162,7 +163,7 @@ void Server::handlePlayerCommands(Player *player)
                     return;
                 }
             }
-            std::cout << "From Player " << player->getID() << " : " << memory << std::endl;
+            //std::cout << "From Player " << player->getID() << " : " << memory << std::endl;
         }
     }
 }

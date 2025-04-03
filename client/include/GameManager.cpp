@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Tue Apr 1 20:46:11 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Fri Apr 3 11:41:15 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Fri Apr 3 13:31:05 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "GameManager.hpp"
@@ -36,25 +36,25 @@ void GameManager::test_server(void)
             break;
         }
         buffer[bytes] = '\0';
-        std::cout << "serv: " << buffer << std::endl;
         std::string command(buffer);
         std::smatch m;
-
-        std::regex const e{"^PLY (\\d) ([0-9]*\\.[0-9]+) ([0-9]*\\.[0-9]+) (\\d)$"};
+        std::regex const e{"^PLY\\s+(\\d+)\\s+(-?[0-9]*\\.?[0-9]+)\\s+(-?[0-9]*\\.?[0-9]+)\\s+(\\d+)$"};
         if (std::regex_search(command, m, e)) {
-            int id = std::atoi(m[1].str().c_str()); // id
-            float x = std::atof(m[2].str().c_str()); // x
-            float y = std::atof(m[3].str().c_str()); // y
-            int coins = std::atoi(m[4].str().c_str()); // coins
+            std::cout << "OKOKOKOK" << std::endl;
+            int id = std::atoi(m[1].str().c_str());
+            float x = std::atof(m[2].str().c_str());
+            float y = std::atof(m[3].str().c_str());
+            int coins = std::atoi(m[4].str().c_str());
 
             Player *player = mPlayerManager->getPlayer(id);
             if (player == nullptr || mPlayerID == id) {
                 continue;
             }
+            std::cout << "Update pos" << std::endl;
             player->setPosition({x, y});
             //player->addCoins(coins);
         }
-        std::regex const e2{"JON \\d [A-Za-z]+$"};
+        std::regex const e2{"^JON\\s+(\\d+)\\s+([A-Za-z0-9_-]+)\r\n$"};
         if (std::regex_search(command, m, e2)) {
             int id = std::atoi(m[1].str().c_str());
             std::string name = m[2].str();
@@ -107,19 +107,23 @@ void GameManager::run_game(void) {
             Player* player = mPlayerManager->getPlayer(mPlayerID);
             std::pair<float, float> pos = player->getPosition();
 
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && mWindow.hasFocus()) {
                 pos.second -= 0.05;
-                player->setAction(1, 2); // Jump action (second row)
-            } else if (pos.second < FLOOR) {
+                player->setAction(1, 2);
+            }
+            player->setPosition({pos.first, pos.second});
+        }
+        std::vector<Player*> players = mPlayerManager->getAllPlayers();
+        for (int i = 0; i < players.size(); i++) {
+            std::pair<float, float> pos = players[i]->getPosition();
+            if (pos.second < FLOOR) {
                 pos.second += 0.03;
-                player->setAction(1, 1); // Default action
+                players[i]->setAction(1, 1);
             } else {
                 pos.second += 0.03;
-                player->setAction(0, 0); // Idle action (first row)
+                players[i]->setAction(0, 0);
             }
-
-            player->setPosition({pos.first, pos.second});
-            player->updateAnimation(); // Ensure this is called
+            players[i]->updateAnimation();
         }
         draw();
     }
@@ -157,6 +161,7 @@ void GameManager::handle_events(void)
             mPlayerUsername = std::string(mInput);
             std::cout << "OK : " << mPlayerUsername << std::endl;
             mPlayerManager->createPlayer(mPlayerUsername, mPlayerID);
+            send(mPlayerSocket, std::string("SNA " + mPlayerUsername).c_str(), std::string("SNA " + mPlayerUsername).length(), 0);
             mHasUsername = true;
             std::thread s(&GameManager::test_send, this);
             s.detach();
@@ -170,14 +175,17 @@ void GameManager::handle_server(void)
 
 void GameManager::draw(void)
 {
+    std::vector<Player*> players = mPlayerManager->getAllPlayers();
+    
     mWindow.clear(sf::Color::Black);
     if (!mHasUsername) {
         mWindow.draw(mPlayerInputDisplay);
     } else {
-        Player* player = mPlayerManager->getPlayer(mPlayerID);
-        if (player == nullptr)
-            std::cout << "NULL" << std::endl;
-        mWindow.draw(player->getPlayerSprite());
+        for (int i = 0; i < players.size(); i++) {
+            //std::cout << players[i]->getPosition().first << " " << players[i]->getPosition().second << std::endl;
+            mWindow.draw(players[i]->getPlayerSprite());
+            //std::cout << "Dessin du joueur " << players[i]->getID() << std::endl;
+        }
     }
     mWindow.display();
 }

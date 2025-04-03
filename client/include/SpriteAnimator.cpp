@@ -60,7 +60,7 @@ void SpriteAnimator::nextFrame() {
         }
     }
 
-    std::cout << "Switching to frame " << mCurrentFrame << " of action " << mCurrentAction << std::endl;
+    //std::cout << "Switching to frame " << mCurrentFrame << " of action " << mCurrentAction << std::endl;
     updateTextureRect();
 }
 
