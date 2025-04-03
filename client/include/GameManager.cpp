@@ -16,7 +16,7 @@ void GameManager::test_send(void)
         float x, y;
         x = mPlayerManager->getPlayer(mPlayerID)->getPosition().first;
         y = mPlayerManager->getPlayer(mPlayerID)->getPosition().second;
-        std::string position_message = "POS " + std::to_string(x) + " " + std::to_string(y) + "\n";
+        std::string position_message = "POS " + std::to_string(x) + " " + std::to_string(y);
         write(mPlayerSocket, position_message.c_str(), position_message.size());
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
@@ -46,8 +46,12 @@ void GameManager::test_server(void)
             int coins = std::atoi(m[4].str().c_str());
         
             Player *player = mPlayerManager->getPlayer(id);
-            if (player == nullptr || mPlayerID != id) {
-                continue;
+            if (player == nullptr) {
+                mPlayerManager->createPlayer("Dummy", id);
+                player = mPlayerManager->getPlayer(id);
+            }
+            if (mPlayerID != id && player) {
+                player->setPosition({x, y});
             }
         }
         std::regex const e2{"JON\\s+(\\d+)\\s+([A-Za-z0-9_-]+)"};
