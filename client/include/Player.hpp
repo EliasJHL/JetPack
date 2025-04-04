@@ -17,6 +17,7 @@
 #include <string>
 #include "SpriteAnimator.hpp"
 #include "IEntity.hpp"
+#include "Clock.hpp"
 
 class Player : public IEntity {
     public:
@@ -40,8 +41,7 @@ class Player : public IEntity {
         sf::Texture mTexture;
         std::string mPlayerName;
         SpriteAnimator mAnimator;
-        sf::Clock mAnimationClock; // Clock to control animation timing
-        float mAnimationInterval = 0.3f; // Time (in seconds) between frames
+        Clock mAnimationTimer; // Utilisation de la classe Timer
 };
 
 #endif /* !PLAYER_HPP_ */

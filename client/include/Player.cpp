@@ -12,14 +12,14 @@
 #include "GameManager.hpp"
 
 Player::Player(int id, std::string name)
-    : mPlayerID(id), mPlayerName(name), mAnimator(mSprite, 134.5, 133.83, 6) // Initialize mAnimator
+    : mPlayerID(id), mPlayerName(name), mAnimator(mSprite, 134.5, 133.83, 6), mAnimationTimer(0.3f) // Initialisation du Timer
 {
     if (!mTexture.loadFromFile("./client/ressources/Sprites/player_sprite_sheet.png")) {
         throw std::runtime_error("Failed to load spritesheet");
     }
     mSprite.setTexture(mTexture);
     mSprite.setScale(1.0, 1.0);
-    mAnimator.setFramesPerAction(4); // Assuming 4 frames per action
+    mAnimator.setFramesPerAction(4);
     mPos.x = 350;
     mPos.y = 570;
     mSprite.setPosition(mPos);
@@ -58,9 +58,9 @@ sf::Sprite Player::getSprite(void) const {
 }
 
 void Player::updateAnimation() {
-    if (mAnimationClock.getElapsedTime().asSeconds() >= mAnimationInterval) { // Change frame every 0.3 seconds
+    if (mAnimationTimer.isElapsed()) { // Vérifie si l'intervalle est écoulé
         mAnimator.nextFrame();
-        mAnimationClock.restart(); // Restart the clock
+        mAnimationTimer.restart(); // Redémarre le Timer
     }
     mSprite.setTextureRect(mAnimator.getTextureRect());
 }

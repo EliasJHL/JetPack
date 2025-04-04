@@ -1,6 +1,6 @@
 #include "Coin.hpp"
 
-Coin::Coin() {
+Coin::Coin() : mAnimationTimer(0.5f) { // Initialisation du Timer
     if (!mTexture.loadFromFile("./client/ressources/Sprites/coin_sprite_sheet.png")) {
         throw std::runtime_error("Failed to load coin spritesheet");
     }
@@ -19,7 +19,10 @@ std::pair<float, float> Coin::getPosition() const {
 }
 
 void Coin::updateAnimation() {
-    // Logic for animating the coin (if needed)
+    if (mAnimationTimer.isElapsed()) { // Vérifie si l'intervalle est écoulé
+        // Logique pour changer de frame
+        mAnimationTimer.restart(); // Redémarre le Timer
+    }
 }
 
 sf::Sprite Coin::getSprite() const {

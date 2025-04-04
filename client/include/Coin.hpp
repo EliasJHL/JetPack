@@ -2,6 +2,7 @@
 #define COIN_HPP_
 
 #include "IEntity.hpp"
+#include "Clock.hpp"
 
 class Coin : public IEntity {
 public:
@@ -17,6 +18,7 @@ private:
     sf::Sprite mSprite;
     sf::Texture mTexture;
     sf::Vector2f mPos;
+    Clock mAnimationTimer; // Utilisation de la classe Timer
 };
 
 #endif /* COIN_HPP_ */
