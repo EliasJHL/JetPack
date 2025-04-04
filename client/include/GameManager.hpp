@@ -22,6 +22,8 @@
 #include <string.h>
 #include <regex>
 #include "PlayersManager.hpp"
+#include "Coin.hpp"
+#include "ElectricBarrier.hpp"
 
 #define FLOOR 450
 #define CEILING 0
@@ -48,6 +50,8 @@ class GameManager {
         std::string mPlayerUsername;
         struct sockaddr_in mAddressControl;
         PlayersManager *mPlayerManager;
+        std::vector<Coin*> mCoins;
+        std::vector<ElectricBarrier*> mBarriers;
         bool mHasUsername;
         sf::Font mFont;
         sf::String mInput;
