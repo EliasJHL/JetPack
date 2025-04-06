@@ -9,19 +9,28 @@
 */
 
 #include "GameManager.hpp"
+#include <sstream>
+#include <iomanip>
 
 void GameManager::test_send(void)
 {
+    Player *p = mPlayerManager->getPlayer(mPlayerID);
+    std::string message;
+    float x, y;
+
     while (true) {
-        float x, y;
-        x = mPlayerManager->getPlayer(mPlayerID)->getPosition().first;
-        y = mPlayerManager->getPlayer(mPlayerID)->getPosition().second;
-        std::string position_message = "POS " + std::to_string(x) + " " + std::to_string(y);
-        write(mPlayerSocket, position_message.c_str(), position_message.size());
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        x = p->getPosition().first;
+        y = p->getPosition().second;
+        std::ostringstream oss;
+        oss << "POS " << std::fixed << std::setprecision(2) << x << " " << y;
+        message = oss.str();
+        //std::cout << message << std::endl;
+        send(mPlayerSocket, message.c_str(), message.size(), 0);
+        std::this_thread::sleep_for(std::chrono::milliseconds(25));
     }
 }
 
+// Suppression des regex qui est trop coûteux
 void GameManager::test_server(void)
 {
     char buffer[2048];
@@ -37,30 +46,48 @@ void GameManager::test_server(void)
         }
         buffer[bytes] = '\0';
         std::string command(buffer);
-        std::smatch m;
-        std::regex const e{"PLY\\s+(\\d+)\\s+([\\d.-]+)\\s+([\\d.-]+)\\s+(\\d+)"};
-        if (std::regex_search(command, m, e) && mHasUsername) {
-            int id = std::atoi(m[1].str().c_str());
-            float x = std::atof(m[2].str().c_str());
-            float y = std::atof(m[3].str().c_str());
-            int coins = std::atoi(m[4].str().c_str());
-        
-            Player *player = mPlayerManager->getPlayer(id);
-            if (player == nullptr) {
-                mPlayerManager->createPlayer("Dummy", id);
-                player = mPlayerManager->getPlayer(id);
+        if (command.substr(0, 3) == "PLY" && mHasUsername) {
+            std::stringstream messageStream(command);
+            std::vector<std::string> parts;
+            std::string m;
+            
+            while (std::getline(messageStream, m, ' ')) {
+                parts.push_back(m);
             }
-            if (mPlayerID != id && player) {
-                player->setPosition({x, y});
+
+            if (parts.size() >= 5) {
+                int id = std::atoi(parts[1].c_str());
+                float x = std::atof(parts[2].c_str());
+                float y = std::atof(parts[3].c_str());
+                int coins = std::atoi(parts[4].c_str());
+
+                Player *player = mPlayerManager->getPlayer(id);
+                if (player == nullptr) {
+                    mPlayerManager->createPlayer("Dummy", id);
+                    player = mPlayerManager->getPlayer(id);
+                }
+                std::cout << "Player " << id << " at " << x << " " << y << " with " << coins << std::endl;
+                if (mPlayerID != id && player) {
+                    player->setPosition({x, y});
+                    // set coins
+                }
             }
         }
-        std::regex const e2{"JON\\s+(\\d+)\\s+([A-Za-z0-9_-]+)"};
-        if (std::regex_search(command, m, e2)) {
-            int id = std::atoi(m[1].str().c_str());
-            std::string name = m[2].str();
+        if (command.substr(0, 3) == "JON" && mHasUsername) {
+            std::stringstream messageStream(command);
+            std::vector<std::string> parts;
+            std::string m;
+
+            std::cout << "NEW PLAYER" << std::endl;
+            
+            while (std::getline(messageStream, m, ' ')) {
+                parts.push_back(m);
+            }
+            int id = std::atoi(parts[0].c_str());
+            std::string name = parts[1];
             Player *player = mPlayerManager->getPlayer(id);
             std::cout << command << std::endl;
-            if (player == nullptr && mPlayerID != id && mPlayerUsername != m[2].str()) {
+            if (player == nullptr && mPlayerID != id) {
                 mPlayerManager->createPlayer(name, id);
             }
         }

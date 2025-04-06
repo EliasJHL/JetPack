@@ -11,6 +11,8 @@
 #include "server.hpp"
 #include <fstream>
 #include <cctype>
+#include <sstream>
+#include <iomanip>
 
 Server::Server() 
 {
@@ -149,10 +151,14 @@ void Server::handlePlayerCommands(Player *player)
                 }
             }
             if (command.substr(0,3) == "POS") {
-                std::regex const e{"^POS\\s+(-?\\d+(?:\\.\\d+)?)\\s+(-?\\d+(?:\\.\\d+)?)$"};
-                if (std::regex_search(command, m, e)) {
-                    player->setPosition(std::pair<float, float> {std::stof(m[1]), std::stof(m[2])});
+                std::stringstream messageStream(command);
+                std::vector<std::string> parts;
+                std::string m;
+                
+                while (std::getline(messageStream, m, ' ')) {
+                    parts.push_back(m);
                 }
+                player->setPosition(std::pair<float, float> {std::stof(parts[1].c_str()), std::stof(parts[2].c_str())});
             }
             if (command.substr(0,3) == "DEC") {
                 std::regex const e{"^DEC\\s+(\\d+)$"};
@@ -182,11 +188,12 @@ void Server::updatePlayersInfo()
                 continue;
             x = players[i]->getPosition().first;
             y = players[i]->getPosition().second;
-            message = std::string("PLY " + std::to_string(players[i]->getID()) + " " + std::to_string(x) + " " + std::to_string(y) + " " + std::to_string(players[i]->getCoins()));
+            std::ostringstream oss;
+            oss << "PLY " << players[i]->getID() << " " << std::fixed << std::setprecision(2) << x << " " << y << " " << players[i]->getCoins() << "\r\n";
+            message = oss.str();
             std::cout << message << std::endl;
             players[i]->getSalon()->CreateMessage(message, Type::POSITION, players[i]->getID());
         }
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
 }
 
