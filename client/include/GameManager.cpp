@@ -211,7 +211,13 @@ void GameManager::draw(void)
         mWindow.draw(mPlayerInputDisplay);
     } else {
         for (Player* player : players) {
-            mWindow.draw(player->getPlayerSprite());
+            sf::Sprite sprite = player->getPlayerSprite();
+            if (player->getID() != mPlayerID) {
+                sf::Color color = sprite.getColor();
+                color.a = 128;
+                sprite.setColor(color);
+            }
+            mWindow.draw(sprite);
         }
     }
     mWindow.display();
