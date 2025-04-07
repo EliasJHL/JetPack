@@ -63,6 +63,33 @@ void GameManager::test_server(void)
                 }
             }
         }
+        std::stringstream messageStream(command);
+        std::string line;
+        while (std::getline(messageStream, line)) {
+            if (line.substr(0, 4) == "COIN") {
+                std::stringstream coinStream(line);
+                std::string type;
+                float x, y;
+                coinStream >> type >> x >> y;
+            
+                Coin* coin = new Coin();
+                coin->setPosition({x * 5, y + 150});
+                mCoins.push_back(coin);
+            
+                std::cout << "Received COIN at (" << x << ", " << y << ")" << std::endl;
+            } else if (line.substr(0, 7) == "BARRIER") {
+                std::stringstream barrierStream(line);
+                std::string type;
+                float x, y;
+                barrierStream >> type >> x >> y;
+            
+                ElectricBarrier* barrier = new ElectricBarrier();
+                barrier->setPosition({x * 5, y + 150});
+                mBarriers.push_back(barrier);
+            
+                std::cout << "Received BARRIER at (" << x << ", " << y << ")" << std::endl;
+            }
+        }
         if (command.substr(0, 3) == "JON" && mHasUsername) {
             std::stringstream messageStream(command);
             std::vector<std::string> parts;
@@ -101,7 +128,7 @@ void GameManager::init_game(int ac, char **av)
     mPlayerID = std::atoi(std::string(data).substr(4).c_str());
     mPlayerManager = mPlayerManager->getInstance();
     mHasUsername = false;
-    mView.setCenter(0, 0);
+    mView.setCenter(0, FLOOR - 150);
     mView.setSize(1200, 600);
     mFont.loadFromFile("./client/ressources/font/jetpack_font.ttf");
     mPlayerInputDisplay.setFont(mFont);
@@ -197,16 +224,15 @@ void GameManager::draw(void)
 {
     std::vector<IEntity*> entities;
 
-    // Ajouter tous les joueurs
-    std::vector<Player*> players = mPlayerManager->getAllPlayers();
-    entities.insert(entities.end(), players.begin(), players.end());
-
     for (Coin* coin : mCoins) {
         entities.push_back(coin);
     }
     for (ElectricBarrier* barrier : mBarriers) {
         entities.push_back(barrier);
     }
+
+    std::vector<Player*> players = mPlayerManager->getAllPlayers();
+    entities.insert(entities.end(), players.begin(), players.end());
 
     mWindow.clear(sf::Color::Black);
     if (!mHasUsername) {

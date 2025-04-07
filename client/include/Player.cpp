@@ -21,7 +21,7 @@ Player::Player(int id, std::string name)
     mSprite.setScale(1.0, 1.0);
     mAnimator.setFramesPerAction(4);
     mPos.x = 350;
-    mPos.y = 570;
+    mPos.y = FLOOR;
     mSprite.setPosition(mPos);
 }
 

@@ -1,12 +1,15 @@
 #include "Coin.hpp"
 
 Coin::Coin() : mAnimator(mSprite, 191.933, 171, 1), mAnimationTimer(0.3f) {
-    if (!mTexture.loadFromFile("./client/ressources/Sprites/coins_sprite_sheet.png")) {
+    if (!mTexture.loadFromFile("./client/ressources/sprites/coins_sprite_sheet.png")) {
         throw std::runtime_error("Failed to load coin spritesheet");
     }
     mSprite.setTexture(mTexture);
     mSprite.setScale(0.5, 0.5);
     mAnimator.setFramesPerAction(6);
+    mPos.x = 400;
+    mPos.y = 450;
+    mSprite.setPosition(mPos);
 }
 
 void Coin::setPosition(std::pair<float, float> pos) {
