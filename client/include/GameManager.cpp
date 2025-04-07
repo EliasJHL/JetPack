@@ -1,13 +1,4 @@
-/*
-** GameManager.cpp for B-NWP-400-MPL-4-1-jetpack-elias-josue.hajjar-llauquen in /home/elias/Documents/Epitech/JetPack/B-NWP-400-MPL-4-1-jetpack-elias-josue.hajjar-llauquen/client/include
-**
-** Made by Elias Josué HAJJAR LLAUQUEN
-** Login   <elias-josue.hajjar-llauquen@epitech.eu>
-**
-** Started on  Tue Apr 1 20:46:11 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Fri Apr 3 15:15:11 2025 Elias Josué HAJJAR LLAUQUEN
-*/
-
+// HEADER
 #include "GameManager.hpp"
 #include <sstream>
 #include <iomanip>
@@ -151,7 +142,6 @@ void GameManager::run_game(void) {
         }
         mWindow.setFramerateLimit(60);
         draw();
-        mWindow.setFramerateLimit(60);
     }
 }
 
