@@ -56,6 +56,7 @@ void Server::init_server(int ac, char **av)
     mMapContent.assign((std::istreambuf_iterator<char>(map)),
                        std::istreambuf_iterator<char>());
 
+    parseMap();
     
     this->mPort = std::stoi(port);
     if (this->mPort <= 0 || this->mPort > 65535)
@@ -214,6 +215,7 @@ void Server::start_server()
         if (rc < 0)
             throw std::runtime_error("loop error : poll");
 
+        
         if (mPoll[0].revents == POLLIN) {
             socklen_t client_len = sizeof(mClientAddr);
             int new_player_socket = accept(mServerSocket, (struct sockaddr*) &mClientAddr, &client_len);
@@ -226,13 +228,25 @@ void Server::start_server()
             mPoll.push_back({
                 .fd = new_player_socket
             });
-            
             int new_player_id = mPlayerManager->createPlayer("Dummy", new_player_socket);
             std::cout << "Connection from " << inet_ntoa(mClientAddr.sin_addr) << ":" << ntohs(mClientAddr.sin_port) << std::endl;
             write(mPlayerManager->getPlayer(new_player_id)->getPlayerSocket(), "Welcome\r\n", std::string("Welcome\r\n").length());
             std::string message = std::string("IDP " + std::to_string(new_player_id) + "\r\n");
             write(mPlayerManager->getPlayer(new_player_id)->getPlayerSocket(), message.c_str(), message.length());
             mPlayerManager->getPlayer(new_player_id)->setSalon(*mRooms[0]);
+
+            // Envoyer les pièces et barrières électriques
+            for (const auto &coin : mCoins) {
+                std::string coinMessage = "COIN " + std::to_string(coin.first) + " " + std::to_string(coin.second) + "\r\n";
+                write(new_player_socket, coinMessage.c_str(), coinMessage.length());
+                std::cout << coinMessage << std::endl;
+            }
+            for (const auto &barrier : mElectricBarriers) {
+                std::string barrierMessage = "BARRIER " + std::to_string(barrier.first) + " " + std::to_string(barrier.second) + "\r\n";
+                write(new_player_socket, barrierMessage.c_str(), barrierMessage.length());
+                std::cout << barrierMessage << std::endl;
+            }
+
             std::thread t(&Server::handlePlayerCommands, this, mPlayerManager->getPlayer(new_player_id));
             t.detach();
             mPoolThread.push_back(std::move(t));
@@ -245,5 +259,22 @@ void Server::start_server()
                 // à voir si nécessaire
             }
         }
+    }
+}
+
+void Server::parseMap() {
+    std::istringstream mapStream(mMapContent);
+    std::string line;
+    int y = 0;
+
+    while (std::getline(mapStream, line)) {
+        for (int x = 0; x < line.size(); ++x) {
+            if (line[x] == 'c') {
+                mCoins.push_back({x, y});
+            } else if (line[x] == 'e') {
+                mElectricBarriers.push_back({x, y});
+            }
+        }
+        ++y;
     }
 }

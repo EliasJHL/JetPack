@@ -26,6 +26,7 @@ class Server {
         
         void init_server(int ac, char **av);
         void start_server();
+        void parseMap();
         
     protected:
         void handlePlayerCommands(Player *player);
@@ -41,6 +42,8 @@ class Server {
         struct sockaddr_in mClientAddr;
         std::vector<struct pollfd> mPoll;
         std::vector<std::thread> mPoolThread;
+        std::vector<std::pair<int, int>> mCoins;
+        std::vector<std::pair<int, int>> mElectricBarriers;
 };
 
 #endif /* !SERVER_HPP_ */

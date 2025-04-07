@@ -1,11 +1,12 @@
 #include "ElectricBarrier.hpp"
 
-ElectricBarrier::ElectricBarrier() {
-    if (!mTexture.loadFromFile("./client/ressources/Sprites/electric_barrier.png")) {
+ElectricBarrier::ElectricBarrier() : mAnimator(mSprite, 105.25, 122, 1), mAnimationTimer(0.3f) {
+    if (!mTexture.loadFromFile("./client/ressources/Sprites/zapper_sprite_sheet.png")) {
         throw std::runtime_error("Failed to load electric barrier texture");
     }
     mSprite.setTexture(mTexture);
     mSprite.setScale(1.0, 1.0);
+    mAnimator.setFramesPerAction(4);
 }
 
 void ElectricBarrier::setPosition(std::pair<float, float> pos) {

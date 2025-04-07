@@ -3,6 +3,7 @@
 
 #include "IEntity.hpp"
 #include "Clock.hpp"
+#include "SpriteAnimator.hpp"
 
 class Coin : public IEntity {
 public:
@@ -18,6 +19,7 @@ private:
     sf::Sprite mSprite;
     sf::Texture mTexture;
     sf::Vector2f mPos;
+    SpriteAnimator mAnimator;
     Clock mAnimationTimer; // Utilisation de la classe Timer
 };
 

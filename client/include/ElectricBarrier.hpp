@@ -2,6 +2,8 @@
 #define ELECTRICBARRIER_HPP_
 
 #include "IEntity.hpp"
+#include "Clock.hpp"
+#include "SpriteAnimator.hpp"
 
 class ElectricBarrier : public IEntity {
 public:
@@ -17,6 +19,8 @@ private:
     sf::Sprite mSprite;
     sf::Texture mTexture;
     sf::Vector2f mPos;
+    SpriteAnimator mAnimator;
+    Clock mAnimationTimer; // Utilisation de la classe Timer
 };
 
 #endif /* ELECTRICBARRIER_HPP_ */
