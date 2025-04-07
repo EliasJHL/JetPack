@@ -73,7 +73,7 @@ void GameManager::test_server(void)
                 coinStream >> type >> x >> y;
             
                 Coin* coin = new Coin();
-                coin->setPosition({x * 5, y + 150});
+                coin->setPosition({x * 12, y * 7});
                 mCoins.push_back(coin);
             
                 std::cout << "Received COIN at (" << x << ", " << y << ")" << std::endl;
@@ -84,7 +84,7 @@ void GameManager::test_server(void)
                 barrierStream >> type >> x >> y;
             
                 ElectricBarrier* barrier = new ElectricBarrier();
-                barrier->setPosition({x * 5, y + 150});
+                barrier->setPosition({x * 7, y * 7});
                 mBarriers.push_back(barrier);
             
                 std::cout << "Received BARRIER at (" << x << ", " << y << ")" << std::endl;
@@ -225,9 +225,11 @@ void GameManager::draw(void)
     std::vector<IEntity*> entities;
 
     for (Coin* coin : mCoins) {
+        coin->updateAnimation(); // Met à jour l'animation des pièces
         entities.push_back(coin);
     }
     for (ElectricBarrier* barrier : mBarriers) {
+        barrier->updateAnimation(); // Met à jour l'animation des barrières
         entities.push_back(barrier);
     }
 

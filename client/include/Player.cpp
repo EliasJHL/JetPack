@@ -12,7 +12,7 @@
 #include "GameManager.hpp"
 
 Player::Player(int id, std::string name)
-    : mPlayerID(id), mPlayerName(name), mAnimator(mSprite, 134.5, 133.83, 6), mAnimationTimer(0.3f) // Initialisation du Timer
+    : mPlayerID(id), mPlayerName(name), mAnimator(mSprite, 134.5, 133.83, 6), mAnimationTimer(0.15f) // Initialisation du Timer
 {
     if (!mTexture.loadFromFile("./client/ressources/sprites/player_sprite_sheet.png")) {
         throw std::runtime_error("Failed to load spritesheet");
