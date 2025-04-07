@@ -18,6 +18,7 @@ class IEntity {
         virtual std::pair<float, float> getPosition() const = 0;
         virtual void updateAnimation() = 0;
         virtual sf::Sprite getSprite() const = 0;
+        virtual bool isColliding(const IEntity& other) const = 0;
 };
 
 #endif // ENTITY_HPP
