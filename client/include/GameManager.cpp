@@ -25,9 +25,29 @@ void GameManager::test_send(void)
 void GameManager::test_server(void)
 {
     char buffer[2048];
-    float mapHeight = 10.0f; // Nombre de lignes dans la carte
-    float scaleFactor = static_cast<float>(mMode.height) / mapHeight;
-    std::cout << "Map height: " << mapHeight << std::endl;
+    // Lire la première ligne pour obtenir la hauteur de la carte
+    int bytes = recv(mPlayerSocket, buffer, sizeof(buffer), 0);
+    if (bytes <= 0) {
+        std::cerr << "Error: Failed to receive data from server." << std::endl;
+        return;
+    }
+    buffer[bytes] = '\0';
+    std::string command(buffer);
+    std::stringstream messageStream(command);
+    std::string line;
+    if (std::getline(messageStream, line) && line.substr(0, 6) == "HEIGHT") {
+        std::stringstream heightStream(line);
+        std::string type;
+        int height;
+        heightStream >> type >> height;
+        mMapHeight = height; // Stocker la hauteur de la carte
+        std::cout << "Map height received: " << mMapHeight << std::endl;
+    } else {
+        std::cerr << "Error: Expected HEIGHT message but received something else." << std::endl;
+        return;
+    }
+    // Calculer le facteur d'échelle après avoir reçu la hauteur
+    float scaleFactor = static_cast<float>(mMode.height) / mMapHeight;
     std::cout << "Window height: " << mWindow.getSize().y << std::endl;
     std::cout << "Scale factor: " << scaleFactor << std::endl;
 

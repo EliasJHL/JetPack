@@ -235,6 +235,11 @@ void Server::start_server()
             write(mPlayerManager->getPlayer(new_player_id)->getPlayerSocket(), message.c_str(), message.length());
             mPlayerManager->getPlayer(new_player_id)->setSalon(*mRooms[0]);
 
+            // Envoyer la hauteur de la carte
+            std::string heightMessage = "HEIGHT " + std::to_string(mMapHeight) + "\r\n";
+            write(new_player_socket, heightMessage.c_str(), heightMessage.length());
+            std::cout << heightMessage << std::endl;
+
             // Envoyer les pièces et barrières électriques
             for (const auto &coin : mCoins) {
                 std::string coinMessage = "COIN " + std::to_string(coin.first) + " " + std::to_string(coin.second) + "\r\n";
@@ -277,4 +282,5 @@ void Server::parseMap() {
         }
         ++y;
     }
+    mMapHeight = y;
 }

@@ -50,6 +50,7 @@ class GameManager {
         std::string mPlayerUsername;
         struct sockaddr_in mAddressControl;
         PlayersManager *mPlayerManager;
+        float mMapHeight;
         std::vector<Coin*> mCoins;
         std::vector<ElectricBarrier*> mBarriers;
         bool mHasUsername;

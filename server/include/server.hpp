@@ -42,6 +42,7 @@ class Server {
         struct sockaddr_in mClientAddr;
         std::vector<struct pollfd> mPoll;
         std::vector<std::thread> mPoolThread;
+        float mMapHeight;
         std::vector<std::pair<int, int>> mCoins;
         std::vector<std::pair<int, int>> mElectricBarriers;
 };
