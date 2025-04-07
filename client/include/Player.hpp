@@ -31,7 +31,7 @@ class Player : public IEntity {
         void setPosition(std::pair<float, float> pos) override;
         std::pair<float, float> getPosition(void) const override;
         void updateAnimation() override;
-        sf::Sprite getSprite(void) const override;
+        sf::Sprite &getSprite(void) override;
         void setAction(int action, int mode);
 
     private:

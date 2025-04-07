@@ -53,7 +53,7 @@ void Player::setPosition(std::pair<float, float> pos) {
     mSprite.setPosition(mPos);
 }
 
-sf::Sprite Player::getSprite(void) const {
+sf::Sprite &Player::getSprite(void) {
     return mSprite;
 }
 

@@ -31,6 +31,6 @@ void Coin::updateAnimation() {
     mSprite.setTextureRect(mAnimator.getTextureRect()); // Met à jour la texture
 }
 
-sf::Sprite Coin::getSprite() const {
+sf::Sprite &Coin::getSprite() {
     return mSprite;
 }

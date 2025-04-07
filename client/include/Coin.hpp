@@ -13,7 +13,7 @@ public:
     void setPosition(std::pair<float, float> pos) override;
     std::pair<float, float> getPosition() const override;
     void updateAnimation() override;
-    sf::Sprite getSprite() const override;
+    sf::Sprite &getSprite() override;
 
 private:
     sf::Sprite mSprite;

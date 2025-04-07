@@ -17,7 +17,7 @@ class IEntity {
         virtual void setPosition(std::pair<float, float> pos) = 0;
         virtual std::pair<float, float> getPosition() const = 0;
         virtual void updateAnimation() = 0;
-        virtual sf::Sprite getSprite() const = 0;
+        virtual sf::Sprite &getSprite() = 0;
 };
 
 #endif // ENTITY_HPP

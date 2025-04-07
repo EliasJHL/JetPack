@@ -31,6 +31,6 @@ void ElectricBarrier::updateAnimation() {
     mSprite.setTextureRect(mAnimator.getTextureRect()); // Met à jour la texture
 }
 
-sf::Sprite ElectricBarrier::getSprite() const {
+sf::Sprite &ElectricBarrier::getSprite() {
     return mSprite;
 }

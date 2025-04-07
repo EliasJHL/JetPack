@@ -99,11 +99,13 @@ void GameManager::test_server(void)
 
                 Coin* coin = new Coin();
                 coin->setPosition({x * scaleFactor, y * scaleFactor});
-                coin->getSprite().setScale(scaleFactor, scaleFactor);
+                coin->getSprite().setScale(scaleFactor / 220, scaleFactor / 220);
                 mCoins.push_back(coin);
 
                 std::cout << "Coin position: " << x * scaleFactor << ", " << y * scaleFactor << std::endl;
-            } else if (line.substr(0, 7) == "BARRIER") {
+                std::cout << "Coin scale: " << coin->getSprite().getScale().x << ", " << coin->getSprite().getScale().y << std::endl;
+            }
+            if (line.substr(0, 7) == "BARRIER") {
                 std::stringstream barrierStream(line);
                 std::string type;
                 float x, y;
@@ -111,10 +113,11 @@ void GameManager::test_server(void)
 
                 ElectricBarrier* barrier = new ElectricBarrier();
                 barrier->setPosition({x * scaleFactor, y * scaleFactor});
-                barrier->getSprite().setScale(scaleFactor, scaleFactor);
+                barrier->getSprite().setScale(scaleFactor / scaleFactor, scaleFactor / scaleFactor);
                 mBarriers.push_back(barrier);
 
                 std::cout << "Barrier position: " << x * scaleFactor << ", " << y * scaleFactor << std::endl;
+                std::cout << "Barrier scale: " << barrier->getSprite().getScale().x << ", " << barrier->getSprite().getScale().y << std::endl;
             }
         }
         if (command.substr(0, 3) == "JON" && mHasUsername) {
