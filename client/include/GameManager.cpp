@@ -135,13 +135,13 @@ void GameManager::run_game(void) {
             std::pair<float, float> pos = player->getPosition();
 
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && mWindow.hasFocus()) {
-                pos.second -= 0.05;
+                pos.second -= 2;
                 player->setAction(1, 2);
             } else if (pos.second < FLOOR) {
-                pos.second += 0.03;
+                pos.second += 1.5;
                 player->setAction(1, 1);
             } else {
-                pos.second += 0.03;
+                pos.second += 1.5;
                 player->setAction(0, 0);
             }
             player->setPosition({pos.first, pos.second});
@@ -153,6 +153,7 @@ void GameManager::run_game(void) {
                 players[i]->updateAnimation();
             }
         }
+        mWindow.setFramerateLimit(60);
         draw();
     }
 }
