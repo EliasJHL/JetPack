@@ -25,6 +25,11 @@ void GameManager::test_send(void)
 void GameManager::test_server(void)
 {
     char buffer[2048];
+    float mapHeight = 10.0f; // Nombre de lignes dans la carte
+    float scaleFactor = static_cast<float>(mMode.height) / mapHeight;
+    std::cout << "Map height: " << mapHeight << std::endl;
+    std::cout << "Window height: " << mWindow.getSize().y << std::endl;
+    std::cout << "Scale factor: " << scaleFactor << std::endl;
 
     while (true) {
         int bytes = recv(mPlayerSocket, buffer, sizeof(buffer), 0);
@@ -71,23 +76,25 @@ void GameManager::test_server(void)
                 std::string type;
                 float x, y;
                 coinStream >> type >> x >> y;
-            
+
                 Coin* coin = new Coin();
-                coin->setPosition({x * 12, y * 7});
+                coin->setPosition({x * scaleFactor, y * scaleFactor});
+                coin->getSprite().setScale(scaleFactor, scaleFactor);
                 mCoins.push_back(coin);
-            
-                std::cout << "Received COIN at (" << x << ", " << y << ")" << std::endl;
+
+                std::cout << "Coin position: " << x * scaleFactor << ", " << y * scaleFactor << std::endl;
             } else if (line.substr(0, 7) == "BARRIER") {
                 std::stringstream barrierStream(line);
                 std::string type;
                 float x, y;
                 barrierStream >> type >> x >> y;
-            
+
                 ElectricBarrier* barrier = new ElectricBarrier();
-                barrier->setPosition({x * 7, y * 7});
+                barrier->setPosition({x * scaleFactor, y * scaleFactor});
+                barrier->getSprite().setScale(scaleFactor, scaleFactor);
                 mBarriers.push_back(barrier);
-            
-                std::cout << "Received BARRIER at (" << x << ", " << y << ")" << std::endl;
+
+                std::cout << "Barrier position: " << x * scaleFactor << ", " << y * scaleFactor << std::endl;
             }
         }
         if (command.substr(0, 3) == "JON" && mHasUsername) {
@@ -130,6 +137,9 @@ void GameManager::init_game(int ac, char **av)
     mHasUsername = false;
     mView.setCenter(0, FLOOR - 150);
     mView.setSize(1200, 600);
+    mMode.width = 1200;
+    mMode.height = 600;
+    mMode.bitsPerPixel = 32;
     mFont.loadFromFile("./client/ressources/font/jetpack_font.ttf");
     mPlayerInputDisplay.setFont(mFont);
     mPlayerInputDisplay.setCharacterSize(15);
@@ -160,7 +170,7 @@ void GameManager::run_game(void) {
                 pos.second += 1.5;
                 player->setAction(0, 0);
             }
-            pos.first += 0.2;
+            pos.first += 4;
             player->setPosition({pos.first, pos.second});
             player->updateAnimation();
             mView.setCenter(pos.first, mView.getCenter().y);
@@ -179,8 +189,7 @@ void GameManager::run_game(void) {
 
 void GameManager::create_window(void)
 {
-    sf::VideoMode mode(1200, 600, 32);
-    mWindow.create(mode, "JetPack Client", sf::Style::Close);
+    mWindow.create(mMode, "JetPack Client", sf::Style::Close);
 }
 
 void GameManager::handle_events(void)

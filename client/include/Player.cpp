@@ -20,7 +20,7 @@ Player::Player(int id, std::string name)
     mSprite.setTexture(mTexture);
     mSprite.setScale(1.0, 1.0);
     mAnimator.setFramesPerAction(4);
-    mPos.x = 350;
+    mPos.x = 0;
     mPos.y = FLOOR;
     mSprite.setPosition(mPos);
 }
