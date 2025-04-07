@@ -66,7 +66,6 @@ void GameManager::test_server(void)
                     mPlayerManager->createPlayer("Dummy", id);
                     player = mPlayerManager->getPlayer(id);
                 }
-                std::cout << "Player " << id << " at " << x << " " << y << " with " << coins << std::endl;
                 if (mPlayerID != id && player) {
                     player->setPosition({x, y});
                     // set coins
@@ -77,8 +76,6 @@ void GameManager::test_server(void)
             std::stringstream messageStream(command);
             std::vector<std::string> parts;
             std::string m;
-
-            std::cout << "NEW PLAYER" << std::endl;
             
             while (std::getline(messageStream, m, ' ')) {
                 parts.push_back(m);
@@ -86,7 +83,6 @@ void GameManager::test_server(void)
             int id = std::atoi(parts[0].c_str());
             std::string name = parts[1];
             Player *player = mPlayerManager->getPlayer(id);
-            std::cout << command << std::endl;
             if (player == nullptr && mPlayerID != id) {
                 mPlayerManager->createPlayer(name, id);
             }
@@ -154,6 +150,7 @@ void GameManager::run_game(void) {
             }
         }
         draw();
+        mWindow.setFramerateLimit(60);
     }
 }
 
@@ -187,7 +184,6 @@ void GameManager::handle_events(void)
                 continue;
             }
             mPlayerUsername = std::string(mInput);
-            std::cout << "OK : " << mPlayerUsername << std::endl;
             mPlayerManager->createPlayer(mPlayerUsername, mPlayerID);
             send(mPlayerSocket, std::string("SNA " + mPlayerUsername).c_str(), std::string("SNA " + mPlayerUsername).length(), 0);
             mHasUsername = true;

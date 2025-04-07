@@ -191,8 +191,9 @@ void Server::updatePlayersInfo()
             std::ostringstream oss;
             oss << "PLY " << players[i]->getID() << " " << std::fixed << std::setprecision(2) << x << " " << y << " " << players[i]->getCoins() << "\r\n";
             message = oss.str();
-            std::cout << message << std::endl;
+            //std::cout << message << std::endl;
             players[i]->getSalon()->CreateMessage(message, Type::POSITION, players[i]->getID());
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
         }
     }
 }
