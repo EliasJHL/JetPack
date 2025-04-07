@@ -16,8 +16,10 @@
 #include <SFML/System.hpp>
 #include <string>
 #include "SpriteAnimator.hpp"
+#include "IEntity.hpp"
+#include "Clock.hpp"
 
-class Player {
+class Player : public IEntity {
     public:
         Player(int id, std::string name);
         ~Player();
@@ -25,11 +27,11 @@ class Player {
         int getID(void) const;
         std::string getName(void) const;
         void setName(std::string name);
-        std::pair<float, float> getPosition(void) const;
-        sf::Sprite getPlayerSprite(void);
         
-        void setPosition(std::pair<float, float> pos);
-        void updateAnimation();
+        void setPosition(std::pair<float, float> pos) override;
+        std::pair<float, float> getPosition(void) const override;
+        void updateAnimation() override;
+        sf::Sprite getSprite(void) const override;
         void setAction(int action, int mode);
 
     private:
@@ -39,8 +41,7 @@ class Player {
         sf::Texture mTexture;
         std::string mPlayerName;
         SpriteAnimator mAnimator;
-        sf::Clock mAnimationClock; // Clock to control animation timing
-        float mAnimationInterval = 0.3f; // Time (in seconds) between frames
+        Clock mAnimationTimer; // Utilisation de la classe Timer
 };
 
 #endif /* !PLAYER_HPP_ */

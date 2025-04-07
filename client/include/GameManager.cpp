@@ -204,18 +204,32 @@ void GameManager::handle_server(void)
 
 void GameManager::draw(void)
 {
+    std::vector<IEntity*> entities;
+
+    // Ajouter tous les joueurs
     std::vector<Player*> players = mPlayerManager->getAllPlayers();
-    
+    entities.insert(entities.end(), players.begin(), players.end());
+
+    // Ajouter d'autres entités (pièces, barrières, etc.)
+    for (Coin* coin : mCoins) {
+        entities.push_back(coin);
+    }
+    for (ElectricBarrier* barrier : mBarriers) {
+        entities.push_back(barrier);
+    }
+
     mWindow.clear(sf::Color::Black);
     if (!mHasUsername) {
         mWindow.draw(mPlayerInputDisplay);
     } else {
-        for (Player* player : players) {
-            sf::Sprite sprite = player->getPlayerSprite();
-            if (player->getID() != mPlayerID) {
-                sf::Color color = sprite.getColor();
-                color.a = 128;
-                sprite.setColor(color);
+        for (IEntity* entity : entities) {
+            sf::Sprite sprite = entity->getSprite();
+            if (Player* player = dynamic_cast<Player*>(entity)) {
+                if (player->getID() != mPlayerID) {
+                    sf::Color color = sprite.getColor();
+                    color.a = 128;
+                    sprite.setColor(color);
+                }
             }
             mWindow.draw(sprite);
         }
