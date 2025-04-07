@@ -101,7 +101,9 @@ void GameManager::init_game(int ac, char **av)
     mPlayerID = std::atoi(std::string(data).substr(4).c_str());
     mPlayerManager = mPlayerManager->getInstance();
     mHasUsername = false;
-    mFont.loadFromFile("./client/ressources/font/font.ttf");
+    mView.setCenter(0, 0);
+    mView.setSize(1200, 600);
+    mFont.loadFromFile("./client/ressources/font/jetpack_font.ttf");
     mPlayerInputDisplay.setFont(mFont);
     mPlayerInputDisplay.setCharacterSize(15);
     mPlayerInputDisplay.setString("");
@@ -131,8 +133,11 @@ void GameManager::run_game(void) {
                 pos.second += 1.5;
                 player->setAction(0, 0);
             }
+            pos.first += 0.2;
             player->setPosition({pos.first, pos.second});
             player->updateAnimation();
+            mView.setCenter(pos.first, mView.getCenter().y);
+            mWindow.setView(mView);
         }
         std::vector<Player*> players = mPlayerManager->getAllPlayers();
         for (int i = 0; i < players.size(); i++) {
@@ -196,7 +201,6 @@ void GameManager::draw(void)
     std::vector<Player*> players = mPlayerManager->getAllPlayers();
     entities.insert(entities.end(), players.begin(), players.end());
 
-    // Ajouter d'autres entités (pièces, barrières, etc.)
     for (Coin* coin : mCoins) {
         entities.push_back(coin);
     }

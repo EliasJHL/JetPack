@@ -55,6 +55,7 @@ class GameManager {
         bool mHasUsername;
         sf::Font mFont;
         sf::String mInput;
+        sf::View mView;
         sf::Text mPlayerInputDisplay;
         std::vector<std::thread> mPoolThread;
 };
