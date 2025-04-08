@@ -255,6 +255,12 @@ void GameManager::handle_server(void)
 void GameManager::draw(void)
 {
     std::vector<IEntity*> entities;
+    sf::Text mMessageText;
+    mMessageText.setFont(mFont);
+    mMessageText.setCharacterSize(20);
+    mMessageText.setFillColor(sf::Color::White);
+    mMessageText.setString("Enter your player name:");
+    mMessageText.setPosition((mWindow.getSize().x - mMessageText.getGlobalBounds().width) / 2, 250);
 
     for (Coin* coin : mCoins) {
         coin->updateAnimation(); // Met à jour l'animation des pièces
@@ -270,6 +276,7 @@ void GameManager::draw(void)
 
     mWindow.clear(sf::Color::Black);
     if (!mHasUsername) {
+        mWindow.draw(mMessageText);
         mWindow.draw(mPlayerInputDisplay);
     } else {
         for (IEntity* entity : entities) {
