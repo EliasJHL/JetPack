@@ -18,11 +18,23 @@ Player::Player(int id, std::string name)
         throw std::runtime_error("Failed to load spritesheet");
     }
     mSprite.setTexture(mTexture);
-    mSprite.setScale(1.0, 1.0);
     mAnimator.setFramesPerAction(4);
+
+    // Initialisation de la position
     mPos.x = 0;
     mPos.y = FLOOR;
     mSprite.setPosition(mPos);
+
+    // Initialisation du texte du score
+    if (!mFont.loadFromFile("./client/ressources/font/jetpack_font.ttf")) {
+        throw std::runtime_error("Failed to load font");
+    }
+    mScore = "0";
+    mScoreText.setFont(mFont);
+    mScoreText.setString("Score: 0");
+    mScoreText.setCharacterSize(15);
+    mScoreText.setFillColor(sf::Color::White);
+    updateScoreText();
 }
 
 Player::~Player() {}
@@ -74,4 +86,22 @@ void Player::setAction(int action, int mode) {
     } else {
         mAnimator.setAction(action);
     }
+}
+
+void Player::updateScoreText() {
+    mScoreText.setString("Score: " + mScore);
+    mScoreText.setPosition(mPos.x - mScoreText.getGlobalBounds().width / 2, 50);
+}
+
+sf::Text &Player::getScoreText() {
+    return mScoreText;
+}
+
+void Player::setScore(std::string score) {
+    mScore = score;
+    updateScoreText(); // Mettre à jour le texte du score
+}
+
+std::string Player::getScore() const {
+    return mScore;
 }

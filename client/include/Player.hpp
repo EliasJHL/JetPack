@@ -34,12 +34,20 @@ class Player : public IEntity {
         sf::Sprite &getSprite(void) override;
         void setAction(int action, int mode);
 
+        void updateScoreText();
+        sf::Text &getScoreText();
+        void setScore(std::string score);
+        std::string getScore() const;
+
     private:
         int mPlayerID;
         sf::Sprite mSprite;
         sf::Vector2f mPos;
         sf::Texture mTexture;
         std::string mPlayerName;
+        std::string mScore;
+        sf::Text mScoreText; // Texte pour afficher le score
+        sf::Font mFont; 
         SpriteAnimator mAnimator;
         Clock mAnimationTimer; // Utilisation de la classe Timer
 };

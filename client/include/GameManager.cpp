@@ -46,11 +46,7 @@ void GameManager::test_server(void)
         std::cerr << "Error: Expected HEIGHT message but received something else." << std::endl;
         return;
     }
-    // Calculer le facteur d'échelle après avoir reçu la hauteur
-    float scaleFactor = static_cast<float>(mMode.height) / mMapHeight;
-    std::cout << "Window height: " << mWindow.getSize().y << std::endl;
-    std::cout << "Scale factor: " << scaleFactor << std::endl;
-
+    mScaleFactor = static_cast<float>(mMode.height) / mMapHeight;
     while (true) {
         int bytes = recv(mPlayerSocket, buffer, sizeof(buffer), 0);
         if (bytes == -1) {
@@ -83,7 +79,8 @@ void GameManager::test_server(void)
                     player = mPlayerManager->getPlayer(id);
                 }
                 if (mPlayerID != id && player) {
-                    player->setPosition({x, y});
+                    player->setPosition({x * mScaleFactor, y * mScaleFactor});
+                    player->getSprite().setScale(mScaleFactor / 70, mScaleFactor / 70);
                     // set coins
                 }
             }
@@ -98,11 +95,11 @@ void GameManager::test_server(void)
                 coinStream >> type >> x >> y;
 
                 Coin* coin = new Coin();
-                coin->setPosition({x * scaleFactor, y * scaleFactor});
-                coin->getSprite().setScale(scaleFactor / 220, scaleFactor / 220);
+                coin->setPosition({x * mScaleFactor, y * mScaleFactor});
+                coin->getSprite().setScale(mScaleFactor / 220, mScaleFactor / 220);
                 mCoins.push_back(coin);
 
-                std::cout << "Coin position: " << x * scaleFactor << ", " << y * scaleFactor << std::endl;
+                std::cout << "Coin position: " << x * mScaleFactor << ", " << y * mScaleFactor << std::endl;
                 std::cout << "Coin scale: " << coin->getSprite().getScale().x << ", " << coin->getSprite().getScale().y << std::endl;
             }
             if (line.substr(0, 7) == "BARRIER") {
@@ -112,11 +109,11 @@ void GameManager::test_server(void)
                 barrierStream >> type >> x >> y;
 
                 ElectricBarrier* barrier = new ElectricBarrier();
-                barrier->setPosition({x * scaleFactor, y * scaleFactor});
-                barrier->getSprite().setScale(scaleFactor / scaleFactor, scaleFactor / scaleFactor);
+                barrier->setPosition({x * mScaleFactor, y * mScaleFactor});
+                barrier->getSprite().setScale(mScaleFactor / mScaleFactor, mScaleFactor / mScaleFactor);
                 mBarriers.push_back(barrier);
 
-                std::cout << "Barrier position: " << x * scaleFactor << ", " << y * scaleFactor << std::endl;
+                std::cout << "Barrier position: " << x * mScaleFactor << ", " << y * mScaleFactor << std::endl;
                 std::cout << "Barrier scale: " << barrier->getSprite().getScale().x << ", " << barrier->getSprite().getScale().y << std::endl;
             }
         }
@@ -182,10 +179,11 @@ void GameManager::run_game(void) {
         if (mHasUsername) {
             Player* player = mPlayerManager->getPlayer(mPlayerID);
             std::pair<float, float> pos = player->getPosition();
-
+            
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && mWindow.hasFocus()) {
                 pos.second -= 2;
                 player->setAction(1, 2);
+                player->setScore(std::to_string(std::stoi(player->getScore()) + 1));
             } else if (pos.second < FLOOR) {
                 pos.second += 1.5;
                 player->setAction(1, 1);
@@ -193,6 +191,7 @@ void GameManager::run_game(void) {
                 pos.second += 1.5;
                 player->setAction(0, 0);
             }
+            player->updateScoreText();
             pos.first += 4;
             player->setPosition({pos.first, pos.second});
             player->updateAnimation();
@@ -257,10 +256,10 @@ void GameManager::draw(void)
     std::vector<IEntity*> entities;
     sf::Text mMessageText;
     mMessageText.setFont(mFont);
-    mMessageText.setCharacterSize(20);
+    mMessageText.setCharacterSize(30);
+    mMessageText.setString("Enter your username:");
+    mMessageText.setPosition((mWindow.getSize().x - mMessageText.getGlobalBounds().width) / 2, 200);
     mMessageText.setFillColor(sf::Color::White);
-    mMessageText.setString("Enter your player name:");
-    mMessageText.setPosition((mWindow.getSize().x - mMessageText.getGlobalBounds().width) / 2, 250);
 
     for (Coin* coin : mCoins) {
         coin->updateAnimation(); // Met à jour l'animation des pièces
@@ -284,8 +283,11 @@ void GameManager::draw(void)
             if (Player* player = dynamic_cast<Player*>(entity)) {
                 if (player->getID() != mPlayerID) {
                     sf::Color color = sprite.getColor();
-                    color.a = 128;
+                    color.a = 128; // Transparence pour les autres joueurs
                     sprite.setColor(color);
+                    sprite.setPosition(player->getPosition().first / mScaleFactor - sprite.getGlobalBounds().width / 2, player->getPosition().second);
+                } else {
+                    mWindow.draw(player->getScoreText()); // Dessiner le texte du score
                 }
             }
             mWindow.draw(sprite);

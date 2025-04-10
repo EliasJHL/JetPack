@@ -25,7 +25,7 @@
 #include "Coin.hpp"
 #include "ElectricBarrier.hpp"
 
-#define FLOOR 450
+#define FLOOR 480
 #define CEILING 0
 
 class GameManager {
@@ -51,6 +51,7 @@ class GameManager {
         struct sockaddr_in mAddressControl;
         PlayersManager *mPlayerManager;
         float mMapHeight;
+        float mScaleFactor;
         std::vector<Coin*> mCoins;
         std::vector<ElectricBarrier*> mBarriers;
         bool mHasUsername;
