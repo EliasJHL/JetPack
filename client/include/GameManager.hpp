@@ -33,8 +33,8 @@ class GameManager {
         GameManager() {};
         ~GameManager() {};
         void init_game(int ac, char **av);
-        void test_server(void);
-        void test_send(void);
+        void commandsHandler(void);
+        void posSender(void);
         void run_game(void);
         void close_connection(void);
     protected:

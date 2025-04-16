@@ -16,7 +16,7 @@
 #include <SFML/System.hpp>
 #include <string>
 #include "SpriteAnimator.hpp"
-#include "IEntity.hpp"
+#include "interfaces/IEntity.hpp"
 #include "Clock.hpp"
 
 class Player : public IEntity {

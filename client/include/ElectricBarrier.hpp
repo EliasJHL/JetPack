@@ -1,7 +1,7 @@
 #ifndef ELECTRICBARRIER_HPP_
 #define ELECTRICBARRIER_HPP_
 
-#include "IEntity.hpp"
+#include "interfaces/IEntity.hpp"
 #include "Clock.hpp"
 #include "SpriteAnimator.hpp"
 
