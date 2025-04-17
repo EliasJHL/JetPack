@@ -15,6 +15,15 @@ GameManager::GameManager()
     mPlayerInputDisplay.setCharacterSize(15);
     mPlayerInputDisplay.setString("");
     mGameReady = false;
+    mSoundManager.loadSound("coin", "./client/ressources/sounds/coin_pickup_1.wav");
+    mSoundManager.loadSound("barrier", "./client/ressources/sounds/dud_zapper_pop.wav");
+    mSoundManager.loadSound("jump", "./client/ressources/sounds/jetpack_start.wav");
+    mSoundManager.loadSound("fly", "./client/ressources/sounds/jetpack.ogg");
+    mSoundManager.loadSound("stopfly", "./client/ressources/sounds/jetpack_stop.wav");
+    mSoundManager.loadSound("touchfloor", "./client/ressources/sounds/jetpack_lp.wav");
+    mSoundManager.loadMusic("./client/ressources/sounds/theme.ogg");
+    mSoundManager.setVolume(50, 10);
+    mSoundManager.playMusic();
 }
 
 void GameManager::posSender(void)
@@ -199,29 +208,52 @@ void GameManager::close_connection(void)
 void GameManager::run_game(void) {
     create_window();
     mWindow.setFramerateLimit(60);
+
     while (mWindow.isOpen()) {
         handle_events();
+
         if (mHasUsername && mGameReady) {
             Player* player = mPlayerManager->getPlayer(mPlayerID);
             std::pair<float, float> pos = player->getPosition();
-            
+
+            mIsOnGround = (pos.second >= FLOOR);
+
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && mWindow.hasFocus()) {
+                if (mIsOnGround) {
+                    if (!mSoundManager.isSoundPlaying("jump")) {
+                        mSoundManager.playSound("jump");
+                    }
+                } else {
+                    if (!mSoundManager.isSoundPlaying("fly")) {
+                        mSoundManager.playSound("fly", true);
+                    }
+                }
+                mIsFlying = true;
                 pos.second -= 2;
                 player->setAction(1, 2);
                 player->setScore(std::to_string(std::stoi(player->getScore()) + 1));
-            } else if (pos.second < FLOOR) {
-                pos.second += 1.5;
-                player->setAction(1, 1);
             } else {
-                pos.second += 1.5;
-                player->setAction(0, 0);
+                if (mIsFlying) {
+                    mSoundManager.stopSound("fly");
+                    mSoundManager.playSound("stopfly");
+                }
+                mIsFlying = false;
+
+                if (!mIsOnGround) {
+                    pos.second += 1.5;
+                    player->setAction(1, 1);
+                } else {
+                    player->setAction(0, 0);
+                }
             }
+
             player->updateScoreText();
             pos.first += 4;
             player->setPosition({pos.first, pos.second});
             player->updateAnimation();
             mView.setCenter(pos.first, mView.getCenter().y);
             mWindow.setView(mView);
+            mWasFlying = mIsFlying;
         }
         std::vector<Player*> players = mPlayerManager->getAllPlayers();
         for (int i = 0; i < players.size(); i++) {
