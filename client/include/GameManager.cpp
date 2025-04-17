@@ -14,6 +14,7 @@ GameManager::GameManager()
     mPlayerInputDisplay.setFont(mFont);
     mPlayerInputDisplay.setCharacterSize(15);
     mPlayerInputDisplay.setString("");
+    mGameReady = false;
 }
 
 void GameManager::posSender(void)
@@ -22,7 +23,7 @@ void GameManager::posSender(void)
     std::string message;
     float x, y;
 
-    while (true) {
+    while (mRunning) {
         x = p->getPosition().first;
         y = p->getPosition().second;
         std::ostringstream oss;
@@ -37,7 +38,7 @@ void GameManager::commandsHandler(void)
 {
     char buffer[2048];
 
-    while (true) {
+    while (mRunning) {
         int bytes = recv(mPlayerSocket, buffer, sizeof(buffer), 0);
         if (bytes == -1) {
             std::cerr << "Error: Failed to receive data from server." << std::endl;
@@ -65,12 +66,14 @@ void GameManager::commandsHandler(void)
 
                 Player *player = mPlayerManager->getPlayer(id);
                 if (player == nullptr) {
+                    std::cout << "Unknow player" << std::endl;
                     mPlayerManager->createPlayer("Dummy", id);
                     player = mPlayerManager->getPlayer(id);
                 }
                 if (mPlayerID != id && player) {
-                    player->setPosition({x * mScaleFactor, y * mScaleFactor});
-                    player->getSprite().setScale(mScaleFactor / 70, mScaleFactor / 70);
+                    std::cout << "Update pos for " << id << " " << x << " " << y << std::endl;
+                    player->setPosition({x, y});
+                    //player->getSprite().setScale(mScaleFactor / 70, mScaleFactor / 70);
                     // set coins
                 }
             }
@@ -80,38 +83,6 @@ void GameManager::commandsHandler(void)
             std::cout << "Map height received: " << mMapHeight << std::endl;
             mScaleFactor = static_cast<float>(mMode.height) / mMapHeight;
         }
-        // std::stringstream messageStream(command);
-        // std::string line;
-        // while (std::getline(messageStream, line)) {
-        //     if (line.substr(0, 4) == "CON") {
-        //         std::stringstream coinStream(line);
-        //         std::string type;
-        //         float x, y;
-        //         coinStream >> type >> x >> y;
-
-        //         Coin* coin = new Coin();
-        //         coin->setPosition({x * mScaleFactor, y * mScaleFactor});
-        //         coin->getSprite().setScale(mScaleFactor / 220, mScaleFactor / 220);
-        //         mCoins.push_back(coin);
-
-        //         // std::cout << "Coin position: " << x * mScaleFactor << ", " << y * mScaleFactor << std::endl;
-        //         // std::cout << "Coin scale: " << coin->getSprite().getScale().x << ", " << coin->getSprite().getScale().y << std::endl;
-        //     }
-        //     if (line.substr(0, 7) == "BAR") {
-        //         std::stringstream barrierStream(line);
-        //         std::string type;
-        //         float x, y;
-        //         barrierStream >> type >> x >> y;
-
-        //         ElectricBarrier* barrier = new ElectricBarrier();
-        //         barrier->setPosition({x * mScaleFactor, y * mScaleFactor});
-        //         barrier->getSprite().setScale(mScaleFactor / mScaleFactor, mScaleFactor / mScaleFactor);
-        //         mBarriers.push_back(barrier);
-
-        //         // std::cout << "Barrier position: " << x * mScaleFactor << ", " << y * mScaleFactor << std::endl;
-        //         // std::cout << "Barrier scale: " << barrier->getSprite().getScale().x << ", " << barrier->getSprite().getScale().y << std::endl;
-        //     }
-        // }
         if (command.substr(0, 3) == "JON" && mHasUsername) {
             std::stringstream messageStream(command);
             std::vector<std::string> parts;
@@ -129,12 +100,43 @@ void GameManager::commandsHandler(void)
                 mPlayerManager->createPlayer(name, id);
             }
         }
+        std::stringstream messageStream(command);
+        std::string line;
+        while (std::getline(messageStream, line)) {
+            if (line.substr(0, 4) == "CON") {
+                std::stringstream coinStream(line);
+                std::string type;
+                float x, y;
+                coinStream >> type >> x >> y;
+
+                Coin* coin = new Coin();
+                coin->setPosition({x * mScaleFactor, y * mScaleFactor});
+                coin->getSprite().setScale(mScaleFactor / 220, mScaleFactor / 220);
+                mCoins.push_back(coin);
+
+                // std::cout << "Coin position: " << x * mScaleFactor << ", " << y * mScaleFactor << std::endl;
+                // std::cout << "Coin scale: " << coin->getSprite().getScale().x << ", " << coin->getSprite().getScale().y << std::endl;
+            }
+            if (line.substr(0, 7) == "BAR") {
+                std::stringstream barrierStream(line);
+                std::string type;
+                float x, y;
+                barrierStream >> type >> x >> y;
+
+                ElectricBarrier* barrier = new ElectricBarrier();
+                barrier->setPosition({x * mScaleFactor, y * mScaleFactor});
+                barrier->getSprite().setScale(mScaleFactor / mScaleFactor, mScaleFactor / mScaleFactor);
+                mBarriers.push_back(barrier);
+
+                // std::cout << "Barrier position: " << x * mScaleFactor << ", " << y * mScaleFactor << std::endl;
+                // std::cout << "Barrier scale: " << barrier->getSprite().getScale().x << ", " << barrier->getSprite().getScale().y << std::endl;
+            }
+        }
     }
 }
 
 void GameManager::init_game(int ac, char **av)
 {
-    // gérer le -h -p et -d
     char data[2048];
     mPlayerSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
@@ -162,6 +164,7 @@ void GameManager::close_connection(void)
 
 void GameManager::run_game(void) {
     create_window();
+    mWindow.setFramerateLimit(60);
     while (mWindow.isOpen()) {
         handle_events();
         if (mHasUsername) {
@@ -192,9 +195,9 @@ void GameManager::run_game(void) {
                 players[i]->updateAnimation();
             }
         }
-        mWindow.setFramerateLimit(60);
         draw();
     }
+    mRunning = false;
 }
 
 void GameManager::create_window(void)
@@ -205,8 +208,10 @@ void GameManager::create_window(void)
 void GameManager::handle_events(void)
 {
     while (mWindow.pollEvent(mEvent)) {
-        if (mEvent.type == sf::Event::Closed)
+        if (mEvent.type == sf::Event::Closed) {
+            mRunning = false;
             mWindow.close();
+        }
         if (mEvent.type == sf::Event::TextEntered && !mHasUsername) {
             if (mEvent.text.unicode == '\b' && !mInput.isEmpty()) {
                 mInput.erase(mInput.getSize() - 1, 1);
@@ -250,11 +255,11 @@ void GameManager::draw(void)
     mMessageText.setFillColor(sf::Color::White);
 
     for (Coin* coin : mCoins) {
-        coin->updateAnimation(); // Met à jour l'animation des pièces
+        coin->updateAnimation();
         entities.push_back(coin);
     }
     for (ElectricBarrier* barrier : mBarriers) {
-        barrier->updateAnimation(); // Met à jour l'animation des barrières
+        barrier->updateAnimation();
         entities.push_back(barrier);
     }
 
@@ -271,11 +276,11 @@ void GameManager::draw(void)
             if (Player* player = dynamic_cast<Player*>(entity)) {
                 if (player->getID() != mPlayerID) {
                     sf::Color color = sprite.getColor();
-                    color.a = 128; // Transparence pour les autres joueurs
+                    color.a = 128;
                     sprite.setColor(color);
                     sprite.setPosition(player->getPosition().first / mScaleFactor - sprite.getGlobalBounds().width / 2, player->getPosition().second);
                 } else {
-                    mWindow.draw(player->getScoreText()); // Dessiner le texte du score
+                    mWindow.draw(player->getScoreText());
                 }
             }
             mWindow.draw(sprite);

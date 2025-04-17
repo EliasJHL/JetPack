@@ -21,6 +21,7 @@
 #include <thread>
 #include <string.h>
 #include <regex>
+#include <atomic>
 #include "PlayersManager.hpp"
 #include "Coin.hpp"
 #include "ElectricBarrier.hpp"
@@ -30,7 +31,7 @@
 
 class GameManager {
     public:
-        GameManager() {};
+        GameManager();
         ~GameManager() {};
         void init_game(int ac, char **av);
         void commandsHandler(void);
@@ -55,6 +56,8 @@ class GameManager {
         std::vector<Coin*> mCoins;
         std::vector<ElectricBarrier*> mBarriers;
         bool mHasUsername;
+        bool mGameReady;
+        std::atomic<bool> mRunning{true};
         sf::Font mFont;
         sf::String mInput;
         sf::View mView;

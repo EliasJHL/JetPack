@@ -13,6 +13,7 @@
 #include <memory>
 #include <string>
 #include "Network.hpp"
+#include <mutex>
 
 class Player {
     public:
@@ -34,7 +35,15 @@ class Player {
         void setPlayerSocket(int fd);
         void setPlayerName(const std::string &name);
         void addCoins(int nb);
-        
+
+        bool isToDelete() {
+            std::lock_guard<std::mutex> lock(mAccessMutex);
+            return mToDelete;
+        };
+        void ToDelete() {
+            std::lock_guard<std::mutex> lock(mAccessMutex);
+            mToDelete = true;
+        };
     private:
         int mPlayerID;
         int mPlayerSocket;
@@ -43,6 +52,8 @@ class Player {
         std::pair<float, float> mCoordinates;
         bool mConnected;
         NetworkObserver *mObserver;
+        std::mutex mAccessMutex;
+        bool mToDelete;
 };
 
 #endif /* !PLAYER_HPP_ */

@@ -118,73 +118,88 @@ void Server::handlePlayerCommands(Player *player)
     std::string command;
     std::smatch m;
     int n;
-    
-    while (true) {
-        n = recv(player->getPlayerSocket(), memory, 1024, 0);
-        if (n <= 0) {
-            if (n == 0) {
-                std::cout << "Client " << player->getID() << " disconnected" << std::endl;
-                player->getSalon()->CreateMessage(std::string("DEC " + std::to_string(player->getID())), Type::DISCONNECT, player->getID());
-                player->getSalon()->Quit(player->getObserver());
+
+    try { 
+        while (true) {
+            n = recv(player->getPlayerSocket(), memory, 1024, 0);
+            if (n <= 0) {
+                std::cout << "Player " << player->getID() << " aka " << player->getName() << " disconnected" << std::endl;
+                // if (player->getSalon() != nullptr) {
+                //     std::string message = "DEC " + std::to_string(player->getID());
+                //     player->getSalon()->CreateMessage(message, Type::DISCONNECT, player->getID());
+                // }
+                player->ToDelete();
+                if (player->getSalon() != nullptr) {
+                    if (player->getObserver() != nullptr) {
+                        player->getSalon()->Quit(player->getObserver());
+                    }
+                }
+                close(player->getPlayerSocket());
                 mPlayerManager->removePlayer(player->getID());
-                return;
-            } else {
-                std::cerr << "Error receiving from client " << player->getID() << std::endl;
-                player->getSalon()->CreateMessage(std::string("DEC " + std::to_string(player->getID())), Type::DISCONNECT, player->getID());
-                player->getSalon()->Quit(player->getObserver());
-                mPlayerManager->removePlayer(player->getID());
-            }
-        }
-        memory[n] = '\0';
-        command = std::string(memory);
-        command.erase(std::remove(command.begin(), command.end(), '\n'), command.end());
-        command.erase(std::remove(command.begin(), command.end(), '\r'), command.end());
-        if (command.substr(0,3) == "PAU") {
-            if (player->getSalon() != nullptr)
-                player->getSalon()->CreateMessage("PAUSE", Type::PAUSE, player->getID());
-        }
-        if (command.substr(0,3) == "EPU") {
-            
-        }
-        if (command.substr(0,3) == "DED") {
-            std::regex const e{"^DED\\s+(\\d+)$"};
-            if (std::regex_search(command, m, e)) {
-                player->getSalon()->CreateMessage(command, Type::DIE, player->getID());
-            }
-        }
-        if (command.substr(0,3) == "WIN") {
-            std::regex const e{"^WIN\\s+(\\d+)$"};
-            if (std::regex_search(command, m, e)) {
-                player->getSalon()->CreateMessage(command, Type::WIN, player->getID());
-            }
-        }
-        if (command.substr(0,3) == "SNA") {
-            std::regex const e{"^SNA\\s+([A-Za-z0-9]+)$"};
-            if (std::regex_search(command, m, e)) {
-                player->setPlayerName(m[1]);
-                std::cout << std::string("JON " + std::to_string(player->getID()) + " " + m[1].str()) << std::endl;
-                player->getSalon()->CreateMessage(std::string("JON " + std::to_string(player->getID()) + " " + m[1].str()), Type::CONNECT, player->getID());
-            }
-        }
-        if (command.substr(0,3) == "POS") {
-            std::stringstream messageStream(command);
-            std::vector<std::string> parts;
-            std::string m;
-            
-            while (std::getline(messageStream, m, ' ')) {
-                parts.push_back(m);
-            }
-            player->setPosition(std::pair<float, float> {std::stof(parts[1].c_str()), std::stof(parts[2].c_str())});
-        }
-        if (command.substr(0,3) == "DEC") {
-            std::regex const e{"^DEC\\s+(\\d+)$"};
-            if (std::regex_search(command, m, e)) {
-                player->getSalon()->CreateMessage(std::string("DEC " + std::to_string(player->getID())), Type::DISCONNECT, player->getID());
-                player->getSalon()->Quit(player->getObserver());
-                mPlayerManager->removePlayer(player->getID());
+                std::cout << "Players left : " << mPlayerManager->getAllPlayers().size() << std::endl;
                 return;
             }
+            memory[n] = '\0';
+            command = std::string(memory);
+            command.erase(std::remove(command.begin(), command.end(), '\n'), command.end());
+            command.erase(std::remove(command.begin(), command.end(), '\r'), command.end());
+            if (command.substr(0,3) == "PAU") {
+                if (player->getSalon() != nullptr)
+                    player->getSalon()->CreateMessage("PAUSE", Type::PAUSE, player->getID());
+            }
+            if (command.substr(0,3) == "EPU") {}
+            if (command.substr(0,3) == "DED") {
+                std::regex const e{"^DED\\s+(\\d+)$"};
+                if (std::regex_search(command, m, e)) {
+                    player->getSalon()->CreateMessage(command, Type::DIE, player->getID());
+                }
+            }
+            if (command.substr(0,3) == "WIN") {
+                std::regex const e{"^WIN\\s+(\\d+)$"};
+                if (std::regex_search(command, m, e)) {
+                    player->getSalon()->CreateMessage(command, Type::WIN, player->getID());
+                }
+            }
+            if (command.substr(0,3) == "SNA") {
+                std::regex const e{"^SNA\\s+([A-Za-z0-9]+)$"};
+                if (std::regex_search(command, m, e)) {
+                    player->setPlayerName(m[1]);
+                    std::cout << std::string("JON " + std::to_string(player->getID()) + " " + m[1].str()) << std::endl;
+                    player->getSalon()->CreateMessage(std::string("JON " + std::to_string(player->getID()) + " " + m[1].str()), Type::CONNECT, player->getID());
+                }
+            }
+            if (command.substr(0,3) == "POS") {
+                std::stringstream messageStream(command);
+                std::vector<std::string> parts;
+                std::string m;
+
+                while (std::getline(messageStream, m, ' ')) {
+                    parts.push_back(m);
+                }
+                player->setPosition(std::pair<float, float> {std::stof(parts[1].c_str()), std::stof(parts[2].c_str())});
+            }
+            if (command.substr(0,3) == "DEC") {
+                std::regex const e{"^DEC\\s+(\\d+)$"};
+                if (std::regex_search(command, m, e)) {
+                    player->getSalon()->CreateMessage(std::string("DEC " + std::to_string(player->getID())), Type::DISCONNECT, player->getID());
+                    player->getSalon()->Quit(player->getObserver());
+                    close(player->getPlayerSocket());
+                    mPlayerManager->removePlayer(player->getID());
+                    for (auto it = mPoll.begin(); it != mPoll.end(); ++it) {
+                        if (it->fd == player->getPlayerSocket()) {
+                            mPoll.erase(it);
+                            close(player->getPlayerSocket());
+                            break;
+                        }
+                    }
+                    return;
+                }
+            }
         }
+    } catch (const std::exception& e) {
+        std::cerr << "Error in client thread: " << e.what() << std::endl;
+    } catch (...) {
+        std::cerr << "Unknown error in client thread" << std::endl;
     }
 }
 
@@ -197,17 +212,26 @@ void Server::updatePlayersInfo()
     
     while (true) {
         players = mPlayerManager->getAllPlayers();
-        for (int i = 0; i < players.size(); i++) {
-            if (players[i]->getName() == "Dummy")
+        for (Player *player : players) {
+            if (player == nullptr || player->getName() == "Dummy" || player->isToDelete())
                 continue;
-            x = players[i]->getPosition().first;
-            y = players[i]->getPosition().second;
-            std::ostringstream oss;
-            oss << "PLY " << players[i]->getID() << " " << std::fixed << std::setprecision(2) << x << " " << y << " " << players[i]->getCoins() << "\r\n";
-            message = oss.str();
-            players[i]->getSalon()->CreateMessage(message, Type::POSITION, players[i]->getID());
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            try {
+                if (mPlayerManager->getPlayer(player->getID()) == nullptr)
+                    continue;
+                x = player->getPosition().first;
+                y = player->getPosition().second;
+                std::ostringstream oss;
+                oss << "PLY " << player->getID() << " " << std::fixed << std::setprecision(2) << x << " " << y << " " << player->getCoins() << "\r\n";
+                message = oss.str();
+                NetworkSalon* salon = player->getSalon();
+                if (salon != nullptr) {
+                    salon->CreateMessage(message, Type::POSITION, player->getID());
+                }
+            } catch (...) {
+                continue;
+            }
         }
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 }
 
