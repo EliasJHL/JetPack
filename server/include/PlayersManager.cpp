@@ -64,3 +64,27 @@ std::vector<Player *> PlayersManager::getAllPlayers(void) const {
     }
     return ret;
 }
+
+std::vector<Player *> PlayersManager::getReadyPlayer(void)
+{
+    std::lock_guard<std::mutex> guard(mMutex);
+    std::vector<Player *> ret;
+    for (const auto& [key, player] : mPlayers) {
+        if (player.get()->getName() != "Dummy") {
+            ret.push_back(player.get());
+        }
+    }
+    return ret;
+};
+
+std::vector<Player *> PlayersManager::getReadyPlayer(void) const
+{
+    std::lock_guard<std::mutex> guard(mMutex);
+    std::vector<Player *> ret;
+    for (const auto& [key, player] : mPlayers) {
+        if (player.get()->getName() != "Dummy") {
+            ret.push_back(player.get());
+        }
+    }
+    return ret;
+};

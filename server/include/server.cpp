@@ -166,6 +166,12 @@ void Server::handlePlayerCommands(Player *player)
                     player->setPlayerName(m[1]);
                     std::cout << std::string("JON " + std::to_string(player->getID()) + " " + m[1].str()) << std::endl;
                     player->getSalon()->CreateMessage(std::string("JON " + std::to_string(player->getID()) + " " + m[1].str()), Type::CONNECT, player->getID());
+                    if (mPlayerManager->getReadyPlayer().size() >= 2) {
+                        std::cout << "READY " << mPlayerManager->getReadyPlayer().size() << std::endl;
+                        player->getSalon()->CreateMessage(std::string("SRT"), Type::RESTART, player->getID());
+                    } else {
+                        std::cout << "NO READY ONLY " << mPlayerManager->getReadyPlayer().size() << std::endl;
+                    }
                 }
             }
             if (command.substr(0,3) == "POS") {
