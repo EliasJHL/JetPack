@@ -55,6 +55,13 @@ std::pair<float, float> Player::getPosition(void) const {
     return {mPos.x, mPos.y};
 }
 
+void Player::updateOnlinePlayersPosition(std::pair<float, float> pos) 
+{
+    mPos.x = pos.first;
+    mPos.y = pos.second;
+    mSprite.setPosition(mPos);
+}
+
 void Player::setPosition(std::pair<float, float> pos) {
     mPos.x = pos.first;
     mPos.y = pos.second;

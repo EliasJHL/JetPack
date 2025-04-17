@@ -71,8 +71,8 @@ void GameManager::commandsHandler(void)
                     player = mPlayerManager->getPlayer(id);
                 }
                 if (mPlayerID != id && player) {
-                    std::cout << "Update pos for " << id << " " << x << " " << y << std::endl;
-                    player->setPosition({x, y});
+                    //std::cout << "Update pos for " << id << " " << x << " " << y << std::endl;
+                    player->updateOnlinePlayersPosition({x * mScaleFactor, y});
                     //player->getSprite().setScale(mScaleFactor / 70, mScaleFactor / 70);
                     // set coins
                 }
@@ -103,7 +103,7 @@ void GameManager::commandsHandler(void)
         std::stringstream messageStream(command);
         std::string line;
         while (std::getline(messageStream, line)) {
-            if (line.substr(0, 4) == "CON") {
+            if (line.substr(0, 3) == "CON") {
                 std::stringstream coinStream(line);
                 std::string type;
                 float x, y;
@@ -114,10 +114,10 @@ void GameManager::commandsHandler(void)
                 coin->getSprite().setScale(mScaleFactor / 220, mScaleFactor / 220);
                 mCoins.push_back(coin);
 
-                // std::cout << "Coin position: " << x * mScaleFactor << ", " << y * mScaleFactor << std::endl;
+                std::cout << "Coin position: " << x * mScaleFactor << ", " << y * mScaleFactor << std::endl;
                 // std::cout << "Coin scale: " << coin->getSprite().getScale().x << ", " << coin->getSprite().getScale().y << std::endl;
             }
-            if (line.substr(0, 7) == "BAR") {
+            if (line.substr(0, 3) == "BAR") {
                 std::stringstream barrierStream(line);
                 std::string type;
                 float x, y;
@@ -128,7 +128,7 @@ void GameManager::commandsHandler(void)
                 barrier->getSprite().setScale(mScaleFactor / mScaleFactor, mScaleFactor / mScaleFactor);
                 mBarriers.push_back(barrier);
 
-                // std::cout << "Barrier position: " << x * mScaleFactor << ", " << y * mScaleFactor << std::endl;
+                std::cout << "Barrier position: " << x * mScaleFactor << ", " << y * mScaleFactor << std::endl;
                 // std::cout << "Barrier scale: " << barrier->getSprite().getScale().x << ", " << barrier->getSprite().getScale().y << std::endl;
             }
         }

@@ -33,6 +33,7 @@ class Player : public IEntity {
         void updateAnimation() override;
         sf::Sprite &getSprite(void) override;
         void setAction(int action, int mode);
+        void updateOnlinePlayersPosition(std::pair<float, float> pos);
 
         void updateScoreText();
         sf::Text &getScoreText();
