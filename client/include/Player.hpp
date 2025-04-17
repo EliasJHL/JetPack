@@ -47,7 +47,7 @@ class Player : public IEntity {
         sf::Texture mTexture;
         std::string mPlayerName;
         std::string mScore;
-        sf::Text mScoreText; // Texte pour afficher le score
+        sf::Text mScoreText;
         sf::Font mFont; 
         SpriteAnimator mAnimator;
         Clock mAnimationTimer; // Utilisation de la classe Timer
