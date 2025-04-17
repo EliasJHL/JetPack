@@ -57,6 +57,9 @@ class GameManager {
         std::vector<ElectricBarrier*> mBarriers;
         bool mHasUsername;
         bool mGameReady;
+        bool mDebugMode = false;
+        std::string mIp;
+        int mPort;
         std::atomic<bool> mRunning{true};
         sf::Font mFont;
         sf::String mInput;

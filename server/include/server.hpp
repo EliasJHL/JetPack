@@ -33,7 +33,7 @@ class Server {
         void updatePlayersInfo();
     private:
         int mServerSocket;
-        bool mDebugMode;
+        bool mDebugMode = false;
         std::string mMapContent;
         int mPort;
         std::vector<NetworkSalon *> mRooms;

@@ -144,11 +144,38 @@ void GameManager::commandsHandler(void)
 void GameManager::init_game(int ac, char **av)
 {
     char data[2048];
+    if (ac < 5 || ac > 6)
+        throw std::runtime_error("Usageccc: ./client -h <ip> -p <port> [-d]");
+    std::string ip;
+    std::string port;
+    for (int i = 1; i < ac; i++) {
+        if (std::string(av[i]) == "-h" && i + 1 < ac) {
+            ip = av[++i];
+            if (ip.empty() || !std::regex_match(ip, std::regex("^(\\d{1,3}\\.){3}\\d{1,3}$")))
+                throw std::runtime_error("Invalid IP address: " + ip);
+        } else if (std::string(av[i]) == "-p" && i + 1 < ac) {
+            port = av[++i];
+            if (port.empty() || !std::all_of(port.begin(), port.end(), ::isdigit))
+                throw std::runtime_error("Invalid port number: " + port);
+        } else if (std::string(av[i]) == "-d") {
+            this->mDebugMode = true;
+        } else {
+            throw std::runtime_error("Invalid arguments. Usage : ./client -h <ip> -p <port> [-d]");
+        }
+    }
+    if (ip.empty())
+        throw std::runtime_error("Missing -h <ip> argument.");
+    if (port.empty())
+        throw std::runtime_error("Missing -p <port> argument.");
+    mIp = ip;
+    mPort = std::atoi(port.c_str());
+    if (mPort <= 0 || mPort > 65535)
+        throw std::runtime_error("Invalid port number: " + port);
     mPlayerSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
     mAddressControl.sin_family = AF_INET;
-    mAddressControl.sin_port = htons(std::atoi(av[2]));
-    mAddressControl.sin_addr.s_addr = inet_addr(av[1]);
+    mAddressControl.sin_port = htons(std::atoi(port.c_str()));
+    mAddressControl.sin_addr.s_addr = inet_addr(ip.c_str());
 
     if (connect(mPlayerSocket, (struct sockaddr *)&mAddressControl, sizeof(mAddressControl)) == -1)
         throw std::runtime_error("Impossible to connect");
