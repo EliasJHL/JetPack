@@ -131,7 +131,7 @@ void GameManager::commandsHandler(void)
 
                 ElectricBarrier* barrier = new ElectricBarrier();
                 barrier->setPosition({x * mScaleFactor, y * mScaleFactor});
-                barrier->getSprite().setScale(mScaleFactor / mScaleFactor, mScaleFactor / mScaleFactor);
+                barrier->getSprite().setScale(mScaleFactor / mScaleFactor - 0.5, mScaleFactor / mScaleFactor - 0.5);
                 mBarriers.push_back(barrier);
 
                 std::cout << "Barrier position: " << x * mScaleFactor << ", " << y * mScaleFactor << std::endl;
@@ -145,7 +145,7 @@ void GameManager::init_game(int ac, char **av)
 {
     char data[2048];
     if (ac < 5 || ac > 6)
-        throw std::runtime_error("Usageccc: ./client -h <ip> -p <port> [-d]");
+        throw std::runtime_error("Usage : ./client -h <ip> -p <port> [-d]");
     std::string ip;
     std::string port;
     for (int i = 1; i < ac; i++) {
