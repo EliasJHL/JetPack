@@ -1,7 +1,7 @@
 #ifndef COIN_HPP_
 #define COIN_HPP_
 
-#include "IEntity.hpp"
+#include "interfaces/IEntity.hpp"
 #include "Clock.hpp"
 #include "SpriteAnimator.hpp"
 

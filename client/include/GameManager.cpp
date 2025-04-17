@@ -3,51 +3,42 @@
 #include <sstream>
 #include <iomanip>
 
-void GameManager::test_send(void)
+GameManager::GameManager()
+{
+    mView.setCenter(0, FLOOR - 150);
+    mView.setSize(1200, 600);
+    mMode.width = 1200;
+    mMode.height = 600;
+    mMode.bitsPerPixel = 32;
+    mFont.loadFromFile("./client/ressources/font/jetpack_font.ttf");
+    mPlayerInputDisplay.setFont(mFont);
+    mPlayerInputDisplay.setCharacterSize(15);
+    mPlayerInputDisplay.setString("");
+    mGameReady = false;
+}
+
+void GameManager::posSender(void)
 {
     Player *p = mPlayerManager->getPlayer(mPlayerID);
     std::string message;
     float x, y;
 
-    while (true) {
+    while (mRunning) {
         x = p->getPosition().first;
         y = p->getPosition().second;
         std::ostringstream oss;
         oss << "POS " << std::fixed << std::setprecision(2) << x << " " << y;
         message = oss.str();
-        //std::cout << message << std::endl;
         send(mPlayerSocket, message.c_str(), message.size(), 0);
         std::this_thread::sleep_for(std::chrono::milliseconds(25));
     }
 }
 
-// Suppression des regex qui est trop coûteux
-void GameManager::test_server(void)
+void GameManager::commandsHandler(void)
 {
     char buffer[2048];
-    // Lire la première ligne pour obtenir la hauteur de la carte
-    int bytes = recv(mPlayerSocket, buffer, sizeof(buffer), 0);
-    if (bytes <= 0) {
-        std::cerr << "Error: Failed to receive data from server." << std::endl;
-        return;
-    }
-    buffer[bytes] = '\0';
-    std::string command(buffer);
-    std::stringstream messageStream(command);
-    std::string line;
-    if (std::getline(messageStream, line) && line.substr(0, 6) == "HEIGHT") {
-        std::stringstream heightStream(line);
-        std::string type;
-        int height;
-        heightStream >> type >> height;
-        mMapHeight = height; // Stocker la hauteur de la carte
-        std::cout << "Map height received: " << mMapHeight << std::endl;
-    } else {
-        std::cerr << "Error: Expected HEIGHT message but received something else." << std::endl;
-        return;
-    }
-    mScaleFactor = static_cast<float>(mMode.height) / mMapHeight;
-    while (true) {
+
+    while (mRunning) {
         int bytes = recv(mPlayerSocket, buffer, sizeof(buffer), 0);
         if (bytes == -1) {
             std::cerr << "Error: Failed to receive data from server." << std::endl;
@@ -58,7 +49,7 @@ void GameManager::test_server(void)
         }
         buffer[bytes] = '\0';
         std::string command(buffer);
-        if (command.substr(0, 3) == "PLY" && mHasUsername) {
+        if (command.substr(0, 3) == "PLY" && mHasUsername && mGameReady) {
             std::stringstream messageStream(command);
             std::vector<std::string> parts;
             std::string m;
@@ -75,52 +66,35 @@ void GameManager::test_server(void)
 
                 Player *player = mPlayerManager->getPlayer(id);
                 if (player == nullptr) {
+                    std::cout << "Unknow player" << std::endl;
                     mPlayerManager->createPlayer("Dummy", id);
                     player = mPlayerManager->getPlayer(id);
                 }
                 if (mPlayerID != id && player) {
-                    player->setPosition({x * mScaleFactor, y * mScaleFactor});
-                    player->getSprite().setScale(mScaleFactor / 70, mScaleFactor / 70);
+                    std::cout << "Update pos for " << id << " " << x << " " << y << std::endl;
+                    player->updateOnlinePlayersPosition({x * mScaleFactor, y});
+                    //player->getSprite().setScale(mScaleFactor / 70, mScaleFactor / 70);
                     // set coins
                 }
             }
         }
-        std::stringstream messageStream(command);
-        std::string line;
-        while (std::getline(messageStream, line)) {
-            if (line.substr(0, 4) == "COIN") {
-                std::stringstream coinStream(line);
-                std::string type;
-                float x, y;
-                coinStream >> type >> x >> y;
-
-                Coin* coin = new Coin();
-                coin->setPosition({x * mScaleFactor, y * mScaleFactor});
-                coin->getSprite().setScale(mScaleFactor / 220, mScaleFactor / 220);
-                mCoins.push_back(coin);
-
-                std::cout << "Coin position: " << x * mScaleFactor << ", " << y * mScaleFactor << std::endl;
-                std::cout << "Coin scale: " << coin->getSprite().getScale().x << ", " << coin->getSprite().getScale().y << std::endl;
-            }
-            if (line.substr(0, 7) == "BARRIER") {
-                std::stringstream barrierStream(line);
-                std::string type;
-                float x, y;
-                barrierStream >> type >> x >> y;
-
-                ElectricBarrier* barrier = new ElectricBarrier();
-                barrier->setPosition({x * mScaleFactor, y * mScaleFactor});
-                barrier->getSprite().setScale(mScaleFactor / mScaleFactor, mScaleFactor / mScaleFactor);
-                mBarriers.push_back(barrier);
-
-                std::cout << "Barrier position: " << x * mScaleFactor << ", " << y * mScaleFactor << std::endl;
-                std::cout << "Barrier scale: " << barrier->getSprite().getScale().x << ", " << barrier->getSprite().getScale().y << std::endl;
-            }
+        if (command.substr(0, 3) == "HIH") {
+            mMapHeight = std::atoi(command.c_str() + 4);
+            std::cout << "Map height received: " << mMapHeight << std::endl;
+            mScaleFactor = static_cast<float>(mMode.height) / mMapHeight;
+        }
+        if (command.substr(0, 3) == "SRT") {
+            std::cout << "OKOKOKOKOKOKOKOK" << std::endl;
+            std::thread s(&GameManager::posSender, this);
+            s.detach();
+            mGameReady = true;
         }
         if (command.substr(0, 3) == "JON" && mHasUsername) {
             std::stringstream messageStream(command);
             std::vector<std::string> parts;
             std::string m;
+
+            std::cout << command << std::endl;
             
             while (std::getline(messageStream, m, ' ')) {
                 parts.push_back(m);
@@ -132,12 +106,43 @@ void GameManager::test_server(void)
                 mPlayerManager->createPlayer(name, id);
             }
         }
+        std::stringstream messageStream(command);
+        std::string line;
+        while (std::getline(messageStream, line)) {
+            if (line.substr(0, 3) == "CON") {
+                std::stringstream coinStream(line);
+                std::string type;
+                float x, y;
+                coinStream >> type >> x >> y;
+
+                Coin* coin = new Coin();
+                coin->setPosition({x * mScaleFactor, y * mScaleFactor});
+                coin->getSprite().setScale(mScaleFactor / 220, mScaleFactor / 220);
+                mCoins.push_back(coin);
+
+                std::cout << "Coin position: " << x * mScaleFactor << ", " << y * mScaleFactor << std::endl;
+                // std::cout << "Coin scale: " << coin->getSprite().getScale().x << ", " << coin->getSprite().getScale().y << std::endl;
+            }
+            if (line.substr(0, 3) == "BAR") {
+                std::stringstream barrierStream(line);
+                std::string type;
+                float x, y;
+                barrierStream >> type >> x >> y;
+
+                ElectricBarrier* barrier = new ElectricBarrier();
+                barrier->setPosition({x * mScaleFactor, y * mScaleFactor});
+                barrier->getSprite().setScale(mScaleFactor / mScaleFactor, mScaleFactor / mScaleFactor);
+                mBarriers.push_back(barrier);
+
+                std::cout << "Barrier position: " << x * mScaleFactor << ", " << y * mScaleFactor << std::endl;
+                // std::cout << "Barrier scale: " << barrier->getSprite().getScale().x << ", " << barrier->getSprite().getScale().y << std::endl;
+            }
+        }
     }
 }
 
 void GameManager::init_game(int ac, char **av)
 {
-    // gérer le -h -p et -d
     char data[2048];
     mPlayerSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
@@ -155,16 +160,8 @@ void GameManager::init_game(int ac, char **av)
     mPlayerID = std::atoi(std::string(data).substr(4).c_str());
     mPlayerManager = mPlayerManager->getInstance();
     mHasUsername = false;
-    mView.setCenter(0, FLOOR - 150);
-    mView.setSize(1200, 600);
-    mMode.width = 1200;
-    mMode.height = 600;
-    mMode.bitsPerPixel = 32;
-    mFont.loadFromFile("./client/ressources/font/jetpack_font.ttf");
-    mPlayerInputDisplay.setFont(mFont);
-    mPlayerInputDisplay.setCharacterSize(15);
-    mPlayerInputDisplay.setString("");
-    std::thread t(&GameManager::test_server, this);
+    mGameReady = false;
+    std::thread t(&GameManager::commandsHandler, this);
     t.detach();
 }
 
@@ -174,9 +171,10 @@ void GameManager::close_connection(void)
 
 void GameManager::run_game(void) {
     create_window();
+    mWindow.setFramerateLimit(60);
     while (mWindow.isOpen()) {
         handle_events();
-        if (mHasUsername) {
+        if (mHasUsername && mGameReady) {
             Player* player = mPlayerManager->getPlayer(mPlayerID);
             std::pair<float, float> pos = player->getPosition();
             
@@ -204,9 +202,9 @@ void GameManager::run_game(void) {
                 players[i]->updateAnimation();
             }
         }
-        mWindow.setFramerateLimit(60);
         draw();
     }
+    mRunning = false;
 }
 
 void GameManager::create_window(void)
@@ -217,9 +215,11 @@ void GameManager::create_window(void)
 void GameManager::handle_events(void)
 {
     while (mWindow.pollEvent(mEvent)) {
-        if (mEvent.type == sf::Event::Closed)
+        if (mEvent.type == sf::Event::Closed) {
+            mRunning = false;
             mWindow.close();
-        if (mEvent.type == sf::Event::TextEntered && !mHasUsername) {
+        }
+        if (mEvent.type == sf::Event::TextEntered && !mHasUsername && !mGameReady) {
             if (mEvent.text.unicode == '\b' && !mInput.isEmpty()) {
                 mInput.erase(mInput.getSize() - 1, 1);
             } else if (mEvent.text.unicode != '\b' && mEvent.text.unicode != '\n' && mEvent.text.unicode != '\r' && mInput.getSize() < 20) {
@@ -228,7 +228,7 @@ void GameManager::handle_events(void)
             mPlayerInputDisplay.setPosition((mWindow.getSize().x - mPlayerInputDisplay.getGlobalBounds().width) / 2, 300);
             mPlayerInputDisplay.setString(mInput);
         }
-        if (mEvent.type == sf::Event::KeyPressed && mEvent.key.code == sf::Keyboard::Return && !mHasUsername) {
+        if (mEvent.type == sf::Event::KeyPressed && mEvent.key.code == sf::Keyboard::Return && !mHasUsername && !mGameReady) {
             if (mInput.isEmpty()) {
                 std::cout << "Username required" << std::endl;
                 continue;
@@ -241,8 +241,6 @@ void GameManager::handle_events(void)
             mPlayerManager->createPlayer(mPlayerUsername, mPlayerID);
             send(mPlayerSocket, std::string("SNA " + mPlayerUsername).c_str(), std::string("SNA " + mPlayerUsername).length(), 0);
             mHasUsername = true;
-            std::thread s(&GameManager::test_send, this);
-            s.detach();
         }
     }
 }
@@ -257,16 +255,14 @@ void GameManager::draw(void)
     sf::Text mMessageText;
     mMessageText.setFont(mFont);
     mMessageText.setCharacterSize(30);
-    mMessageText.setString("Enter your username:");
-    mMessageText.setPosition((mWindow.getSize().x - mMessageText.getGlobalBounds().width) / 2, 200);
     mMessageText.setFillColor(sf::Color::White);
 
     for (Coin* coin : mCoins) {
-        coin->updateAnimation(); // Met à jour l'animation des pièces
+        coin->updateAnimation();
         entities.push_back(coin);
     }
     for (ElectricBarrier* barrier : mBarriers) {
-        barrier->updateAnimation(); // Met à jour l'animation des barrières
+        barrier->updateAnimation();
         entities.push_back(barrier);
     }
 
@@ -275,19 +271,25 @@ void GameManager::draw(void)
 
     mWindow.clear(sf::Color::Black);
     if (!mHasUsername) {
+        mMessageText.setString("Enter your username:");
+        mMessageText.setPosition((mWindow.getSize().x - mMessageText.getGlobalBounds().width) / 2, 200);
         mWindow.draw(mMessageText);
         mWindow.draw(mPlayerInputDisplay);
+    } else if (!mGameReady) {
+        mMessageText.setString("Waiting a second player...");
+        mMessageText.setPosition((mWindow.getSize().x - mMessageText.getGlobalBounds().width) / 2, 200);
+        mWindow.draw(mMessageText);
     } else {
         for (IEntity* entity : entities) {
             sf::Sprite sprite = entity->getSprite();
             if (Player* player = dynamic_cast<Player*>(entity)) {
                 if (player->getID() != mPlayerID) {
                     sf::Color color = sprite.getColor();
-                    color.a = 128; // Transparence pour les autres joueurs
+                    color.a = 128;
                     sprite.setColor(color);
                     sprite.setPosition(player->getPosition().first / mScaleFactor - sprite.getGlobalBounds().width / 2, player->getPosition().second);
                 } else {
-                    mWindow.draw(player->getScoreText()); // Dessiner le texte du score
+                    mWindow.draw(player->getScoreText());
                 }
             }
             mWindow.draw(sprite);

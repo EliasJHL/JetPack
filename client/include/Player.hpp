@@ -16,7 +16,7 @@
 #include <SFML/System.hpp>
 #include <string>
 #include "SpriteAnimator.hpp"
-#include "IEntity.hpp"
+#include "interfaces/IEntity.hpp"
 #include "Clock.hpp"
 
 class Player : public IEntity {
@@ -33,6 +33,7 @@ class Player : public IEntity {
         void updateAnimation() override;
         sf::Sprite &getSprite(void) override;
         void setAction(int action, int mode);
+        void updateOnlinePlayersPosition(std::pair<float, float> pos);
 
         void updateScoreText();
         sf::Text &getScoreText();

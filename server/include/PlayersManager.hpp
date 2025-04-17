@@ -23,6 +23,8 @@ class PlayersManager {
         Player *getPlayer(int id);
         std::vector<Player *> getAllPlayers(void);
         std::vector<Player *> getAllPlayers(void) const;
+        std::vector<Player *> getReadyPlayer(void);
+        std::vector<Player *> getReadyPlayer(void) const;
     private:
         PlayersManager() {mNextPlayerID = 0;};
         ~PlayersManager() = default;

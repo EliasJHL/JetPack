@@ -11,12 +11,13 @@ NAME_CLIENT	=	jetpack_client
 SRC_SERVER	=	server/src/*.cpp server/include/*.cpp
 SRC_CLIENT	=	client/src/*.cpp client/include/*.cpp
 
-SFML_FLAGS	=	-lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio -lsfml-network
+SFML_FLAGS	=	$(shell pkg-config --libs sfml-all)
+SFML_CFLAGS	=	$(shell pkg-config --cflags sfml-all)
 
 all:	server	client
 
 $(NAME_CLIENT): $(SRC_CLIENT)
-	g++ -o $(NAME_CLIENT) $(SRC_CLIENT) $(SFML_FLAGS) -I client/include/
+	g++ -o $(NAME_CLIENT) $(SRC_CLIENT) $(SFML_CFLAGS) -I client/include/ $(SFML_FLAGS)
 	@echo "\033[32m= = = = =  COMPILATION COMPLETED  = = = = =\033[0m"
 
 $(NAME_SERVER): $(SRC_SERVER)

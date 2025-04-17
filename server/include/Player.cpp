@@ -12,7 +12,7 @@
 
 Player::Player(int id, const std::string &name, int socket)
     : mPlayerID(id), mPlayerName(name), mPlayerSocket(socket),
-      mCoordinates({0, 0}), mConnected(true), mObserver(nullptr), mPlayerCoin(0)
+      mCoordinates({0, 0}), mConnected(true), mObserver(nullptr), mPlayerCoin(0), mToDelete(false)
 {
 }
 
@@ -75,10 +75,10 @@ NetworkObserver *Player::getObserver()
 
 NetworkSalon *Player::getSalon()
 {
-    if (mObserver) {
-        return mObserver->getNetworkSalon();
-    }
-    return nullptr;
+    std::lock_guard<std::mutex> lock(mAccessMutex);
+    if (mToDelete || mObserver == nullptr)
+        return nullptr;
+    return mObserver->getNetworkSalon();
 }
 
 void Player::setSalon(NetworkSalon &salon) {
