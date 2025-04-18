@@ -43,6 +43,7 @@ class GameManager {
         void create_window(void);
         void handle_events(void);
         void handle_server(void);
+        void move_background(void);
         void draw(void);
     private:
         sf::RenderWindow mWindow;
@@ -63,6 +64,7 @@ class GameManager {
         int mPort;
         std::atomic<bool> mRunning{true};
         sf::Font mFont;
+        sf::Texture mBackground;
         sf::String mInput;
         sf::View mView;
         sf::VideoMode mMode;

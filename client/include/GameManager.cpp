@@ -205,6 +205,24 @@ void GameManager::close_connection(void)
 {
 }
 
+void GameManager::move_background(void)
+{
+    Player* player = mPlayerManager->getPlayer(mPlayerID);
+    std::pair<float, float> pos = player->getPosition();
+    sf::Sprite backgroundSprite(mBackground);
+
+    if (pos.first > 4315) {
+        player->setPosition({0, pos.second});
+    }
+    backgroundSprite.setScale(2.5f, 2.5f);
+    backgroundSprite.setPosition(-4315, -70);
+    mWindow.draw(backgroundSprite);
+    backgroundSprite.setPosition(0, -70);
+    mWindow.draw(backgroundSprite);
+    backgroundSprite.setPosition(4315, -70);
+    mWindow.draw(backgroundSprite);
+}
+
 void GameManager::run_game(void) {
     create_window();
     mWindow.setFramerateLimit(60);
@@ -315,7 +333,7 @@ void GameManager::draw(void)
     mMessageText.setFont(mFont);
     mMessageText.setCharacterSize(30);
     mMessageText.setFillColor(sf::Color::White);
-
+    
     for (Coin* coin : mCoins) {
         coin->updateAnimation();
         entities.push_back(coin);
@@ -324,10 +342,10 @@ void GameManager::draw(void)
         barrier->updateAnimation();
         entities.push_back(barrier);
     }
-
+    
     std::vector<Player*> players = mPlayerManager->getAllPlayers();
     entities.insert(entities.end(), players.begin(), players.end());
-
+    
     mWindow.clear(sf::Color::Black);
     if (!mHasUsername) {
         mMessageText.setString("Enter your username:");
