@@ -160,6 +160,7 @@ void GameManager::init_game(int ac, char **av)
     mMode.width = 1200;
     mMode.height = 600;
     mMode.bitsPerPixel = 32;
+    mBackground.loadFromFile("./client/ressources/sprites/background.png");
     mFont.loadFromFile("./client/ressources/font/jetpack_font.ttf");
     mPlayerInputDisplay.setFont(mFont);
     mPlayerInputDisplay.setCharacterSize(15);
@@ -170,6 +171,24 @@ void GameManager::init_game(int ac, char **av)
 
 void GameManager::close_connection(void)
 {
+}
+
+void GameManager::move_background(void)
+{
+    Player* player = mPlayerManager->getPlayer(mPlayerID);
+    std::pair<float, float> pos = player->getPosition();
+    sf::Sprite backgroundSprite(mBackground);
+
+    if (pos.first > 4315) {
+        player->setPosition({0, pos.second});
+    }
+    backgroundSprite.setScale(2.5f, 2.5f);
+    backgroundSprite.setPosition(-4315, -70);
+    mWindow.draw(backgroundSprite);
+    backgroundSprite.setPosition(0, -70);
+    mWindow.draw(backgroundSprite);
+    backgroundSprite.setPosition(4315, -70);
+    mWindow.draw(backgroundSprite);
 }
 
 void GameManager::run_game(void) {
@@ -260,7 +279,7 @@ void GameManager::draw(void)
     mMessageText.setString("Enter your username:");
     mMessageText.setPosition((mWindow.getSize().x - mMessageText.getGlobalBounds().width) / 2, 200);
     mMessageText.setFillColor(sf::Color::White);
-
+    
     for (Coin* coin : mCoins) {
         coin->updateAnimation(); // Met à jour l'animation des pièces
         entities.push_back(coin);
@@ -269,15 +288,16 @@ void GameManager::draw(void)
         barrier->updateAnimation(); // Met à jour l'animation des barrières
         entities.push_back(barrier);
     }
-
+    
     std::vector<Player*> players = mPlayerManager->getAllPlayers();
     entities.insert(entities.end(), players.begin(), players.end());
-
+    
     mWindow.clear(sf::Color::Black);
     if (!mHasUsername) {
         mWindow.draw(mMessageText);
         mWindow.draw(mPlayerInputDisplay);
     } else {
+        move_background();
         for (IEntity* entity : entities) {
             sf::Sprite sprite = entity->getSprite();
             if (Player* player = dynamic_cast<Player*>(entity)) {
