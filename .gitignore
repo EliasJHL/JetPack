@@ -2,3 +2,5 @@
 jetpack_*
 .vscode/
 .jetpack/
+
+!*.wav
