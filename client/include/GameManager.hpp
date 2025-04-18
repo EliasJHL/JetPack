@@ -25,6 +25,7 @@
 #include "PlayersManager.hpp"
 #include "Coin.hpp"
 #include "ElectricBarrier.hpp"
+#include "SoundManager.hpp"
 
 #define FLOOR 480
 #define CEILING 0
@@ -42,6 +43,7 @@ class GameManager {
         void create_window(void);
         void handle_events(void);
         void handle_server(void);
+        void move_background(void);
         void draw(void);
     private:
         sf::RenderWindow mWindow;
@@ -57,13 +59,22 @@ class GameManager {
         std::vector<ElectricBarrier*> mBarriers;
         bool mHasUsername;
         bool mGameReady;
+        bool mDebugMode = false;
+        std::string mIp;
+        int mPort;
         std::atomic<bool> mRunning{true};
         sf::Font mFont;
+        sf::Texture mBackground;
         sf::String mInput;
         sf::View mView;
         sf::VideoMode mMode;
         sf::Text mPlayerInputDisplay;
         std::vector<std::thread> mPoolThread;
+        SoundManager mSoundManager;
+        bool mIsOnGround = true;
+        bool mIsFlying = false;
+        bool mWasFlying = false;
+
 };
 
 #endif /* !GAMEMANAGER_HPP_ */

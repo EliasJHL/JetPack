@@ -21,6 +21,15 @@ GameManager::GameManager()
     mPlayerInputDisplay.setCharacterSize(15);
     mPlayerInputDisplay.setString("");
     mGameReady = false;
+    mSoundManager.loadSound("coin", "./client/ressources/sounds/coin_pickup_1.wav");
+    mSoundManager.loadSound("barrier", "./client/ressources/sounds/dud_zapper_pop.wav");
+    mSoundManager.loadSound("jump", "./client/ressources/sounds/jetpack_start.wav");
+    mSoundManager.loadSound("fly", "./client/ressources/sounds/jetpack.ogg");
+    mSoundManager.loadSound("stopfly", "./client/ressources/sounds/jetpack_stop.wav");
+    mSoundManager.loadSound("touchfloor", "./client/ressources/sounds/jetpack_lp.wav");
+    mSoundManager.loadMusic("./client/ressources/sounds/theme.ogg");
+    mSoundManager.setVolume(50, 10);
+    mSoundManager.playMusic();
 }
 
 void GameManager::posSender(void)
@@ -135,7 +144,7 @@ void GameManager::commandsHandler(void)
 
                 ElectricBarrier* barrier = new ElectricBarrier();
                 barrier->setPosition({x * mScaleFactor, y * mScaleFactor});
-                barrier->getSprite().setScale(mScaleFactor / mScaleFactor, mScaleFactor / mScaleFactor);
+                barrier->getSprite().setScale(mScaleFactor / mScaleFactor - 0.5, mScaleFactor / mScaleFactor - 0.5);
                 mBarriers.push_back(barrier);
 
                 std::cout << "Barrier position: " << x * mScaleFactor << ", " << y * mScaleFactor << std::endl;
@@ -148,11 +157,38 @@ void GameManager::commandsHandler(void)
 void GameManager::init_game(int ac, char **av)
 {
     char data[2048];
+    if (ac < 5 || ac > 6)
+        throw std::runtime_error("Usage : ./client -h <ip> -p <port> [-d]");
+    std::string ip;
+    std::string port;
+    for (int i = 1; i < ac; i++) {
+        if (std::string(av[i]) == "-h" && i + 1 < ac) {
+            ip = av[++i];
+            if (ip.empty() || !std::regex_match(ip, std::regex("^(\\d{1,3}\\.){3}\\d{1,3}$")))
+                throw std::runtime_error("Invalid IP address: " + ip);
+        } else if (std::string(av[i]) == "-p" && i + 1 < ac) {
+            port = av[++i];
+            if (port.empty() || !std::all_of(port.begin(), port.end(), ::isdigit))
+                throw std::runtime_error("Invalid port number: " + port);
+        } else if (std::string(av[i]) == "-d") {
+            this->mDebugMode = true;
+        } else {
+            throw std::runtime_error("Invalid arguments. Usage : ./client -h <ip> -p <port> [-d]");
+        }
+    }
+    if (ip.empty())
+        throw std::runtime_error("Missing -h <ip> argument.");
+    if (port.empty())
+        throw std::runtime_error("Missing -p <port> argument.");
+    mIp = ip;
+    mPort = std::atoi(port.c_str());
+    if (mPort <= 0 || mPort > 65535)
+        throw std::runtime_error("Invalid port number: " + port);
     mPlayerSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
     mAddressControl.sin_family = AF_INET;
-    mAddressControl.sin_port = htons(std::atoi(av[2]));
-    mAddressControl.sin_addr.s_addr = inet_addr(av[1]);
+    mAddressControl.sin_port = htons(std::atoi(port.c_str()));
+    mAddressControl.sin_addr.s_addr = inet_addr(ip.c_str());
 
     if (connect(mPlayerSocket, (struct sockaddr *)&mAddressControl, sizeof(mAddressControl)) == -1)
         throw std::runtime_error("Impossible to connect");
@@ -173,31 +209,75 @@ void GameManager::close_connection(void)
 {
 }
 
+void GameManager::move_background(void)
+{
+    Player* player = mPlayerManager->getPlayer(mPlayerID);
+    std::pair<float, float> pos = player->getPosition();
+    sf::Sprite backgroundSprite(mBackground);
+
+    if (pos.first > 4315) {
+        player->setPosition({0, pos.second});
+    }
+    backgroundSprite.setScale(2.5f, 2.5f);
+    backgroundSprite.setPosition(-4315, -70);
+    mWindow.draw(backgroundSprite);
+    backgroundSprite.setPosition(0, -70);
+    mWindow.draw(backgroundSprite);
+    backgroundSprite.setPosition(4315, -70);
+    mWindow.draw(backgroundSprite);
+}
+
 void GameManager::run_game(void) {
     create_window();
     mWindow.setFramerateLimit(60);
+
     while (mWindow.isOpen()) {
         handle_events();
+
         if (mHasUsername && mGameReady) {
             Player* player = mPlayerManager->getPlayer(mPlayerID);
             std::pair<float, float> pos = player->getPosition();
-            
+
+            mIsOnGround = (pos.second >= FLOOR);
+
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && mWindow.hasFocus()) {
+                if (mIsOnGround) {
+                    if (!mSoundManager.isSoundPlaying("jump")) {
+                        mSoundManager.playSound("jump");
+                    }
+                } else {
+                    if (!mSoundManager.isSoundPlaying("fly")) {
+                        mSoundManager.playSound("fly", true);
+                    }
+                }
+                mIsFlying = true;
                 pos.second -= 2;
                 player->setAction(1, 2);
             } else if (pos.second < FLOOR) {
                 pos.second += 1.5;
                 player->setAction(1, 1);
             } else {
-                pos.second += 1.5;
-                player->setAction(0, 0);
+                if (mIsFlying) {
+                    mSoundManager.stopSound("fly");
+                    mSoundManager.playSound("stopfly");
+                }
+                mIsFlying = false;
+
+                if (!mIsOnGround) {
+                    pos.second += 1.5;
+                    player->setAction(1, 1);
+                } else {
+                    player->setAction(0, 0);
+                }
             }
+
             player->updateScoreText();
             pos.first += 4;
             player->setPosition({pos.first, pos.second});
             player->updateAnimation();
             mView.setCenter(pos.first, mView.getCenter().y);
             mWindow.setView(mView);
+            mWasFlying = mIsFlying;
         }
         std::vector<Player*> players = mPlayerManager->getAllPlayers();
         for (int i = 0; i < players.size(); i++) {
@@ -259,7 +339,7 @@ void GameManager::draw(void)
     mMessageText.setFont(mFont);
     mMessageText.setCharacterSize(30);
     mMessageText.setFillColor(sf::Color::White);
-
+    
     for (Coin* coin : mCoins) {
         coin->updateAnimation();
         entities.push_back(coin);
@@ -268,10 +348,10 @@ void GameManager::draw(void)
         barrier->updateAnimation();
         entities.push_back(barrier);
     }
-
+    
     std::vector<Player*> players = mPlayerManager->getAllPlayers();
     entities.insert(entities.end(), players.begin(), players.end());
-
+    
     mWindow.clear(sf::Color::Black);
     if (!mHasUsername) {
         mMessageText.setString("Enter your username:");
