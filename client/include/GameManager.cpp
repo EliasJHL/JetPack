@@ -1,4 +1,10 @@
-// HEADER
+/*
+** EPITECH PROJECT, 2025
+** B-NWP-400-MPL-4-1-jetpack-elias-josue.hajjar-llauquen
+** File description:
+** GameManager
+*/
+
 #include "GameManager.hpp"
 #include <sstream>
 #include <iomanip>
@@ -45,7 +51,7 @@ void GameManager::commandsHandler(void)
             break;
         } else if (bytes == 0) {
             std::cout << "Server closed the connection." << std::endl;
-            break;
+            exit(0);
         }
         buffer[bytes] = '\0';
         std::string command(buffer);
@@ -62,7 +68,7 @@ void GameManager::commandsHandler(void)
                 int id = std::atoi(parts[1].c_str());
                 float x = std::atof(parts[2].c_str());
                 float y = std::atof(parts[3].c_str());
-                int coins = std::atoi(parts[4].c_str());
+                std::string coins = parts[4].c_str();
 
                 Player *player = mPlayerManager->getPlayer(id);
                 if (player == nullptr) {
@@ -71,11 +77,10 @@ void GameManager::commandsHandler(void)
                     player = mPlayerManager->getPlayer(id);
                 }
                 if (mPlayerID != id && player) {
-                    std::cout << "Update pos for " << id << " " << x << " " << y << std::endl;
+                    //std::cout << "Update pos for " << id << " " << x << " " << y << std::endl;
                     player->updateOnlinePlayersPosition({x * mScaleFactor, y});
-                    //player->getSprite().setScale(mScaleFactor / 70, mScaleFactor / 70);
-                    // set coins
                 }
+                player->setScore(coins);
             }
         }
         if (command.substr(0, 3) == "HIH") {
@@ -84,7 +89,6 @@ void GameManager::commandsHandler(void)
             mScaleFactor = static_cast<float>(mMode.height) / mMapHeight;
         }
         if (command.substr(0, 3) == "SRT") {
-            std::cout << "OKOKOKOKOKOKOKOK" << std::endl;
             std::thread s(&GameManager::posSender, this);
             s.detach();
             mGameReady = true;
@@ -181,7 +185,6 @@ void GameManager::run_game(void) {
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && mWindow.hasFocus()) {
                 pos.second -= 2;
                 player->setAction(1, 2);
-                player->setScore(std::to_string(std::stoi(player->getScore()) + 1));
             } else if (pos.second < FLOOR) {
                 pos.second += 1.5;
                 player->setAction(1, 1);
@@ -288,6 +291,10 @@ void GameManager::draw(void)
                     color.a = 128;
                     sprite.setColor(color);
                     sprite.setPosition(player->getPosition().first / mScaleFactor - sprite.getGlobalBounds().width / 2, player->getPosition().second);
+                    mMessageText.setPosition({player->getPosition().first / mScaleFactor - mMessageText.getGlobalBounds().width / 2, player->getPosition().second - mMessageText.getGlobalBounds().height - 10});
+                    mMessageText.setCharacterSize(10);
+                    mMessageText.setString(player->getName());
+                    mWindow.draw(mMessageText);
                 } else {
                     mWindow.draw(player->getScoreText());
                 }

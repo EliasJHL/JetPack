@@ -98,18 +98,15 @@ void Server::init_server(int ac, char **av)
 // PLR id x y coin      -> Update envoyé      - Server Send
 // DEC id               -> Player disconnect  - Server Send
 // JON id name          -> Player Connect     - Server Send
-// RDY                  -> Player Ready       - Server Send
 // SRT                  -> Start Game         - Server Send
 // DED id               -> Player who dead    - Server Send
 // WIN id               -> Player who win     - Server Send
-// PAU id               -> Pause              - Server Send
 // RET                  -> Restart Game       - Server Send
-// --------------------Startup Client ----------------------
-// MAP size_x size_y content map -> Envoyer map - Server Send
+// HIH taille           -> Envoi de la hauteur de la map - Server Send when client join
+// CON X Y (par rapport à la ligne) -> Envoi de pièces X et Y via X et Y du fichier
+// BAR X Y (par rapport à la ligne) -> Envoi des barrières X et Y via X et Y du fichier
 // -------------------- Client Send ------------------------
 // SNA name             -> Set Username       - Client Send
-// PAU                  -> Pause              - Client Send
-// EPU                  -> End Pause          - Client Send
 // POS x y              -> Envoyer la position- Client Send
 // DEC                  -> Player disconnect  - Client Send
 void Server::handlePlayerCommands(Player *player)
