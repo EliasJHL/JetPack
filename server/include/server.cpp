@@ -161,13 +161,27 @@ void Server::handlePlayerCommands(Player *player)
                 std::regex const e{"^SNA\\s+([A-Za-z0-9]+)$"};
                 if (std::regex_search(command, m, e)) {
                     player->setPlayerName(m[1]);
-                    std::cout << std::string("JON " + std::to_string(player->getID()) + " " + m[1].str()) << std::endl;
-                    player->getSalon()->CreateMessage(std::string("JON " + std::to_string(player->getID()) + " " + m[1].str()), Type::CONNECT, player->getID());
+                    
+                    for (Player* p : mPlayerManager->getAllPlayers()) {
+                        if (p != nullptr && p->getName() != "Dummy" && p->getID() != player->getID()) {
+                            std::string existingPlayer = "JON " + std::to_string(p->getID()) + " " + p->getName() + "\r\n";
+                            write(player->getPlayerSocket(), existingPlayer.c_str(), existingPlayer.length());
+                        }
+                    }
+                    
+                    std::string newPlayer = "JON " + std::to_string(player->getID()) + " " + m[1].str() + "\r\n";
+                    for (Player* p : mPlayerManager->getAllPlayers()) {
+                        if (p != nullptr && p->getName() != "Dummy") {
+                            write(p->getPlayerSocket(), newPlayer.c_str(), newPlayer.length());
+                        }
+                    }
+                    
                     if (mPlayerManager->getReadyPlayer().size() >= 2) {
-                        std::cout << "READY " << mPlayerManager->getReadyPlayer().size() << std::endl;
-                        player->getSalon()->CreateMessage(std::string("SRT"), Type::RESTART, player->getID());
-                    } else {
-                        std::cout << "NO READY ONLY " << mPlayerManager->getReadyPlayer().size() << std::endl;
+                        std::cout << "OK 2 Players online" << std::endl;
+                        for (Player* p : mPlayerManager->getReadyPlayer()) {
+                            std::string srt_msg = "SRT\r\n";
+                            write(p->getPlayerSocket(), srt_msg.c_str(), srt_msg.length());
+                        }
                     }
                 }
             }
@@ -279,16 +293,13 @@ void Server::start_server()
             write(new_player_socket, heightMessage.c_str(), heightMessage.length());
             std::cout << heightMessage << std::endl;
 
-            // Envoyer les pièces et barrières électriques
             for (const auto &coin : mCoins) {
                 std::string coinMessage = "CON " + std::to_string(coin.first) + " " + std::to_string(coin.second) + "\r\n";
                 write(new_player_socket, coinMessage.c_str(), coinMessage.length());
-                std::cout << coinMessage << std::endl;
             }
             for (const auto &barrier : mElectricBarriers) {
                 std::string barrierMessage = "BAR " + std::to_string(barrier.first) + " " + std::to_string(barrier.second) + "\r\n";
                 write(new_player_socket, barrierMessage.c_str(), barrierMessage.length());
-                std::cout << barrierMessage << std::endl;
             }
 
             std::thread t(&Server::handlePlayerCommands, this, mPlayerManager->getPlayer(new_player_id));

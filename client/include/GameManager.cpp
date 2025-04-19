@@ -21,6 +21,7 @@ GameManager::GameManager()
     mPlayerInputDisplay.setCharacterSize(15);
     mPlayerInputDisplay.setString("");
     mGameReady = false;
+    mPosThread = false;
     mSoundManager.loadSound("coin", "./client/ressources/sounds/coin_pickup_1.wav");
     mSoundManager.loadSound("barrier", "./client/ressources/sounds/dud_zapper_pop.wav");
     mSoundManager.loadSound("jump", "./client/ressources/sounds/jetpack_start.wav");
@@ -52,9 +53,10 @@ void GameManager::posSender(void)
 void GameManager::commandsHandler(void)
 {
     char buffer[2048];
+    std::string messageBuffer;
 
     while (mRunning) {
-        int bytes = recv(mPlayerSocket, buffer, sizeof(buffer), 0);
+        int bytes = recv(mPlayerSocket, buffer, sizeof(buffer) - 1, 0);
         if (bytes == -1) {
             std::cerr << "Error: Failed to receive data from server." << std::endl;
             break;
@@ -63,67 +65,82 @@ void GameManager::commandsHandler(void)
             exit(0);
         }
         buffer[bytes] = '\0';
-        std::string command(buffer);
-        if (command.substr(0, 3) == "PLY" && mHasUsername && mGameReady) {
-            std::stringstream messageStream(command);
-            std::vector<std::string> parts;
-            std::string m;
+        
+        messageBuffer += std::string(buffer);
+        
+        int pos;
+        while ((pos = messageBuffer.find("\r\n")) != std::string::npos) {
+            std::string command = messageBuffer.substr(0, pos);
+            messageBuffer.erase(0, pos + 2);
             
-            while (std::getline(messageStream, m, ' ')) {
-                parts.push_back(m);
-            }
-
-            if (parts.size() >= 5) {
-                int id = std::atoi(parts[1].c_str());
-                float x = std::atof(parts[2].c_str());
-                float y = std::atof(parts[3].c_str());
-                std::string coins = parts[4].c_str();
-
-                Player *player = mPlayerManager->getPlayer(id);
-                if (player == nullptr) {
-                    std::cout << "Unknow player" << std::endl;
-                    mPlayerManager->createPlayer("Dummy", id);
-                    player = mPlayerManager->getPlayer(id);
+            if (command.empty())
+                continue;
+                        
+            if (command.substr(0, 3) == "PLY" && mHasUsername && mGameReady) {
+                std::stringstream messageStream(command);
+                std::vector<std::string> parts;
+                std::string m;
+                
+                while (std::getline(messageStream, m, ' ')) {
+                    parts.push_back(m);
                 }
-                if (mPlayerID != id && player) {
-                    //std::cout << "Update pos for " << id << " " << x << " " << y << std::endl;
-                    player->updateOnlinePlayersPosition({x * mScaleFactor, y});
-                }
-                player->setScore(coins);
-            }
-        }
-        if (command.substr(0, 3) == "HIH") {
-            mMapHeight = std::atoi(command.c_str() + 4);
-            std::cout << "Map height received: " << mMapHeight << std::endl;
-            mScaleFactor = static_cast<float>(mMode.height) / mMapHeight;
-        }
-        if (command.substr(0, 3) == "SRT") {
-            std::thread s(&GameManager::posSender, this);
-            s.detach();
-            mGameReady = true;
-        }
-        if (command.substr(0, 3) == "JON" && mHasUsername) {
-            std::stringstream messageStream(command);
-            std::vector<std::string> parts;
-            std::string m;
 
-            std::cout << command << std::endl;
-            
-            while (std::getline(messageStream, m, ' ')) {
-                parts.push_back(m);
+                if (parts.size() >= 5) {
+                    int id = std::atoi(parts[1].c_str());
+                    float x = std::atof(parts[2].c_str());
+                    float y = std::atof(parts[3].c_str());
+                    std::string coins = parts[4].c_str();
+
+                    Player *player = mPlayerManager->getPlayer(id);
+                    if (player == nullptr && id != mPlayerID) {
+                        continue;
+                    }
+                    if (mPlayerID != id && player) {
+                        player->updateOnlinePlayersPosition({x * mScaleFactor, y});
+                    }
+                    if (player) {
+                        player->setScore(coins);
+                    }
+                }
             }
-            int id = std::atoi(parts[0].c_str());
-            std::string name = parts[1];
-            Player *player = mPlayerManager->getPlayer(id);
-            if (player == nullptr && mPlayerID != id) {
-                mPlayerManager->createPlayer(name, id);
+            else if (command.substr(0, 3) == "HIH") {
+                std::istringstream iss(command.substr(4));
+                iss >> mMapHeight;
+                std::cout << "Map height received: " << mMapHeight << std::endl;
+                mScaleFactor = static_cast<float>(mMode.height) / mMapHeight;
             }
-        }
-        std::stringstream messageStream(command);
-        std::string line;
-        while (std::getline(messageStream, line)) {
-            if (line.substr(0, 3) == "CON") {
-                std::stringstream coinStream(line);
+            else if (command == "SRT") {
+                std::cout << "Ready received from the server" << std::endl;
+                mGameReady = true;
+                if (!mPosThread) {
+                    std::thread s(&GameManager::posSender, this);
+                    s.detach();
+                    mPosThread = true;
+                }
+            }
+            else if (command.substr(0, 3) == "JON" && mHasUsername) {
+                std::stringstream messageStream(command);
+                std::vector<std::string> parts;
+                std::string m;
+
+                std::cout << command << std::endl;
+                
+                while (std::getline(messageStream, m, ' ')) {
+                    parts.push_back(m);
+                }
+                
+                if (parts.size() >= 3) {
+                    int id = std::atoi(parts[1].c_str());
+                    std::string name = parts[2];
+                    Player *player = mPlayerManager->getPlayer(id);
+                    if (player == nullptr && mPlayerID != id) {
+                        std::cout << "New player joined! : " << id << " " << name << std::endl;
+                        mPlayerManager->createPlayer(name, id);
+                    }
+                }
+            }
+            else if (command.substr(0, 3) == "CON") {
+                std::stringstream coinStream(command);
                 std::string type;
                 float x, y;
                 coinStream >> type >> x >> y;
@@ -134,10 +151,9 @@ void GameManager::commandsHandler(void)
                 mCoins.push_back(coin);
 
                 std::cout << "Coin position: " << x * mScaleFactor << ", " << y * mScaleFactor << std::endl;
-                // std::cout << "Coin scale: " << coin->getSprite().getScale().x << ", " << coin->getSprite().getScale().y << std::endl;
             }
-            if (line.substr(0, 3) == "BAR") {
-                std::stringstream barrierStream(line);
+            else if (command.substr(0, 3) == "BAR") {
+                std::stringstream barrierStream(command);
                 std::string type;
                 float x, y;
                 barrierStream >> type >> x >> y;
@@ -148,7 +164,8 @@ void GameManager::commandsHandler(void)
                 mBarriers.push_back(barrier);
 
                 std::cout << "Barrier position: " << x * mScaleFactor << ", " << y * mScaleFactor << std::endl;
-                // std::cout << "Barrier scale: " << barrier->getSprite().getScale().x << ", " << barrier->getSprite().getScale().y << std::endl;
+            } else {
+                continue;
             }
         }
     }

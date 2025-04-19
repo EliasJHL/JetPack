@@ -74,7 +74,7 @@ class GameManager {
         bool mIsOnGround = true;
         bool mIsFlying = false;
         bool mWasFlying = false;
-
+        bool mPosThread;
 };
 
 #endif /* !GAMEMANAGER_HPP_ */

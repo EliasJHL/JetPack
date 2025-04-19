@@ -1,0 +1,240 @@
+# Multiplayer Snake Game Protocol Specification
+**RFC Version:** 1.0  
+**Date:** April 18, 2025  
+**Status:** Draft
+
+## 1. Introduction
+
+This document describes the communication protocol for a multiplayer snake-like game. The protocol facilitates communication between game clients and the game server, enabling real-time multiplayer gameplay.
+
+## 2. Protocol Overview
+
+The protocol uses text-based messages with space-separated parameters. Each message begins with a three-letter command code followed by parameters specific to that command.
+
+### 2.1 Transport Layer
+
+This protocol is designed to run over a reliable transport protocol such as TCP/WebSockets. The specific transport implementation is outside the scope of this document.
+
+## 3. Message Format
+
+All messages follow this general format:
+```
+CMD [param1] [param2] ... [paramN]
+```
+
+Where:
+- `CMD` is a three-letter uppercase command code
+- Parameters are separated by spaces
+- The interpretation of parameters depends on the specific command
+
+## 4. Server-to-Client Messages
+
+### 4.1 Player Updates
+
+#### PLR - Player Update
+Updates a player's position and coin status.
+```
+PLR id x y coin
+```
+- `id`: Unique player identifier
+- `x`: X-coordinate of player position
+- `y`: Y-coordinate of player position
+- `coin`: Player's coin count
+
+#### DEC - Player Disconnect
+Notifies clients that a player has disconnected.
+```
+DEC id
+```
+- `id`: Identifier of the disconnected player
+
+#### JON - Player Connect
+Notifies clients that a new player has connected.
+```
+JON id name
+```
+- `id`: Unique identifier for the new player
+- `name`: Display name of the new player
+
+#### DED - Player Death
+Indicates that a player has died.
+```
+DED id
+```
+- `id`: Identifier of the player who died
+
+### 4.2 Game State Messages
+
+#### SRT - Start Game
+Signals the start of a new game.
+```
+SRT
+```
+No parameters.
+
+#### WIN - Game Winner
+Indicates which player has won the game.
+```
+WIN id
+```
+- `id`: Identifier of the winning player
+
+#### RET - Restart Game
+Signals that the game is being restarted.
+```
+RET
+```
+No parameters.
+
+### 4.3 Map Information
+
+#### HIH - Map Height
+Sends the height of the game map when a client joins.
+```
+HIH taille
+```
+- `taille`: Height of the map in game units
+
+#### CON - Coin Position
+Specifies the position of a coin on the map.
+```
+CON X Y
+```
+- `X`: X-coordinate of the coin position
+- `Y`: Y-coordinate of the coin position
+
+#### BAR - Barrier Position
+Specifies the position of a barrier on the map.
+```
+BAR X Y
+```
+- `X`: X-coordinate of the barrier position
+- `Y`: Y-coordinate of the barrier position
+
+## 5. Client-to-Server Messages
+
+### 5.1 Player Actions
+
+#### SNA - Set Username
+Sets the display name for the client's player.
+```
+SNA name
+```
+- `name`: Desired display name for the player
+
+#### POS - Player Position
+Sends the client's current position to the server.
+```
+POS x y
+```
+- `x`: X-coordinate of the player's current position
+- `y`: Y-coordinate of the player's current position
+
+#### DEC - Player Disconnect
+Notifies the server that the client is disconnecting.
+```
+DEC
+```
+No parameters.
+
+## 6. Protocol Flow
+
+### 6.1 Connection Sequence
+1. Client connects to server
+2. Client sends `SNA` to set username
+3. Server responds with `JON` to acknowledge connection
+4. Server sends `HIH` with map height
+5. Server sends multiple `CON` and `BAR` messages to describe map
+6. Server sends `PLR` messages for all existing players
+
+### 6.2 Gameplay Sequence
+1. Server sends `SRT` to start the game
+2. Clients continuously send `POS` updates as player positions change
+3. Server broadcasts `PLR` updates to all clients
+4. When a player collects a coin, the server updates their coin count in `PLR` messages
+5. If a player dies, server sends `DED` message
+6. When game ends, server sends `WIN` message
+7. For a new game, server sends `RET` and the gameplay sequence repeats
+
+### 6.3 Disconnection Sequence
+1. Client sends `DEC` to notify server of disconnection
+2. Server broadcasts `DEC` to all other clients
+3. Client disconnects from transport layer
+
+## 7. Error Handling
+
+The protocol does not define explicit error handling mechanisms. Implementations should handle transport-level errors according to the underlying transport protocol's specifications.
+
+## 8. Security Considerations
+
+This protocol specification does not include authentication or encryption mechanisms. It is recommended that production implementations consider adding appropriate security measures based on their specific requirements.
+
+## 9. Example Message Sequences
+
+### 9.1 Player Connection
+```
+Client → Server: SNA PlayerOne
+Server → All: JON 1 PlayerOne
+Server → Client: HIH 20
+Server → Client: CON 5 7
+Server → Client: CON 12 15
+Server → Client: BAR 3 4
+Server → Client: PLR 2 10 10 5
+```
+
+### 9.2 Gameplay
+```
+Server → All: SRT
+Client → Server: POS 5 5
+Server → All: PLR 1 5 5 0
+Client → Server: POS 5 6
+Server → All: PLR 1 5 6 0
+Client → Server: POS 5 7
+Server → All: PLR 1 5 7 1  // Collected coin at position 5,7
+```
+
+### 9.3 Game End
+```
+Server → All: DED 2
+Server → All: WIN 1
+Server → All: RET
+Server → All: SRT
+```
+
+## 10. References
+
+[None at this time]
+
+## 11. Appendix
+
+### 11.1 Abbreviations
+- PLR: Player
+- DEC: Disconnect
+- JON: Join
+- SRT: Start
+- DED: Dead
+- WIN: Winner
+- RET: Restart
+- HIH: Height
+- CON: Coin
+- BAR: Barrier
+- SNA: Snake (Username)
+- POS: Position
+
+### 11.2 Command Summary
+
+| Code | Direction        | Description              | Format             |
+|------|------------------|--------------------------|-------------------|
+| PLR  | Server to Client | Player update            | PLR id x y coin   |
+| DEC  | Server to Client | Player disconnected      | DEC id            |
+| JON  | Server to Client | Player connected         | JON id name       |
+| SRT  | Server to Client | Start game               | SRT               |
+| DED  | Server to Client | Player died              | DED id            |
+| WIN  | Server to Client | Player won               | WIN id            |
+| RET  | Server to Client | Restart game             | RET               |
+| HIH  | Server to Client | Map height               | HIH taille        |
+| CON  | Server to Client | Coin position            | CON X Y           |
+| BAR  | Server to Client | Barrier position         | BAR X Y           |
+| SNA  | Client to Server | Set username             | SNA name          |
+| POS  | Client to Server | Update position          | POS x y           |
+| DEC  | Client to Server | Client disconnecting     | DEC               |
