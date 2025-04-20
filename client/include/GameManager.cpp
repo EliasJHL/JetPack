@@ -71,9 +71,8 @@ void GameManager::commandsHandler(void)
         
         messageBuffer += std::string(buffer);
 
-        if (mDebugMode) {
+        if (mDebugMode)
             std::cout << "[DEBUG] Received: " << buffer << std::endl;
-        }
         
         int pos;
         while ((pos = messageBuffer.find("\r\n")) != std::string::npos) {
