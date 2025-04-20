@@ -23,6 +23,9 @@
 #include <string.h>
 #include <regex>
 #include <atomic>
+#include <poll.h>
+#include <sstream>
+#include <iomanip>
 #include "PlayersManager.hpp"
 #include "Coin.hpp"
 #include "ElectricBarrier.hpp"
@@ -43,6 +46,7 @@ class GameManager {
         void posSender(void);
         void run_game(void);
         void close_connection(void);
+        void dummyPoll(void);
     protected:
         void create_window(void);
         void handle_events(void);
