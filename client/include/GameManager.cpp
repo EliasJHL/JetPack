@@ -392,11 +392,13 @@ void GameManager::handleAnimations(void)
         return;
 
     Player* player = mPlayerManager->getPlayer(mPlayerID);
+    if (player == nullptr)
+        return;
     std::pair<float, float> pos = player->getPosition();
     bool SpaceKeyPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Space);
     bool IsOnGround = (pos.second >= FLOOR);
     bool IsPlayerDead = player->isDead();
-    bool IsFlying;
+    bool IsFlying = !IsOnGround && SpaceKeyPressed;
 
     if (SpaceKeyPressed && !IsPlayerDead) {
         if (IsOnGround) {
@@ -472,7 +474,7 @@ void GameManager::handleAnimations(void)
     // Update Animations
     for (Player *p : mPlayerManager->getAllPlayers()) {
         bool isLocalPlayer = (p->getID() == mPlayerID);
-        if (!isLocalPlayer)
+        if (!isLocalPlayer && p != nullptr)
             p->updateAnimation();
     }
 }
@@ -568,6 +570,8 @@ void GameManager::draw(void)
         for (IEntity* entity : entities) {
             sf::Sprite sprite = entity->getSprite();
             if (Player* player = dynamic_cast<Player*>(entity)) {
+                if (player == nullptr)
+                    continue;
                 if (player->getID() != mPlayerID) {
                     sf::Color color = sprite.getColor();
                     color.a = 128;
@@ -584,15 +588,18 @@ void GameManager::draw(void)
             mWindow.draw(sprite);
         }
         mMessageText.setCharacterSize(30);
-        if (mPlayerManager->getPlayer(mPlayerID)->isDead()) {
-            mMessageText.setString("GAME OVER :(");
-            mMessageText.setPosition((mPlayerManager->getPlayer(mPlayerID)->getPosition().first - mMessageText.getGlobalBounds().width), 200);
-            mWindow.draw(mMessageText);
-        }
-        if (mPlayerManager->getPlayer(mPlayerID)->isWin()) {
-            mMessageText.setString("VICTORY !!!");
-            mMessageText.setPosition((mPlayerManager->getPlayer(mPlayerID)->getPosition().first - mMessageText.getGlobalBounds().width), 200);
-            mWindow.draw(mMessageText);
+        Player* localPlayer = mPlayerManager->getPlayer(mPlayerID);
+        if (localPlayer != nullptr) {
+            if (localPlayer->isDead()) {
+                mMessageText.setString("GAME OVER :(");
+                mMessageText.setPosition((localPlayer->getPosition().first - mMessageText.getGlobalBounds().width), 200);
+                mWindow.draw(mMessageText);
+            }
+            if (localPlayer->isWin()) {
+                mMessageText.setString("VICTORY !!!");
+                mMessageText.setPosition((localPlayer->getPosition().first - mMessageText.getGlobalBounds().width), 200);
+                mWindow.draw(mMessageText);
+            }
         }
     }
     mWindow.display();
