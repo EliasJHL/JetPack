@@ -106,7 +106,7 @@ void GameManager::commandsHandler(void)
                         player->updateOnlinePlayersPosition({x * mScaleFactor, y});
                     }
                     if (player) {
-                        player->setScore(coins);
+                        player->setScore(coins, mViewPos);
                     }
                 }
             }
@@ -142,7 +142,7 @@ void GameManager::commandsHandler(void)
                     Player *player = mPlayerManager->getPlayer(id);
                     if (player == nullptr && mPlayerID != id) {
                         std::cout << "New player joined! : " << id << " " << name << std::endl;
-                        mPlayerManager->createPlayer(name, id);
+                        mPlayerManager->createPlayer(name, id, mViewPos);
                     }
                 }
             }
@@ -320,6 +320,8 @@ void GameManager::init_game(int ac, char **av)
     mHasUsername = false;
     mGameReady = false;
     mScaleFactor = 60.0f;
+    mViewPos.x = 0;
+    mViewPos.y = mView.getCenter().y;
     std::thread t(&GameManager::commandsHandler, this);
     t.detach();
 }
@@ -358,6 +360,8 @@ void GameManager::handleAnimations(void)
     Player* player = mPlayerManager->getPlayer(mPlayerID);
     std::pair<float, float> pos = player->getPosition();
     bool SpaceKeyPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && mWindow.hasFocus();
+    bool ArrowLeftPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Left) && mWindow.hasFocus();
+    bool RightArrowPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Right) && mWindow.hasFocus();
     bool IsOnGround = (pos.second >= FLOOR);
     bool IsPlayerDead = player->isDead();
     bool IsFlying;
@@ -397,11 +401,18 @@ void GameManager::handleAnimations(void)
         }
     }
 
-    player->updateScoreText();
-    pos.first += 4;
+    player->updateScoreText(mViewPos);
+    if (ArrowLeftPressed)
+        pos.first += 1;
+    else if (RightArrowPressed)
+        pos.first += 8;
+    else
+        pos.first += 4;
+    if (!player->isDead() && !player->isWin())
+        mViewPos.x += 4;
     player->setPosition({pos.first, pos.second});
     player->updateAnimation();
-    mView.setCenter(pos.first, mView.getCenter().y);
+    mView.setCenter(mViewPos.x, mView.getCenter().y);
     mWindow.setView(mView);
 
     // Update Other players animations
@@ -486,7 +497,7 @@ void GameManager::handle_events(void)
                 continue;
             }
             mPlayerUsername = std::string(mInput);
-            mPlayerManager->createPlayer(mPlayerUsername, mPlayerID);
+            mPlayerManager->createPlayer(mPlayerUsername, mPlayerID, mViewPos);
             send(mPlayerSocket, std::string("SNA " + mPlayerUsername).c_str(), std::string("SNA " + mPlayerUsername).length(), 0);
             mHasUsername = true;
         }
@@ -549,12 +560,12 @@ void GameManager::draw(void)
         mMessageText.setCharacterSize(30);
         if (mPlayerManager->getPlayer(mPlayerID)->isDead()) {
             mMessageText.setString("GAME OVER :(");
-            mMessageText.setPosition((mPlayerManager->getPlayer(mPlayerID)->getPosition().first - mMessageText.getGlobalBounds().width), 200);
+            mMessageText.setPosition((mViewPos.x - mMessageText.getGlobalBounds().width) / 2, 200);
             mWindow.draw(mMessageText);
         }
         if (mPlayerManager->getPlayer(mPlayerID)->isWin()) {
             mMessageText.setString("VICTORY !!!");
-            mMessageText.setPosition((mPlayerManager->getPlayer(mPlayerID)->getPosition().first - mMessageText.getGlobalBounds().width), 200);
+            mMessageText.setPosition((mViewPos.x - mMessageText.getGlobalBounds().width) / 2, 200);
             mWindow.draw(mMessageText);
         }
     }

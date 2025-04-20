@@ -21,7 +21,7 @@
 
 class Player : public IEntity {
     public:
-        Player(int id, std::string name);
+        Player(int id, std::string name, sf::Vector2f viewPos);
         ~Player();
         
         int getID(void) const;
@@ -35,9 +35,9 @@ class Player : public IEntity {
         void setAction(int action, int mode);
         void updateOnlinePlayersPosition(std::pair<float, float> pos);
 
-        void updateScoreText();
+        void updateScoreText(sf::Vector2f viewPos);
         sf::Text &getScoreText();
-        void setScore(std::string score);
+        void setScore(std::string score, sf::Vector2f viewPos);
         std::string getScore() const;
 
         void setDead(void);

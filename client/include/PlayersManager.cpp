@@ -22,7 +22,7 @@ PlayersManager *PlayersManager::getInstance()
     return mPlayersManager;
 }
 
-void PlayersManager::createPlayer(const std::string &name, int id)
+void PlayersManager::createPlayer(const std::string &name, int id, sf::Vector2f viewPos)
 {
     std::lock_guard<std::mutex> lock(mMutex);
     std::cout << id << std::endl;
@@ -31,7 +31,7 @@ void PlayersManager::createPlayer(const std::string &name, int id)
         std::cout << "Attention: Un joueur avec l'ID " << id << " existe déjà!" << std::endl;
         return;
     }
-    mPlayers[id] = std::make_unique<Player>(id, name);
+    mPlayers[id] = std::make_unique<Player>(id, name, viewPos);
 }
 
 void PlayersManager::removePlayer(int id)

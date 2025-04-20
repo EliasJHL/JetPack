@@ -22,7 +22,7 @@
 class PlayersManager {
     public:
         static PlayersManager *getInstance(void);
-        void createPlayer(const std::string &name, int id);
+        void createPlayer(const std::string &name, int id, sf::Vector2f viewPos);
         void removePlayer(int id);
         Player *getPlayer(int id);
         std::vector<Player *> getAllPlayers(void);

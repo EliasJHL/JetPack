@@ -11,7 +11,7 @@
 #include "Player.hpp"
 #include "GameManager.hpp"
 
-Player::Player(int id, std::string name)
+Player::Player(int id, std::string name, sf::Vector2f viewPos)
     : mPlayerID(id), mPlayerName(name), mAnimator(mSprite, 134.5, 133.83, 6),
     mAnimationTimer(0.15f), mIsDead(false), mWin(false)
 {
@@ -33,7 +33,7 @@ Player::Player(int id, std::string name)
     mScoreText.setString("Score: 0");
     mScoreText.setCharacterSize(15);
     mScoreText.setFillColor(sf::Color::White);
-    updateScoreText();
+    updateScoreText(viewPos);
 }
 
 Player::~Player() {}
@@ -121,18 +121,18 @@ void Player::setAction(int action, int mode) {
     }
 }
 
-void Player::updateScoreText() {
+void Player::updateScoreText(sf::Vector2f viewPos) {
     mScoreText.setString("Score: " + mScore);
-    mScoreText.setPosition(mPos.x - mScoreText.getGlobalBounds().width / 2, 50);
+    mScoreText.setPosition(viewPos.x - mScoreText.getGlobalBounds().width / 2, 50);
 }
 
 sf::Text &Player::getScoreText() {
     return mScoreText;
 }
 
-void Player::setScore(std::string score) {
+void Player::setScore(std::string score, sf::Vector2f viewPos) {
     mScore = score;
-    updateScoreText();
+    updateScoreText(viewPos);
 }
 
 std::string Player::getScore() const {

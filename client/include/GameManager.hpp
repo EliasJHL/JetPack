@@ -76,6 +76,7 @@ class GameManager {
         std::vector<std::thread> mPoolThread;
         SoundManager mSoundManager;
         bool mPosThread;
+        sf::Vector2f mViewPos;
 };
 
 #endif /* !GAMEMANAGER_HPP_ */
