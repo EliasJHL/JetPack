@@ -203,9 +203,6 @@ void GameManager::commandsHandler(void)
 
                     Player *player = mPlayerManager->getPlayer(id);
 
-                    if (id != mPlayerID)
-                        continue;
-
                     player->setDead();
                 }
             }
@@ -375,13 +372,24 @@ void GameManager::handleAnimations(void)
             continue;
         pos = p->getPosition();
         IsOnGround = (pos.second >= FLOOR);
+        IsPlayerDead = p->isDead();
+
         if (pos.second < FLOOR) {
-            p->setAction(1, 2);
+            if (!IsPlayerDead)
+                p->setAction(1, 2);
+            else
+                p->setAction(3, 0);
         } else {
             if (!IsOnGround) {
-                p->setAction(1, 1);
+                if (!IsPlayerDead)
+                    p->setAction(1, 1);
+                else
+                    p->setAction(3, 0);
             } else {
-                p->setAction(0, 0);
+                if (!IsPlayerDead)
+                    p->setAction(0, 0);
+                else
+                    p->setAction(3, 0);
             }
         }
     }
