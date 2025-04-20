@@ -39,6 +39,11 @@ void Player::addCoins(int nb, std::pair<float, float> coin, bool debugMode) {
         std::cout << "[DEBUG] Player " << mPlayerID << " collected a coin !" << std::endl;
 }
 
+void Player::clearCollectedCoins()
+{
+    mCollectedCoins.clear();
+}
+
 const std::string &Player::getName(void) const
 {
     return mPlayerName;

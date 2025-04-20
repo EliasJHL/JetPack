@@ -15,6 +15,7 @@ public:
     void updateAnimation() override;
     sf::Sprite &getSprite() override;
     void toDisplay(bool to_display);
+    bool isVisible() const;
 
 private:
     sf::Sprite mSprite;
