@@ -33,7 +33,10 @@
 class GameManager {
     public:
         GameManager();
-        ~GameManager() {};
+        ~GameManager() {
+            std::string m = "DEC\r\n";
+            send(mPlayerSocket, m.c_str(), m.length(), 0);
+        };
         void init_game(int ac, char **av);
         void commandsHandler(void);
         void posSender(void);

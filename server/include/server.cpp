@@ -16,6 +16,7 @@
 
 Server::Server() 
 {
+    mDebugMode = false;
 };
 
 Server::~Server()
@@ -33,7 +34,7 @@ void Server::init_server(int ac, char **av)
         throw std::runtime_error("Init error : Socket");
 
     mServerAddressControl.sin_family = AF_INET;
-    mServerAddressControl.sin_port = htons(this->mPort);
+    mServerAddressControl.sin_port = htons(mPort);
     mServerAddressControl.sin_addr.s_addr = INADDR_ANY;
 
     int on = 1;
@@ -53,10 +54,6 @@ void Server::init_server(int ac, char **av)
 
     mPlayerManager = mPlayerManager->getInstance();
     mRooms.push_back(new NetworkSalon("Default"));
-
-    if (mDebugMode) {
-        std::cout << "Debug mode enabled." << std::endl;
-    }
 }
 
 int Server::parseArguments(int ac, char **av)
@@ -73,6 +70,7 @@ int Server::parseArguments(int ac, char **av)
             map_file = av[++i];
         } else if (std::string(av[i]) == "-d") {
             mDebugMode = true;
+            std::cout << "Debug mode enabled." << std::endl;
         } else {
             throw std::runtime_error("Invalid arguments. Usage : ./jetpack_server -p <port> -m <map> [-d]");
         }
@@ -153,13 +151,8 @@ void Server::handlePlayerCommands(Player *player)
     int n;
 
     while (true) {
-        n = recv(player->getPlayerSocket(), memory, 1024, 0);
+        n = read(player->getPlayerSocket(), memory, 1024);
         if (n <= 0) {
-            std::cout << "Player " << player->getID() << " aka " << player->getName() << " disconnected" << std::endl;
-            // if (player->getSalon() != nullptr) {
-            //     std::string message = "DEC " + std::to_string(player->getID());
-            //     player->getSalon()->CreateMessage(message, Type::DISCONNECT, player->getID());
-            // }
             player->ToDelete();
             if (player->getSalon() != nullptr) {
                 if (player->getObserver() != nullptr) {
@@ -181,7 +174,18 @@ void Server::handlePlayerCommands(Player *player)
 
         if (serverCommand == nullptr)
             continue;
+
         serverCommand->execute(player->getID(), command);
+        
+        if (command.substr(0, 3) == "DEC") {
+            for (auto it = mPoll.begin(); it != mPoll.end(); ++it) {
+                if (it->fd == player->getPlayerSocket()) {
+                    mPoll.erase(it);
+                    close(player->getPlayerSocket());
+                    break;
+                }
+            }
+        }
     }
 }
 

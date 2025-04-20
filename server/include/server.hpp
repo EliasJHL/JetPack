@@ -18,6 +18,7 @@
 #include <thread>
 #include <string>
 #include <iostream>
+#include <map>
 #include <regex>
 
 class Server {
@@ -37,17 +38,17 @@ class Server {
         int parseArguments(int ac, char **av);
         void parseMap();
     private:
-        int mServerSocket;
-        bool mDebugMode = false;
-        std::string mMapContent;
         int mPort;
-        std::vector<NetworkSalon *> mRooms;
-        PlayersManager *mPlayerManager;
-        struct sockaddr_in mServerAddressControl;
-        struct sockaddr_in mClientAddr;
-        std::vector<struct pollfd> mPoll;
-        std::vector<std::thread> mPoolThread;
         float mMapHeight;
+        int mServerSocket;
+        bool mDebugMode;
+        std::string mMapContent;
+        PlayersManager *mPlayerManager;
+        struct sockaddr_in mClientAddr;
+        struct sockaddr_in mServerAddressControl;
+        std::vector<struct pollfd> mPoll;
+        std::vector<NetworkSalon *> mRooms;
+        std::vector<std::thread> mPoolThread;
         std::vector<std::pair<int, int>> mCoins;
         std::vector<std::pair<int, int>> mElectricBarriers;
 };

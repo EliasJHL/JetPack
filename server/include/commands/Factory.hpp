@@ -8,9 +8,6 @@
 #ifndef FACTORY_HPP_
 #define FACTORY_HPP_
 #include "interfaces/IServerCommands.hpp"
-#include <map>
-#include <string>
-
 #include "commands/DEC_Command.hpp"
 #include "commands/SNA_Command.hpp"
 #include "commands/POS_Command.hpp"

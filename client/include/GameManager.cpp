@@ -231,6 +231,24 @@ void GameManager::commandsHandler(void)
                 mPlayerID = std::atoi(command.substr(4).c_str());
                 std::cout << "OK - ID given by server is " << mPlayerID << std::endl;
             }
+            else if (command.substr(0, 3) == "DEC") {
+                std::stringstream messageStream(command);
+                std::vector<std::string> parts;
+                std::string m;
+
+                while (std::getline(messageStream, m, ' ')) {
+                    parts.push_back(m);
+                }
+
+                if (parts.size() >= 2) {
+                    int id = std::atoi(parts[1].c_str());
+                    Player* player = mPlayerManager->getPlayer(id);
+                    if (player != nullptr) {
+                        std::cout << "Player disconnected: " << id << std::endl;
+                        mPlayerManager->removePlayer(id);
+                    }
+                }
+            }
             else {
                 continue;
             }
@@ -432,6 +450,8 @@ void GameManager::handle_events(void)
 {
     while (mWindow.pollEvent(mEvent)) {
         if (mEvent.type == sf::Event::Closed) {
+            std::string m = "DEC\r\n";
+            send(mPlayerSocket, m.c_str(), m.length(), 0);
             mRunning = false;
             mWindow.close();
         }
