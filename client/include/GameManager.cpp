@@ -388,9 +388,9 @@ void GameManager::handleAnimations(void)
     if (player == nullptr)
         return;
     std::pair<float, float> pos = player->getPosition();
-    bool SpaceKeyPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Space);
-    bool ArrowLeftPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Left);
-    bool RightArrowPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Right);
+    bool SpaceKeyPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && mWindow.hasFocus();
+    bool ArrowLeftPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Left) && mWindow.hasFocus();
+    bool RightArrowPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Right) && mWindow.hasFocus();
     bool IsOnGround = (pos.second >= FLOOR);
     bool IsPlayerDead = player->isDead();
     bool IsFlying = !IsOnGround && SpaceKeyPressed;
