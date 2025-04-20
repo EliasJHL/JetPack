@@ -16,6 +16,9 @@ class DEC_Command : public IServerCommands {
         void execute(int id, std::string command, bool debugMode) override {
             PlayersManager *plyManager = PlayersManager::getInstance();
             Player *player = plyManager->getPlayer(id);
+
+            if (debugMode)
+                std::cout << "[DEBUG] Player " << id << " disconnected by DEC command" << std::endl;
             
             player->getSalon()->CreateMessage(std::string("DEC " + std::to_string(player->getID())), Type::DISCONNECT, player->getID());
             player->getSalon()->Quit(player->getObserver());
