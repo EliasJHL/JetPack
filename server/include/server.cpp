@@ -104,8 +104,8 @@ void Server::threadCheckCollisions(void)
                 for (const auto &coin : mCoins) {
                     ox1 = coin.first * scale;
                     oy1 = coin.second * scale;
-                    ox2 = ox1 + 60;
-                    oy2 = oy1 + 60;
+                    ox2 = ox1 + scale;
+                    oy2 = oy1 + scale;
                     if (x1 < ox2 && x2 > ox1 && y1 < oy2 && y2 > oy1) {
                         std::string coinMessage = "COC " + std::to_string(player->getID()) + " " + std::to_string(ox1) + " " + std::to_string(oy1) + "\r\n";
                         player->getSalon()->CreateMessage(coinMessage, Type::COIN, player->getID());
@@ -116,8 +116,8 @@ void Server::threadCheckCollisions(void)
                 for (const auto &barrier : mElectricBarriers) {
                     ox1 = barrier.first * scale;
                     oy1 = barrier.second * scale;
-                    ox2 = ox1 + 60;
-                    oy2 = oy1 + 60;
+                    ox2 = ox1 + scale;
+                    oy2 = oy1 + scale;
                     if (!player->isPlayerDied() && !player->isPlayerWin() && x1 < ox2 && x2 > ox1 && y1 < oy2 && y2 > oy1) {
                         std::string deadMessage = "DED " + std::to_string(player->getID());
                         player->playerDie();
