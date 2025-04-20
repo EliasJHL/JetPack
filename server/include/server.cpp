@@ -238,19 +238,27 @@ void Server::updatePlayersInfo()
 void Server::sendMapData(int player_socket)
 {
     // Envoi de l'hauteur
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
     std::string heightMessage = "HIH " + std::to_string(mMapHeight) + "\r\n";
     write(player_socket, heightMessage.c_str(), heightMessage.length());
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    std::cout << heightMessage;
 
     // Envoi des pièces
     for (const auto &coin : mCoins) {
         std::string coinMessage = "CON " + std::to_string(coin.first) + " " + std::to_string(coin.second) + "\r\n";
+        std::cout << coinMessage << std::endl;
         write(player_socket, coinMessage.c_str(), coinMessage.length());
+        std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
     // Envoi des barrières
     for (const auto &barrier : mElectricBarriers) {
         std::string barrierMessage = "BAR " + std::to_string(barrier.first) + " " + std::to_string(barrier.second) + "\r\n";
+        std::cout << barrierMessage << std::endl;
         write(player_socket, barrierMessage.c_str(), barrierMessage.length());
+        std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
 }
 

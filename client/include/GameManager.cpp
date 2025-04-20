@@ -140,9 +140,11 @@ void GameManager::commandsHandler(void)
                 }
             }
             else if (command.substr(0, 3) == "CON") {
+                std::cout << command << std::endl;
                 std::stringstream coinStream(command);
                 std::string type;
-                float x, y;
+                float x = 0;
+                float y = 0;
                 coinStream >> type >> x >> y;
 
                 Coin* coin = new Coin();
@@ -280,6 +282,7 @@ void GameManager::init_game(int ac, char **av)
     mPlayerManager = mPlayerManager->getInstance();
     mHasUsername = false;
     mGameReady = false;
+    mScaleFactor = 60.0f;
     std::thread t(&GameManager::commandsHandler, this);
     t.detach();
 }
@@ -354,7 +357,6 @@ void GameManager::handleAnimations(void)
                 player->setAction(0, 0);
             else
                 player->setAction(3, 0);
-            //player->setAction(0, 0);
         }
     }
 
