@@ -29,6 +29,7 @@ GameManager::GameManager()
     mSoundManager.loadSound("stopfly", "./client/ressources/sounds/jetpack_stop.wav");
     mSoundManager.loadSound("touchfloor", "./client/ressources/sounds/jetpack_lp.wav");
     mSoundManager.loadMusic("./client/ressources/sounds/theme.ogg");
+    mBackground.loadFromFile("./client/ressources/sprites/background.png");
     mSoundManager.setVolume(50, 10);
     mSoundManager.playMusic();
 }
@@ -367,10 +368,19 @@ void GameManager::move_background(void)
 
     float offsetX = static_cast<int>(pos.first) % static_cast<int>(mMapWidth * mScaleFactor);
 
+    if (pos.first > 17160) {
+        player->setPosition({0, pos.second});
+    }
     backgroundSprite.setScale(2.5f, 2.5f);
     backgroundSprite.setPosition(-offsetX, -70);
     mWindow.draw(backgroundSprite);
     backgroundSprite.setPosition(mMapWidth - offsetX, -70);
+    mWindow.draw(backgroundSprite);
+    backgroundSprite.setPosition(8630, -70);
+    mWindow.draw(backgroundSprite);
+    backgroundSprite.setPosition(12945, -70);
+    mWindow.draw(backgroundSprite);
+    backgroundSprite.setPosition(17160, -70);
     mWindow.draw(backgroundSprite);
 }
 
@@ -552,6 +562,7 @@ void GameManager::draw(void)
         mMessageText.setPosition((mWindow.getSize().x - mMessageText.getGlobalBounds().width) / 2, 200);
         mWindow.draw(mMessageText);
     } else {
+        move_background();
         for (IEntity* entity : entities) {
             sf::Sprite sprite = entity->getSprite();
             if (Player* player = dynamic_cast<Player*>(entity)) {
