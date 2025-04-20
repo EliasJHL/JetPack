@@ -75,9 +75,9 @@ sf::Sprite &Player::getSprite(void) {
 }
 
 void Player::updateAnimation() {
-    if (mAnimationTimer.isElapsed()) { // Vérifie si l'intervalle est écoulé
+    if (mAnimationTimer.isElapsed()) {
         mAnimator.nextFrame();
-        mAnimationTimer.restart(); // Redémarre le Timer
+        mAnimationTimer.restart();
     }
     mSprite.setTextureRect(mAnimator.getTextureRect());
 }

@@ -229,7 +229,11 @@ void GameManager::close_connection(void)
 void GameManager::move_background(void)
 {
     Player* player = mPlayerManager->getPlayer(mPlayerID);
-    std::pair<float, float> pos = player->getPosition();
+    std::pair<float, float> pos;
+
+    if (player == nullptr)
+        return;
+    pos = player->getPosition();
     sf::Sprite backgroundSprite(mBackground);
 
     if (pos.first > 4315) {
@@ -244,64 +248,83 @@ void GameManager::move_background(void)
     mWindow.draw(backgroundSprite);
 }
 
+void GameManager::handleAnimations(void)
+{
+    if (!mHasUsername || !mGameReady)
+        return;
+
+    Player* player = mPlayerManager->getPlayer(mPlayerID);
+    std::pair<float, float> pos = player->getPosition();
+    bool SpaceKeyPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && mWindow.hasFocus();
+    bool IsOnGround = (pos.second >= FLOOR);
+    bool IsFlying;
+
+    if (SpaceKeyPressed) {
+        if (IsOnGround) {
+            if (!mSoundManager.isSoundPlaying("jump"))
+                mSoundManager.playSound("jump");
+        } else {
+            if (!mSoundManager.isSoundPlaying("fly"))
+                mSoundManager.playSound("fly", true);
+        }
+        pos.second -= 4;
+        player->setAction(1, 2);
+    } else if (pos.second < FLOOR) {
+        pos.second += 5;
+        player->setAction(1, 1);
+    } else {
+        if (IsFlying) {
+            mSoundManager.stopSound("fly");
+            mSoundManager.playSound("stopfly");
+        }
+        if (!IsOnGround) {
+            pos.second += 5;
+            player->setAction(1, 1);
+        } else {
+            player->setAction(0, 0);
+        }
+    }
+
+    player->updateScoreText();
+    pos.first += 4;
+    player->setPosition({pos.first, pos.second});
+    player->updateAnimation();
+    mView.setCenter(pos.first, mView.getCenter().y);
+    mWindow.setView(mView);
+
+    // Update Other players animations
+    for (Player *p : mPlayerManager->getAllPlayers()) {
+        bool isLocalPlayer = (p->getID() == mPlayerID);
+        if (isLocalPlayer)
+            continue;
+        pos = p->getPosition();
+        IsOnGround = (pos.second >= FLOOR);
+        if (pos.second < FLOOR) {
+            p->setAction(1, 2);
+        } else {
+            if (!IsOnGround) {
+                p->setAction(1, 1);
+            } else {
+                p->setAction(0, 0);
+            }
+        }
+    }
+
+    // Update Animations
+    for (Player *p : mPlayerManager->getAllPlayers()) {
+        bool isLocalPlayer = (p->getID() == mPlayerID);
+        if (!isLocalPlayer)
+            p->updateAnimation();
+    }
+}
+
 void GameManager::run_game(void) {
     create_window();
     mWindow.setFramerateLimit(60);
 
     while (mWindow.isOpen()) {
         handle_events();
-
-        if (mHasUsername && mGameReady) {
-            Player* player = mPlayerManager->getPlayer(mPlayerID);
-            std::pair<float, float> pos = player->getPosition();
-
-            mIsOnGround = (pos.second >= FLOOR);
-
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && mWindow.hasFocus()) {
-                if (mIsOnGround) {
-                    if (!mSoundManager.isSoundPlaying("jump")) {
-                        mSoundManager.playSound("jump");
-                    }
-                } else {
-                    if (!mSoundManager.isSoundPlaying("fly")) {
-                        mSoundManager.playSound("fly", true);
-                    }
-                }
-                mIsFlying = true;
-                pos.second -= 2;
-                player->setAction(1, 2);
-            } else if (pos.second < FLOOR) {
-                pos.second += 1.5;
-                player->setAction(1, 1);
-            } else {
-                if (mIsFlying) {
-                    mSoundManager.stopSound("fly");
-                    mSoundManager.playSound("stopfly");
-                }
-                mIsFlying = false;
-
-                if (!mIsOnGround) {
-                    pos.second += 1.5;
-                    player->setAction(1, 1);
-                } else {
-                    player->setAction(0, 0);
-                }
-            }
-
-            player->updateScoreText();
-            pos.first += 4;
-            player->setPosition({pos.first, pos.second});
-            player->updateAnimation();
-            mView.setCenter(pos.first, mView.getCenter().y);
-            mWindow.setView(mView);
-            mWasFlying = mIsFlying;
-        }
-        std::vector<Player*> players = mPlayerManager->getAllPlayers();
-        for (int i = 0; i < players.size(); i++) {
-            if (players[i]->getID() != mPlayerID) {
-                players[i]->updateAnimation();
-            }
-        }
+        handleAnimations();
         draw();
     }
     mRunning = false;

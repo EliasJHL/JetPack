@@ -44,6 +44,7 @@ class GameManager {
         void handle_events(void);
         void handle_server(void);
         void move_background(void);
+        void handleAnimations(void);
         void draw(void);
     private:
         sf::RenderWindow mWindow;
@@ -71,9 +72,6 @@ class GameManager {
         sf::Text mPlayerInputDisplay;
         std::vector<std::thread> mPoolThread;
         SoundManager mSoundManager;
-        bool mIsOnGround = true;
-        bool mIsFlying = false;
-        bool mWasFlying = false;
         bool mPosThread;
 };
 
