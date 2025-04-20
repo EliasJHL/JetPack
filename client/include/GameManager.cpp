@@ -6,8 +6,6 @@
 */
 
 #include "GameManager.hpp"
-#include <sstream>
-#include <iomanip>
 
 GameManager::GameManager()
 {
@@ -32,6 +30,15 @@ GameManager::GameManager()
     mBackground.loadFromFile("./client/ressources/sprites/background.png");
     mSoundManager.setVolume(40, 10);
     mSoundManager.playMusic();
+}
+
+void GameManager::dummyPoll()
+{
+    struct pollfd fds[1];
+    fds[0].fd = mPlayerSocket;
+    fds[0].events = 0;
+
+    poll(fds, 1, 0);
 }
 
 void GameManager::posSender(void)
@@ -495,6 +502,7 @@ void GameManager::run_game(void) {
         handle_events();
         handleAnimations();
         draw();
+        dummyPoll();
     }
     mRunning = false;
 }
