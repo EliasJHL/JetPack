@@ -43,4 +43,10 @@ sf::Sprite &Coin::getSprite() {
 void Coin::toDisplay(bool to_display)
 {
     mToDisplay = to_display;
+    mSprite.setColor(to_display ? sf::Color::White : sf::Color(255, 255, 255, 0));
+}
+
+bool Coin::isVisible() const
+{
+    return mToDisplay;
 }

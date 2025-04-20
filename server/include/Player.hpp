@@ -37,13 +37,14 @@ class Player {
         void setPlayerSocket(int fd);
         void setPlayerName(const std::string &name);
         void addCoins(int nb, std::pair<float, float> coin, bool debugMode);
-
+        void clearCollectedCoins();
+        
         void playerWin(void);
         void playerDie(void);
-
+        
         bool isPlayerDied(void);
         bool isPlayerWin(void);
-
+        
         bool isToDelete() {
             std::lock_guard<std::mutex> lock(mAccessMutex);
             return mToDelete;
@@ -52,7 +53,7 @@ class Player {
             std::lock_guard<std::mutex> lock(mAccessMutex);
             mToDelete = true;
         };
-    private:
+        private:
         int mPlayerID;
         int mPlayerCoin;
         int mPlayerSocket;
