@@ -115,105 +115,36 @@ void Server::handlePlayerCommands(Player *player)
     std::smatch m;
     int n;
 
-    try { 
-        while (true) {
-            n = recv(player->getPlayerSocket(), memory, 1024, 0);
-            if (n <= 0) {
-                std::cout << "Player " << player->getID() << " aka " << player->getName() << " disconnected" << std::endl;
-                // if (player->getSalon() != nullptr) {
-                //     std::string message = "DEC " + std::to_string(player->getID());
-                //     player->getSalon()->CreateMessage(message, Type::DISCONNECT, player->getID());
-                // }
-                player->ToDelete();
-                if (player->getSalon() != nullptr) {
-                    if (player->getObserver() != nullptr) {
-                        player->getSalon()->Quit(player->getObserver());
-                    }
-                }
-                close(player->getPlayerSocket());
-                mPlayerManager->removePlayer(player->getID());
-                std::cout << "Players left : " << mPlayerManager->getAllPlayers().size() << std::endl;
-                return;
-            }
-            memory[n] = '\0';
-            command = std::string(memory);
-            command.erase(std::remove(command.begin(), command.end(), '\n'), command.end());
-            command.erase(std::remove(command.begin(), command.end(), '\r'), command.end());
-            if (command.substr(0,3) == "PAU") {
-                if (player->getSalon() != nullptr)
-                    player->getSalon()->CreateMessage("PAUSE", Type::PAUSE, player->getID());
-            }
-            if (command.substr(0,3) == "EPU") {}
-            if (command.substr(0,3) == "DED") {
-                std::regex const e{"^DED\\s+(\\d+)$"};
-                if (std::regex_search(command, m, e)) {
-                    player->getSalon()->CreateMessage(command, Type::DIE, player->getID());
-                }
-            }
-            if (command.substr(0,3) == "WIN") {
-                std::regex const e{"^WIN\\s+(\\d+)$"};
-                if (std::regex_search(command, m, e)) {
-                    player->getSalon()->CreateMessage(command, Type::WIN, player->getID());
-                }
-            }
-            if (command.substr(0,3) == "SNA") {
-                std::regex const e{"^SNA\\s+([A-Za-z0-9]+)$"};
-                if (std::regex_search(command, m, e)) {
-                    player->setPlayerName(m[1]);
-                    
-                    // Envoyer au nouveau joueur les joueurs déjà connectés
-                    std::string existingPlayer = "JON " + std::to_string(player->getID()) + " " + player->getName() + "\r\n";
-                    for (Player* p : mPlayerManager->getAllPlayers()) {
-                        if (p != nullptr && p->getName() != "Dummy" && p->getID() != player->getID()) {
-                            std::string existingPlayer = "JON " + std::to_string(p->getID()) + " " + p->getName() + "\r\n";
-                            write(player->getPlayerSocket(), existingPlayer.c_str(), existingPlayer.length());
-                        }
-                    }
-                    
-                    // Envoyer à tous les joueurs du nouveau joueur
-                    std::string newPlayer = "JON " + std::to_string(player->getID()) + " " + m[1].str() + "\r\n";
-                    player->getSalon()->CreateMessage(newPlayer, Type::CONNECT, player->getID());
-                    
-                    // Lancer le jeu si +2 joueurs sont connectés
-                    std::string srt_msg = "SRT\r\n";
-                    if (mPlayerManager->getReadyPlayer().size() >= 2) {
-                        std::cout << "OK 2 Players online" << std::endl;
-                        player->getSalon()->CreateMessage(srt_msg, Type::START, player->getID());
-                    }
-                }
-            }
-            if (command.substr(0,3) == "POS") {
-                std::stringstream messageStream(command);
-                std::vector<std::string> parts;
-                std::string m;
-
-                while (std::getline(messageStream, m, ' ')) {
-                    parts.push_back(m);
-                }
-                player->setPosition(std::pair<float, float> {std::stof(parts[1].c_str()), std::stof(parts[2].c_str())});
-            }
-            if (command.substr(0,3) == "DEC") {
-                std::regex const e{"^DEC\\s+(\\d+)$"};
-                if (std::regex_search(command, m, e)) {
-                    player->getSalon()->CreateMessage(std::string("DEC " + std::to_string(player->getID())), Type::DISCONNECT, player->getID());
+    while (true) {
+        n = recv(player->getPlayerSocket(), memory, 1024, 0);
+        if (n <= 0) {
+            std::cout << "Player " << player->getID() << " aka " << player->getName() << " disconnected" << std::endl;
+            // if (player->getSalon() != nullptr) {
+            //     std::string message = "DEC " + std::to_string(player->getID());
+            //     player->getSalon()->CreateMessage(message, Type::DISCONNECT, player->getID());
+            // }
+            player->ToDelete();
+            if (player->getSalon() != nullptr) {
+                if (player->getObserver() != nullptr) {
                     player->getSalon()->Quit(player->getObserver());
-                    close(player->getPlayerSocket());
-                    mPlayerManager->removePlayer(player->getID());
-                    for (auto it = mPoll.begin(); it != mPoll.end(); ++it) {
-                        if (it->fd == player->getPlayerSocket()) {
-                            mPoll.erase(it);
-                            close(player->getPlayerSocket());
-                            break;
-                        }
-                    }
-                    return;
                 }
             }
+            close(player->getPlayerSocket());
+            mPlayerManager->removePlayer(player->getID());
+            std::cout << "Players left : " << mPlayerManager->getAllPlayers().size() << std::endl;
+            return;
         }
-    } catch (const std::exception& e) {
-        std::cerr << "Error in client thread: " << e.what() << std::endl;
-    } catch (...) {
-        std::cerr << "Unknown error in client thread" << std::endl;
+        memory[n] = '\0';
+        command = std::string(memory);
+        command.erase(std::remove(command.begin(), command.end(), '\n'), command.end());
+        command.erase(std::remove(command.begin(), command.end(), '\r'), command.end());
+
+        Factory CommandFactory;
+        IServerCommands *serverCommand = CommandFactory.getCommand(command.substr(0,3));
+
+        if (serverCommand == nullptr)
+            continue;
+        serverCommand->execute(player->getID(), command);
     }
 }
 
@@ -298,12 +229,7 @@ void Server::initNewPlayer()
     mPoolThread.push_back(std::move(t));
 };
 
-// pour poll
-// https://www.ibm.com/docs/en/i/7.1?topic=designs-using-poll-instead-select
-// multi thread
-// https://eli.thegreenplace.net/2017/concurrent-servers-part-1-introduction/
-// mutex pour l'accès aux données (createplayer, etc)
-// https://bousk.developpez.com/cours/multi-thread-mutex/
+
 void Server::start_server()
 {
     std::thread updateThread(&Server::updatePlayersInfo, this);

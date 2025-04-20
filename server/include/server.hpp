@@ -14,6 +14,7 @@
 #include "Player.hpp"
 #include "PlayersManager.hpp"
 #include "Encapsulation.hpp"
+#include "commands/Factory.hpp"
 #include <thread>
 #include <string>
 #include <iostream>
@@ -27,7 +28,7 @@ class Server {
         void init_server(int ac, char **av);
         void start_server();
         
-        protected:
+    protected:
         void handlePlayerCommands(Player *player);
         void updatePlayersInfo();
         void initNewPlayer();
