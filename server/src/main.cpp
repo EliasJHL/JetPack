@@ -15,6 +15,8 @@ int main(int ac, char **av)
     Server serv;
 
     try {
+        if (ac < 5 || ac > 6)
+            throw std::runtime_error("Usage : ./jetpack_server -p <port> -m <map> [-d]");
         serv.init_server(ac, av);
         serv.start_server();
     } catch (std::runtime_error &e) {

@@ -12,7 +12,8 @@
 #include "GameManager.hpp"
 
 Player::Player(int id, std::string name)
-    : mPlayerID(id), mPlayerName(name), mAnimator(mSprite, 134.5, 133.83, 6), mAnimationTimer(0.15f) // Initialisation du Timer
+    : mPlayerID(id), mPlayerName(name), mAnimator(mSprite, 134.5, 133.83, 6),
+    mAnimationTimer(0.15f), mIsDead(false), mWin(false)
 {
     if (!mTexture.loadFromFile("./client/ressources/sprites/player_sprite_sheet.png")) {
         throw std::runtime_error("Failed to load spritesheet");
@@ -20,12 +21,10 @@ Player::Player(int id, std::string name)
     mSprite.setTexture(mTexture);
     mAnimator.setFramesPerAction(4);
 
-    // Initialisation de la position
     mPos.x = 0;
     mPos.y = FLOOR;
     mSprite.setPosition(mPos);
 
-    // Initialisation du texte du score
     if (!mFont.loadFromFile("./client/ressources/font/jetpack_font.ttf")) {
         throw std::runtime_error("Failed to load font");
     }
@@ -51,6 +50,11 @@ void Player::setName(std::string name) {
     mPlayerName = name;
 }
 
+void Player::setDead(void)
+{
+    mIsDead = true;
+}
+
 std::pair<float, float> Player::getPosition(void) const {
     return {mPos.x, mPos.y};
 }
@@ -62,14 +66,36 @@ void Player::updateOnlinePlayersPosition(std::pair<float, float> pos)
     mSprite.setPosition(mPos);
 }
 
+bool Player::isDead(void)
+{
+    return mIsDead;
+}
+
+void Player::setWin(void)
+{
+    mWin = true;
+}
+
+bool Player::isWin(void) const
+{
+    return mWin;
+}
+
 void Player::setPosition(std::pair<float, float> pos) {
-    mPos.x = pos.first;
-    mPos.y = pos.second;
-    if (mPos.y > FLOOR)
-        mPos.y = FLOOR;
-    if (mPos.y < CEILING)
-        mPos.y = CEILING;
-    mSprite.setPosition(mPos);
+    if (mIsDead || mWin) {
+        mPos.y = pos.second;
+        if (mPos.y > FLOOR)
+            mPos.y = FLOOR;
+        mSprite.setPosition(mPos);
+    } else {
+        mPos.x = pos.first;
+        mPos.y = pos.second;
+        if (mPos.y > FLOOR)
+            mPos.y = FLOOR;
+        if (mPos.y < CEILING)
+            mPos.y = CEILING;
+        mSprite.setPosition(mPos);
+    }
 }
 
 sf::Sprite &Player::getSprite(void) {
@@ -77,9 +103,9 @@ sf::Sprite &Player::getSprite(void) {
 }
 
 void Player::updateAnimation() {
-    if (mAnimationTimer.isElapsed()) { // Vérifie si l'intervalle est écoulé
+    if (mAnimationTimer.isElapsed()) {
         mAnimator.nextFrame();
-        mAnimationTimer.restart(); // Redémarre le Timer
+        mAnimationTimer.restart();
     }
     mSprite.setTextureRect(mAnimator.getTextureRect());
 }
@@ -106,9 +132,9 @@ sf::Text &Player::getScoreText() {
 
 void Player::setScore(std::string score) {
     mScore = score;
-    updateScoreText(); // Mettre à jour le texte du score
+    updateScoreText();
 }
 
 std::string Player::getScore() const {
-    return mScore;
+    return mScore;  
 }

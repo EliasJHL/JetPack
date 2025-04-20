@@ -33,7 +33,10 @@
 class GameManager {
     public:
         GameManager();
-        ~GameManager() {};
+        ~GameManager() {
+            std::string m = "DEC\r\n";
+            send(mPlayerSocket, m.c_str(), m.length(), 0);
+        };
         void init_game(int ac, char **av);
         void commandsHandler(void);
         void posSender(void);
@@ -44,6 +47,7 @@ class GameManager {
         void handle_events(void);
         void handle_server(void);
         void move_background(void);
+        void handleAnimations(void);
         void draw(void);
     private:
         sf::RenderWindow mWindow;
@@ -71,10 +75,7 @@ class GameManager {
         sf::Text mPlayerInputDisplay;
         std::vector<std::thread> mPoolThread;
         SoundManager mSoundManager;
-        bool mIsOnGround = true;
-        bool mIsFlying = false;
-        bool mWasFlying = false;
-
+        bool mPosThread;
 };
 
 #endif /* !GAMEMANAGER_HPP_ */

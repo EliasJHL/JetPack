@@ -9,13 +9,10 @@
 */
 
 #include "server.hpp"
-#include <fstream>
-#include <cctype>
-#include <sstream>
-#include <iomanip>
 
 Server::Server() 
 {
+    mDebugMode = false;
 };
 
 Server::~Server()
@@ -24,50 +21,16 @@ Server::~Server()
 
 void Server::init_server(int ac, char **av)
 {
-    if (ac < 5 || ac > 6)
-        throw std::runtime_error("Usage : ./jetpack_server -p <port> -m <map> [-d]");
-
-    std::string port;
-    std::string map_file;
-
-    for (int i = 1; i < ac; ++i) {
-        if (std::string(av[i]) == "-p" && i + 1 < ac) {
-            port = av[++i];
-            if (port.empty() || !std::all_of(port.begin(), port.end(), ::isdigit))
-                throw std::runtime_error("Invalid port number: " + port);
-        } else if (std::string(av[i]) == "-m" && i + 1 < ac) {
-            map_file = av[++i];
-        } else if (std::string(av[i]) == "-d") {
-            this->mDebugMode = true;
-        } else {
-            throw std::runtime_error("Invalid arguments. Usage : ./jetpack_server -p <port> -m <map> [-d]");
-        }
-    }
-
-    if (port.empty())
-        throw std::runtime_error("Missing -p <port> argument.");
-    if (map_file.empty())
-        throw std::runtime_error("Missing -m <map> argument.");
-
-    std::ifstream map(map_file);
-    if (!map.good())
-        throw std::runtime_error("Map file not found: " + map_file);
-    
-    mMapContent.assign((std::istreambuf_iterator<char>(map)),
-                       std::istreambuf_iterator<char>());
+    mPort = parseArguments(ac, av);
 
     parseMap();
     
-    this->mPort = std::stoi(port);
-    if (this->mPort <= 0 || this->mPort > 65535)
-        throw std::runtime_error("Invalid port number: " + port);
-
     mServerSocket = socket(AF_INET, SOCK_STREAM, 0);
     if (mServerSocket < 0)
         throw std::runtime_error("Init error : Socket");
 
     mServerAddressControl.sin_family = AF_INET;
-    mServerAddressControl.sin_port = htons(this->mPort);
+    mServerAddressControl.sin_port = htons(mPort);
     mServerAddressControl.sin_addr.s_addr = INADDR_ANY;
 
     int on = 1;
@@ -86,32 +49,98 @@ void Server::init_server(int ac, char **av)
     });
 
     mPlayerManager = mPlayerManager->getInstance();
-    mRooms.push_back(new NetworkSalon("Default"));
+    mRooms.push_back(new NetworkSalon("Default", mDebugMode));
+}
 
-    if (this->mDebugMode) {
-        std::cout << "Debug mode enabled." << std::endl;
+int Server::parseArguments(int ac, char **av)
+{
+    std::string port;
+    std::string map_file;
+
+    for (int i = 1; i < ac; ++i) {
+        if (std::string(av[i]) == "-p" && i + 1 < ac) {
+            port = av[++i];
+            if (port.empty() || !std::all_of(port.begin(), port.end(), ::isdigit))
+                throw std::runtime_error("Invalid port number: " + port);
+        } else if (std::string(av[i]) == "-m" && i + 1 < ac) {
+            map_file = av[++i];
+        } else if (std::string(av[i]) == "-d") {
+            mDebugMode = true;
+            std::cout << "Debug mode enabled." << std::endl;
+        } else {
+            throw std::runtime_error("Invalid arguments. Usage : ./jetpack_server -p <port> -m <map> [-d]");
+        }
+    }
+
+    if (port.empty())
+        throw std::runtime_error("Missing -p <port> argument.");
+    if (map_file.empty())
+        throw std::runtime_error("Missing -m <map> argument.");
+
+    std::ifstream map(map_file);
+    if (!map.good())
+        throw std::runtime_error("Map file not found: " + map_file);
+    
+    mMapContent.assign((std::istreambuf_iterator<char>(map)), std::istreambuf_iterator<char>());
+    
+    return std::stoi(port);
+}
+
+void Server::threadCheckCollisions(void)
+{
+    std::string message;
+    float scale = 600 / mMapHeight;
+    float x1, y1, x2, y2;
+    float ox1, oy1, ox2, oy2;
+    
+    while (true) {
+        for (Player *player : mPlayerManager->getReadyPlayer()) {
+            try {
+                x1 = player->getPosition().first;
+                y1 = player->getPosition().second;
+                x2 = player->getPosition().first + 134.5;
+                y2 = player->getPosition().second + 134.5;
+
+                for (const auto &coin : mCoins) {
+                    ox1 = coin.first * scale;
+                    oy1 = coin.second * scale;
+                    ox2 = ox1 + scale;
+                    oy2 = oy1 + scale;
+                    if (x1 < ox2 && x2 > ox1 && y1 < oy2 && y2 > oy1) {
+                        std::string coinMessage = "COC " + std::to_string(player->getID()) + " " + std::to_string(ox1) + " " + std::to_string(oy1) + "\r\n";
+                        player->getSalon()->CreateMessage(coinMessage, Type::COIN, player->getID());
+                        player->addCoins(1, {ox1, oy1}, mDebugMode);
+                    }
+                }
+            
+                for (const auto &barrier : mElectricBarriers) {
+                    ox1 = barrier.first * scale;
+                    oy1 = barrier.second * scale;
+                    ox2 = ox1 + scale;
+                    oy2 = oy1 + scale;
+                    if (!player->isPlayerDied() && !player->isPlayerWin() && x1 < ox2 && x2 > ox1 && y1 < oy2 && y2 > oy1) {
+                        std::string deadMessage = "DED " + std::to_string(player->getID());
+                        player->playerDie();
+                        player->getSalon()->CreateMessage(deadMessage, Type::DIE, player->getID()); + "\r\n";
+                        for (Player *p : mPlayerManager->getReadyPlayer()) {
+                            if (p->getID() == player->getID())
+                                continue;
+                            std::string winMessage = "WIN " + std::to_string(p->getID());
+                            p->playerWin();
+                            p->getSalon()->CreateMessage(winMessage, Type::WIN, p->getID()); + "\r\n";
+                            if (mDebugMode)
+                                std::cout << "[DEBUG] Player " << player->getID() << " touched a barrier !" << std::endl;
+                        }
+                    }
+                }
+            } catch (...) {
+                continue;
+            }
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
 }
 
-//https://stackoverflow.com/questions/71572056/multithreaded-server-c-socket-programming
-// ---------------------Server side-------------------------
-// PLR id x y coin      -> Update envoyé      - Server Send
-// DEC id               -> Player disconnect  - Server Send
-// JON id name          -> Player Connect     - Server Send
-// RDY                  -> Player Ready       - Server Send
-// SRT                  -> Start Game         - Server Send
-// DED id               -> Player who dead    - Server Send
-// WIN id               -> Player who win     - Server Send
-// PAU id               -> Pause              - Server Send
-// RET                  -> Restart Game       - Server Send
-// --------------------Startup Client ----------------------
-// MAP size_x size_y content map -> Envoyer map - Server Send
-// -------------------- Client Send ------------------------
-// SNA name             -> Set Username       - Client Send
-// PAU                  -> Pause              - Client Send
-// EPU                  -> End Pause          - Client Send
-// POS x y              -> Envoyer la position- Client Send
-// DEC                  -> Player disconnect  - Client Send
 void Server::handlePlayerCommands(Player *player)
 {
     char memory[1024] = { 0 };
@@ -119,97 +148,46 @@ void Server::handlePlayerCommands(Player *player)
     std::smatch m;
     int n;
 
-    try { 
-        while (true) {
-            n = recv(player->getPlayerSocket(), memory, 1024, 0);
-            if (n <= 0) {
-                std::cout << "Player " << player->getID() << " aka " << player->getName() << " disconnected" << std::endl;
-                // if (player->getSalon() != nullptr) {
-                //     std::string message = "DEC " + std::to_string(player->getID());
-                //     player->getSalon()->CreateMessage(message, Type::DISCONNECT, player->getID());
-                // }
-                player->ToDelete();
-                if (player->getSalon() != nullptr) {
-                    if (player->getObserver() != nullptr) {
-                        player->getSalon()->Quit(player->getObserver());
-                    }
-                }
-                close(player->getPlayerSocket());
-                mPlayerManager->removePlayer(player->getID());
-                std::cout << "Players left : " << mPlayerManager->getAllPlayers().size() << std::endl;
-                return;
-            }
-            memory[n] = '\0';
-            command = std::string(memory);
-            command.erase(std::remove(command.begin(), command.end(), '\n'), command.end());
-            command.erase(std::remove(command.begin(), command.end(), '\r'), command.end());
-            if (command.substr(0,3) == "PAU") {
-                if (player->getSalon() != nullptr)
-                    player->getSalon()->CreateMessage("PAUSE", Type::PAUSE, player->getID());
-            }
-            if (command.substr(0,3) == "EPU") {}
-            if (command.substr(0,3) == "DED") {
-                std::regex const e{"^DED\\s+(\\d+)$"};
-                if (std::regex_search(command, m, e)) {
-                    player->getSalon()->CreateMessage(command, Type::DIE, player->getID());
-                }
-            }
-            if (command.substr(0,3) == "WIN") {
-                std::regex const e{"^WIN\\s+(\\d+)$"};
-                if (std::regex_search(command, m, e)) {
-                    player->getSalon()->CreateMessage(command, Type::WIN, player->getID());
-                }
-            }
-            if (command.substr(0,3) == "SNA") {
-                std::regex const e{"^SNA\\s+([A-Za-z0-9]+)$"};
-                if (std::regex_search(command, m, e)) {
-                    player->setPlayerName(m[1]);
-                    std::cout << std::string("JON " + std::to_string(player->getID()) + " " + m[1].str()) << std::endl;
-                    player->getSalon()->CreateMessage(std::string("JON " + std::to_string(player->getID()) + " " + m[1].str()), Type::CONNECT, player->getID());
-                    if (mPlayerManager->getReadyPlayer().size() >= 2) {
-                        std::cout << "READY " << mPlayerManager->getReadyPlayer().size() << std::endl;
-                        player->getSalon()->CreateMessage(std::string("SRT"), Type::RESTART, player->getID());
-                    } else {
-                        std::cout << "NO READY ONLY " << mPlayerManager->getReadyPlayer().size() << std::endl;
-                    }
-                }
-            }
-            if (command.substr(0,3) == "POS") {
-                std::stringstream messageStream(command);
-                std::vector<std::string> parts;
-                std::string m;
-
-                while (std::getline(messageStream, m, ' ')) {
-                    parts.push_back(m);
-                }
-                player->setPosition(std::pair<float, float> {std::stof(parts[1].c_str()), std::stof(parts[2].c_str())});
-            }
-            if (command.substr(0,3) == "DEC") {
-                std::regex const e{"^DEC\\s+(\\d+)$"};
-                if (std::regex_search(command, m, e)) {
-                    player->getSalon()->CreateMessage(std::string("DEC " + std::to_string(player->getID())), Type::DISCONNECT, player->getID());
+    while (true) {
+        n = read(player->getPlayerSocket(), memory, 1024);
+        if (n <= 0) {
+            player->ToDelete();
+            if (player->getSalon() != nullptr) {
+                if (player->getObserver() != nullptr) {
                     player->getSalon()->Quit(player->getObserver());
-                    close(player->getPlayerSocket());
-                    mPlayerManager->removePlayer(player->getID());
-                    for (auto it = mPoll.begin(); it != mPoll.end(); ++it) {
-                        if (it->fd == player->getPlayerSocket()) {
-                            mPoll.erase(it);
-                            close(player->getPlayerSocket());
-                            break;
-                        }
-                    }
-                    return;
+                }
+            }
+            close(player->getPlayerSocket());
+            mPlayerManager->removePlayer(player->getID());
+            if (mDebugMode)
+                std::cout << "[DEBUG] Players left : " << mPlayerManager->getAllPlayers().size() << std::endl;
+            return;
+        }
+        memory[n] = '\0';
+        command = std::string(memory);
+
+        command.erase(std::remove(command.begin(), command.end(), '\n'), command.end());
+        command.erase(std::remove(command.begin(), command.end(), '\r'), command.end());
+
+        Factory CommandFactory;
+        IServerCommands *serverCommand = CommandFactory.getCommand(command.substr(0,3));
+
+        if (serverCommand == nullptr)
+            continue;
+
+        serverCommand->execute(player->getID(), command, mDebugMode);
+        
+        if (command.substr(0, 3) == "DEC") {
+            for (auto it = mPoll.begin(); it != mPoll.end(); ++it) {
+                if (it->fd == player->getPlayerSocket()) {
+                    mPoll.erase(it);
+                    break;
                 }
             }
         }
-    } catch (const std::exception& e) {
-        std::cerr << "Error in client thread: " << e.what() << std::endl;
-    } catch (...) {
-        std::cerr << "Unknown error in client thread" << std::endl;
     }
 }
 
-// PLR id x y coin      -> Update envoyé      - Server Send
 void Server::updatePlayersInfo()
 {
     std::vector<Player*> players;
@@ -237,66 +215,85 @@ void Server::updatePlayersInfo()
                 continue;
             }
         }
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        std::this_thread::sleep_for(std::chrono::milliseconds(2));
     }
 }
 
-// pour poll
-// https://www.ibm.com/docs/en/i/7.1?topic=designs-using-poll-instead-select
-// multi thread
-// https://eli.thegreenplace.net/2017/concurrent-servers-part-1-introduction/
-// mutex pour l'accès aux données (createplayer, etc)
-// https://bousk.developpez.com/cours/multi-thread-mutex/
+void Server::sendMapData(int player_socket)
+{
+    // Envoi de l'hauteur
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    std::string heightMessage = "HIH " + std::to_string(mMapHeight) + "\r\n";
+    write(player_socket, heightMessage.c_str(), heightMessage.length());
+    if (mDebugMode)
+        std::cout << "[DEBUG] Sent to Player: " << heightMessage << std::endl;
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+
+    // Envoi des pièces
+    for (const auto &coin : mCoins) {
+        std::string coinMessage = "CON " + std::to_string(coin.first) + " " + std::to_string(coin.second) + "\r\n";
+        write(player_socket, coinMessage.c_str(), coinMessage.length());
+        if (mDebugMode)
+            std::cout << "[DEBUG] Sent to Player: " << coinMessage << std::endl;
+        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+
+    // Envoi des barrières
+    for (const auto &barrier : mElectricBarriers) {
+        std::string barrierMessage = "BAR " + std::to_string(barrier.first) + " " + std::to_string(barrier.second) + "\r\n";
+        write(player_socket, barrierMessage.c_str(), barrierMessage.length());
+        if (mDebugMode)
+            std::cout << "[DEBUG] Sent to Player: " << barrierMessage << std::endl;
+        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+    }
+}
+
+void Server::initNewPlayer()
+{
+    int new_player_id;
+    socklen_t client_len;
+
+    client_len = sizeof(mClientAddr);
+    int new_player_socket = accept(mServerSocket, (struct sockaddr*) &mClientAddr, &client_len);
+
+    if (new_player_socket < 0) {
+        std::cerr << "New client connection failed" << std::endl;
+        return;
+    }
+
+    mPoll.push_back({
+        .fd = new_player_socket
+    });
+    new_player_id = mPlayerManager->createPlayer("Dummy", new_player_socket);
+    std::cout << "Connection from " << inet_ntoa(mClientAddr.sin_addr) << ":" << ntohs(mClientAddr.sin_port) << " with ID " << new_player_id << std::endl;
+    write(mPlayerManager->getPlayer(new_player_id)->getPlayerSocket(), "Welcome\r\n", std::string("Welcome\r\n").length());
+    std::string message = std::string("IDP " + std::to_string(new_player_id) + "\r\n");
+    write(mPlayerManager->getPlayer(new_player_id)->getPlayerSocket(), message.c_str(), message.length());
+    mPlayerManager->getPlayer(new_player_id)->setSalon(*mRooms[0], mDebugMode);
+
+    sendMapData(new_player_socket);
+
+    std::thread t(&Server::handlePlayerCommands, this, mPlayerManager->getPlayer(new_player_id));
+    t.detach();
+    mPoolThread.push_back(std::move(t));
+};
+
+
 void Server::start_server()
 {
     std::thread updateThread(&Server::updatePlayersInfo, this);
     updateThread.detach();
+    std::thread CollisionsThread(&Server::threadCheckCollisions, this);
+    CollisionsThread.detach();
     while (true) {
         int rc = poll(mPoll.data(), mPoll.size(), 180000);
 
         if (rc < 0)
             throw std::runtime_error("loop error : poll");
-
         
         if (mPoll[0].revents == POLLIN) {
-            socklen_t client_len = sizeof(mClientAddr);
-            int new_player_socket = accept(mServerSocket, (struct sockaddr*) &mClientAddr, &client_len);
-
-            if (new_player_socket < 0) {
-                std::cerr << "New client connection failed" << std::endl;
-                continue;
-            }
-
-            mPoll.push_back({
-                .fd = new_player_socket
-            });
-            int new_player_id = mPlayerManager->createPlayer("Dummy", new_player_socket);
-            std::cout << "Connection from " << inet_ntoa(mClientAddr.sin_addr) << ":" << ntohs(mClientAddr.sin_port) << std::endl;
-            write(mPlayerManager->getPlayer(new_player_id)->getPlayerSocket(), "Welcome\r\n", std::string("Welcome\r\n").length());
-            std::string message = std::string("IDP " + std::to_string(new_player_id) + "\r\n");
-            write(mPlayerManager->getPlayer(new_player_id)->getPlayerSocket(), message.c_str(), message.length());
-            mPlayerManager->getPlayer(new_player_id)->setSalon(*mRooms[0]);
-
-            // Envoyer la hauteur de la carte
-            std::string heightMessage = "HIH " + std::to_string(mMapHeight) + "\r\n";
-            write(new_player_socket, heightMessage.c_str(), heightMessage.length());
-            std::cout << heightMessage << std::endl;
-
-            // Envoyer les pièces et barrières électriques
-            for (const auto &coin : mCoins) {
-                std::string coinMessage = "CON " + std::to_string(coin.first) + " " + std::to_string(coin.second) + "\r\n";
-                write(new_player_socket, coinMessage.c_str(), coinMessage.length());
-                std::cout << coinMessage << std::endl;
-            }
-            for (const auto &barrier : mElectricBarriers) {
-                std::string barrierMessage = "BAR " + std::to_string(barrier.first) + " " + std::to_string(barrier.second) + "\r\n";
-                write(new_player_socket, barrierMessage.c_str(), barrierMessage.length());
-                std::cout << barrierMessage << std::endl;
-            }
-
-            std::thread t(&Server::handlePlayerCommands, this, mPlayerManager->getPlayer(new_player_id));
-            t.detach();
-            mPoolThread.push_back(std::move(t));
+            initNewPlayer();
         }
         
         for (int i = 0; i < mPoll.size(); i++) {

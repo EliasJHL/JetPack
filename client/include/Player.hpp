@@ -40,6 +40,12 @@ class Player : public IEntity {
         void setScore(std::string score);
         std::string getScore() const;
 
+        void setDead(void);
+        bool isDead(void);
+
+        void setWin(void);
+        bool isWin(void) const;
+
     private:
         int mPlayerID;
         sf::Sprite mSprite;
@@ -50,7 +56,9 @@ class Player : public IEntity {
         sf::Text mScoreText;
         sf::Font mFont; 
         SpriteAnimator mAnimator;
-        Clock mAnimationTimer; // Utilisation de la classe Timer
+        Clock mAnimationTimer;
+        bool mIsDead;
+        bool mWin;
 };
 
 #endif /* !PLAYER_HPP_ */

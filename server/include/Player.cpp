@@ -1,11 +1,8 @@
 /*
-** Player.cpp for B-NWP-400-MPL-4-1-jetpack-elias-josue.hajjar-llauquen in /home/elias/Documents/Epitech/JetPack/B-NWP-400-MPL-4-1-jetpack-elias-josue.hajjar-llauquen/server/include
-**
-** Made by Elias Josué HAJJAR LLAUQUEN
-** Login   <elias-josue.hajjar-llauquen@epitech.eu>
-**
-** Started on  Tue Mar 25 11:43:11 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Fri Apr 3 15:02:02 2025 Elias Josué HAJJAR LLAUQUEN
+** EPITECH PROJECT, 2025
+** B-NWP-400-MPL-4-1-jetpack-elias-josue.hajjar-llauquen
+** File description:
+** Player
 */
 
 #include "Player.hpp"
@@ -33,9 +30,13 @@ int Player::getCoins()
     return mPlayerCoin;
 }
 
-void Player::addCoins(int nb)
-{
+void Player::addCoins(int nb, std::pair<float, float> coin, bool debugMode) {
+    if (std::find(mCollectedCoins.begin(), mCollectedCoins.end(), coin) != mCollectedCoins.end())
+        return;
     mPlayerCoin += nb;
+    mCollectedCoins.push_back(coin);
+    if (debugMode)
+        std::cout << "[DEBUG] Player " << mPlayerID << " collected a coin !" << std::endl;
 }
 
 const std::string &Player::getName(void) const
@@ -46,6 +47,26 @@ const std::string &Player::getName(void) const
 bool Player::isConnected(void) const
 {
     return mConnected;
+}
+
+void Player::playerDie()
+{
+    mDied = true;
+}
+
+void Player::playerWin()
+{
+    mWin = true;
+}
+
+bool Player::isPlayerDied()
+{
+    return mDied;
+}
+
+bool Player::isPlayerWin()
+{
+    return mWin;
 }
 
 const std::pair<float, float> &Player::getPosition(void) const
@@ -81,12 +102,12 @@ NetworkSalon *Player::getSalon()
     return mObserver->getNetworkSalon();
 }
 
-void Player::setSalon(NetworkSalon &salon) {
+void Player::setSalon(NetworkSalon &salon, bool debugMode) {
     if (mObserver != nullptr) {
         mObserver->RemoveMe();
         delete mObserver;
     }
-    mObserver = new NetworkObserver(salon, mPlayerSocket);
+    mObserver = new NetworkObserver(salon, mPlayerSocket, debugMode);
 }
 
 int Player::getPlayerSocket() {

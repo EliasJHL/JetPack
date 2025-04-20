@@ -6,11 +6,12 @@ Coin::Coin() : mAnimator(mSprite, 191.933, 171, 1), mAnimationTimer(0.15f) {
     }
     mSprite.setTexture(mTexture);
     mSprite.setScale(0.5, 0.5);
-    mAnimator.setFramesPerAction(6); // 6 frames pour l'animation
-    mAnimator.setDefaultAction(0);    // Commence sur la première frame
+    mAnimator.setFramesPerAction(6);
+    mAnimator.setDefaultAction(0);
     mPos.x = 400;
     mPos.y = 450;
     mSprite.setPosition(mPos);
+    mToDisplay = true;
 }
 
 void Coin::setPosition(std::pair<float, float> pos) {
@@ -24,13 +25,22 @@ std::pair<float, float> Coin::getPosition() const {
 }
 
 void Coin::updateAnimation() {
-    if (mAnimationTimer.isElapsed()) { // Vérifie si l'intervalle est écoulé
-        mAnimator.nextFrame();         // Passe à la frame suivante
-        mAnimationTimer.restart();     // Redémarre le Timer
+    if (mAnimationTimer.isElapsed()) {
+        mAnimator.nextFrame();
+        mAnimationTimer.restart();
     }
-    mSprite.setTextureRect(mAnimator.getTextureRect()); // Met à jour la texture
+    mSprite.setTextureRect(mAnimator.getTextureRect());
 }
 
 sf::Sprite &Coin::getSprite() {
+    if (mToDisplay)
+        mSprite.setColor(sf::Color(255, 255, 255, 255));
+    else
+        mSprite.setColor(sf::Color(255, 255, 255, 0));
     return mSprite;
+}
+
+void Coin::toDisplay(bool to_display)
+{
+    mToDisplay = to_display;
 }

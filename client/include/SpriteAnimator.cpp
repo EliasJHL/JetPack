@@ -17,9 +17,8 @@ SpriteAnimator::SpriteAnimator(sf::Sprite &sprite, int frameWidth, int frameHeig
 void SpriteAnimator::setAction(int action) {
     if (action >= 0 && action < mActions) {
         mCurrentAction = action;
-        // mCurrentFrame = 0; // Reset to the first frame of the action
         mDefaultMode = false;
-        mOneActionMode = false; // Ensure one-action mode is disabled
+        mOneActionMode = false;
         updateTextureRect();
     }
 }
@@ -29,8 +28,7 @@ void SpriteAnimator::setDefaultAction(int action) {
         mCurrentAction = action;
     }
     mDefaultMode = true;
-    mOneActionMode = false; // Ensure one-action mode is disabled
-    // mCurrentFrame = 0; // Start from the first frame
+    mOneActionMode = false;
     updateTextureRect();
 }
 
@@ -47,20 +45,14 @@ void SpriteAnimator::setOneAction(int action, int frame)
 
 void SpriteAnimator::nextFrame() {
     if (mDefaultMode) {
-        // Default mode: Loop through all frames in the current row (0 to last frame)
         mCurrentFrame = (mCurrentFrame + 1) % mFramesPerAction;
     } else if (mOneActionMode) {
-        // One-action mode: Stay on the same frame
-        // Do nothing, as we are looping a single frame
     } else {
-        // Normal mode: Loop through frames of the current action (1 to last frame, excluding 0)
         mCurrentFrame = (mCurrentFrame + 1) % mFramesPerAction;
         if (mCurrentFrame == 0) {
-            mCurrentFrame = 1; // Skip frame 0
+            mCurrentFrame = 1;
         }
     }
-
-    //std::cout << "Switching to frame " << mCurrentFrame << " of action " << mCurrentAction << std::endl;
     updateTextureRect();
 }
 
@@ -78,7 +70,7 @@ sf::IntRect SpriteAnimator::getTextureRect() const
 }
 
 void SpriteAnimator::updateTextureRect() {
-    int left = mCurrentFrame * mFrameWidth; // Calculate the X position of the frame
-    int top = mCurrentAction * mFrameHeight; // Calculate the Y position of the action
+    int left = mCurrentFrame * mFrameWidth;
+    int top = mCurrentAction * mFrameHeight;
     mSprite.setTextureRect(sf::IntRect(left, top, mFrameWidth, mFrameHeight));
 }

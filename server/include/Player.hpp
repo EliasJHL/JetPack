@@ -12,8 +12,10 @@
 #define PLAYER_HPP_
 #include <memory>
 #include <string>
-#include "Network.hpp"
+#include "NetworkObserver.hpp"
 #include <mutex>
+#include <vector>
+#include <algorithm>
 
 class Player {
     public:
@@ -31,10 +33,16 @@ class Player {
         const std::pair<float, float> &getPosition(void) const;
         void setPosition(std::pair<float, float> pos);
         void setConnection(bool connexion);
-        void setSalon(NetworkSalon &salon);
+        void setSalon(NetworkSalon &salon, bool debugMode);
         void setPlayerSocket(int fd);
         void setPlayerName(const std::string &name);
-        void addCoins(int nb);
+        void addCoins(int nb, std::pair<float, float> coin, bool debugMode);
+
+        void playerWin(void);
+        void playerDie(void);
+
+        bool isPlayerDied(void);
+        bool isPlayerWin(void);
 
         bool isToDelete() {
             std::lock_guard<std::mutex> lock(mAccessMutex);
@@ -46,14 +54,17 @@ class Player {
         };
     private:
         int mPlayerID;
-        int mPlayerSocket;
         int mPlayerCoin;
-        std::string mPlayerName;
-        std::pair<float, float> mCoordinates;
-        bool mConnected;
-        NetworkObserver *mObserver;
-        std::mutex mAccessMutex;
+        int mPlayerSocket;
+        bool mWin;
+        bool mDied;
         bool mToDelete;
+        bool mConnected;
+        std::string mPlayerName;
+        std::mutex mAccessMutex;
+        NetworkObserver *mObserver;
+        std::pair<float, float> mCoordinates;
+        std::vector<std::pair<float, float>> mCollectedCoins;
 };
 
 #endif /* !PLAYER_HPP_ */

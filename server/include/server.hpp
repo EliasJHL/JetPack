@@ -10,14 +10,21 @@
 
 #ifndef SERVER_HPP_
 # define SERVER_HPP_
-#include "Network.hpp"
 #include "Player.hpp"
+#include "NetworkSalon.hpp"
 #include "PlayersManager.hpp"
-#include "Encapsulation.hpp"
+#include "commands/Factory.hpp"
+#include <map>
+#include <regex>
 #include <thread>
 #include <string>
+#include <poll.h>
+#include <iomanip>
+#include <fstream>
+#include <sstream>
 #include <iostream>
-#include <regex>
+#include <arpa/inet.h>
+#include <netinet/in.h>
 
 class Server {
     public:
@@ -26,23 +33,27 @@ class Server {
         
         void init_server(int ac, char **av);
         void start_server();
-        void parseMap();
         
     protected:
+        void threadCheckCollisions(void);
         void handlePlayerCommands(Player *player);
         void updatePlayersInfo();
+        void initNewPlayer();
+        void sendMapData(int player_socket);
+        int parseArguments(int ac, char **av);
+        void parseMap();
     private:
-        int mServerSocket;
-        bool mDebugMode = false;
-        std::string mMapContent;
         int mPort;
-        std::vector<NetworkSalon *> mRooms;
-        PlayersManager *mPlayerManager;
-        struct sockaddr_in mServerAddressControl;
-        struct sockaddr_in mClientAddr;
-        std::vector<struct pollfd> mPoll;
-        std::vector<std::thread> mPoolThread;
         float mMapHeight;
+        int mServerSocket;
+        bool mDebugMode;
+        std::string mMapContent;
+        PlayersManager *mPlayerManager;
+        struct sockaddr_in mClientAddr;
+        struct sockaddr_in mServerAddressControl;
+        std::vector<struct pollfd> mPoll;
+        std::vector<NetworkSalon *> mRooms;
+        std::vector<std::thread> mPoolThread;
         std::vector<std::pair<int, int>> mCoins;
         std::vector<std::pair<int, int>> mElectricBarriers;
 };

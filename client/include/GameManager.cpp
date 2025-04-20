@@ -1,4 +1,10 @@
-// HEADER
+/*
+** EPITECH PROJECT, 2025
+** B-NWP-400-MPL-4-1-jetpack-elias-josue.hajjar-llauquen
+** File description:
+** GameManager
+*/
+
 #include "GameManager.hpp"
 #include <sstream>
 #include <iomanip>
@@ -15,6 +21,7 @@ GameManager::GameManager()
     mPlayerInputDisplay.setCharacterSize(15);
     mPlayerInputDisplay.setString("");
     mGameReady = false;
+    mPosThread = false;
     mSoundManager.loadSound("coin", "./client/ressources/sounds/coin_pickup_1.wav");
     mSoundManager.loadSound("barrier", "./client/ressources/sounds/dud_zapper_pop.wav");
     mSoundManager.loadSound("jump", "./client/ressources/sounds/jetpack_start.wav");
@@ -40,89 +47,111 @@ void GameManager::posSender(void)
         oss << "POS " << std::fixed << std::setprecision(2) << x << " " << y;
         message = oss.str();
         send(mPlayerSocket, message.c_str(), message.size(), 0);
-        std::this_thread::sleep_for(std::chrono::milliseconds(25));
+        if (mDebugMode) {
+            std::cout << "[DEBUG] Sent: " << message << std::endl;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(2));
     }
 }
 
 void GameManager::commandsHandler(void)
 {
     char buffer[2048];
+    std::string messageBuffer;
 
     while (mRunning) {
-        int bytes = recv(mPlayerSocket, buffer, sizeof(buffer), 0);
+        int bytes = recv(mPlayerSocket, buffer, sizeof(buffer) - 1, 0);
         if (bytes == -1) {
             std::cerr << "Error: Failed to receive data from server." << std::endl;
             break;
         } else if (bytes == 0) {
             std::cout << "Server closed the connection." << std::endl;
-            break;
+            exit(0);
         }
         buffer[bytes] = '\0';
-        std::string command(buffer);
-        if (command.substr(0, 3) == "PLY" && mHasUsername && mGameReady) {
-            std::stringstream messageStream(command);
-            std::vector<std::string> parts;
-            std::string m;
+        
+        messageBuffer += std::string(buffer);
+
+        if (mDebugMode) {
+            std::cout << "[DEBUG] Received: " << buffer << std::endl;
+        }
+        
+        int pos;
+        while ((pos = messageBuffer.find("\r\n")) != std::string::npos) {
+            std::string command = messageBuffer.substr(0, pos);
+            messageBuffer.erase(0, pos + 2);
             
-            while (std::getline(messageStream, m, ' ')) {
-                parts.push_back(m);
-            }
-
-            if (parts.size() >= 5) {
-                int id = std::atoi(parts[1].c_str());
-                float x = std::atof(parts[2].c_str());
-                float y = std::atof(parts[3].c_str());
-                int coins = std::atoi(parts[4].c_str());
-
-                Player *player = mPlayerManager->getPlayer(id);
-                if (player == nullptr) {
-                    std::cout << "Unknow player" << std::endl;
-                    mPlayerManager->createPlayer("Dummy", id);
-                    player = mPlayerManager->getPlayer(id);
+            if (command.empty())
+                continue;
+                        
+            if (command.substr(0, 3) == "PLY" && mHasUsername && mGameReady) {
+                std::stringstream messageStream(command);
+                std::vector<std::string> parts;
+                std::string m;
+                
+                while (std::getline(messageStream, m, ' ')) {
+                    parts.push_back(m);
                 }
-                if (mPlayerID != id && player) {
-                    std::cout << "Update pos for " << id << " " << x << " " << y << std::endl;
-                    player->updateOnlinePlayersPosition({x * mScaleFactor, y});
-                    //player->getSprite().setScale(mScaleFactor / 70, mScaleFactor / 70);
-                    // set coins
+
+                if (parts.size() >= 5) {
+                    int id = std::atoi(parts[1].c_str());
+                    float x = std::atof(parts[2].c_str());
+                    float y = std::atof(parts[3].c_str());
+                    std::string coins = parts[4].c_str();
+
+                    Player *player = mPlayerManager->getPlayer(id);
+                    if (player == nullptr && id != mPlayerID) {
+                        continue;
+                    }
+                    if (mPlayerID != id && player) {
+                        player->updateOnlinePlayersPosition({x * mScaleFactor, y});
+                    }
+                    if (player) {
+                        player->setScore(coins);
+                    }
                 }
             }
-        }
-        if (command.substr(0, 3) == "HIH") {
-            mMapHeight = std::atoi(command.c_str() + 4);
-            std::cout << "Map height received: " << mMapHeight << std::endl;
-            mScaleFactor = static_cast<float>(mMode.height) / mMapHeight;
-        }
-        if (command.substr(0, 3) == "SRT") {
-            std::cout << "OKOKOKOKOKOKOKOK" << std::endl;
-            std::thread s(&GameManager::posSender, this);
-            s.detach();
-            mGameReady = true;
-        }
-        if (command.substr(0, 3) == "JON" && mHasUsername) {
-            std::stringstream messageStream(command);
-            std::vector<std::string> parts;
-            std::string m;
+            else if (command.substr(0, 3) == "HIH") {
+                std::istringstream iss(command.substr(4));
+                iss >> mMapHeight;
+                //std::cout << "Map height received: " << mMapHeight << std::endl;
+                mScaleFactor = static_cast<float>(mMode.height) / mMapHeight;
+            }
+            else if (command == "SRT") {
+                std::cout << "Ready received from the server" << std::endl;
+                mGameReady = true;
+                if (!mPosThread) {
+                    std::thread s(&GameManager::posSender, this);
+                    s.detach();
+                    mPosThread = true;
+                }
+            }
+            else if (command.substr(0, 3) == "JON" && mHasUsername) {
+                std::stringstream messageStream(command);
+                std::vector<std::string> parts;
+                std::string m;
 
-            std::cout << command << std::endl;
-            
-            while (std::getline(messageStream, m, ' ')) {
-                parts.push_back(m);
+                std::cout << command << std::endl;
+                
+                while (std::getline(messageStream, m, ' ')) {
+                    parts.push_back(m);
+                }
+                
+                if (parts.size() >= 3) {
+                    int id = std::atoi(parts[1].c_str());
+                    std::string name = parts[2];
+                    Player *player = mPlayerManager->getPlayer(id);
+                    if (player == nullptr && mPlayerID != id) {
+                        std::cout << "New player joined! : " << id << " " << name << std::endl;
+                        mPlayerManager->createPlayer(name, id);
+                    }
+                }
             }
-            int id = std::atoi(parts[0].c_str());
-            std::string name = parts[1];
-            Player *player = mPlayerManager->getPlayer(id);
-            if (player == nullptr && mPlayerID != id) {
-                mPlayerManager->createPlayer(name, id);
-            }
-        }
-        std::stringstream messageStream(command);
-        std::string line;
-        while (std::getline(messageStream, line)) {
-            if (line.substr(0, 3) == "CON") {
-                std::stringstream coinStream(line);
+            else if (command.substr(0, 3) == "CON") {
+                std::stringstream coinStream(command);
                 std::string type;
-                float x, y;
+                float x = 0;
+                float y = 0;
                 coinStream >> type >> x >> y;
 
                 Coin* coin = new Coin();
@@ -131,10 +160,9 @@ void GameManager::commandsHandler(void)
                 mCoins.push_back(coin);
 
                 std::cout << "Coin position: " << x * mScaleFactor << ", " << y * mScaleFactor << std::endl;
-                // std::cout << "Coin scale: " << coin->getSprite().getScale().x << ", " << coin->getSprite().getScale().y << std::endl;
             }
-            if (line.substr(0, 3) == "BAR") {
-                std::stringstream barrierStream(line);
+            else if (command.substr(0, 3) == "BAR") {
+                std::stringstream barrierStream(command);
                 std::string type;
                 float x, y;
                 barrierStream >> type >> x >> y;
@@ -145,7 +173,96 @@ void GameManager::commandsHandler(void)
                 mBarriers.push_back(barrier);
 
                 std::cout << "Barrier position: " << x * mScaleFactor << ", " << y * mScaleFactor << std::endl;
-                // std::cout << "Barrier scale: " << barrier->getSprite().getScale().x << ", " << barrier->getSprite().getScale().y << std::endl;
+            }
+            else if (command.substr(0, 3) == "COC") {
+                std::stringstream messageStream(command);
+                std::vector<std::string> parts;
+                std::string m;
+                
+                while (std::getline(messageStream, m, ' ')) {
+                    parts.push_back(m);
+                }
+
+                if (parts.size() >= 4) {
+                    int id = std::atoi(parts[1].c_str());
+                    float x = std::atof(parts[2].c_str());
+                    float y = std::atof(parts[3].c_str());
+
+                    if (id != mPlayerID)
+                        continue;
+
+                    for (const auto &coin : mCoins) {
+                        std::pair <float, float> pos = coin->getPosition();
+                        if (pos.first == x && pos.second == y) {
+                            mSoundManager.playSound("coin");
+                            coin->toDisplay(false);
+                        }
+                    }
+                }
+            }
+            else if (command.substr(0, 3) == "DED") {
+                std::stringstream messageStream(command);
+                std::vector<std::string> parts;
+                std::string m;
+                
+                while (std::getline(messageStream, m, ' ')) {
+                    parts.push_back(m);
+                }
+
+                if (parts.size() >= 2) {
+                    int id = std::atoi(parts[1].c_str());
+
+                    Player *player = mPlayerManager->getPlayer(id);
+
+                    player->setDead();
+
+                    mSoundManager.playSound("barrier");
+                }
+            }
+            else if (command.substr(0, 3) == "WIN") {
+                std::stringstream messageStream(command);
+                std::vector<std::string> parts;
+                std::string m;
+                
+                while (std::getline(messageStream, m, ' ')) {
+                    parts.push_back(m);
+                }
+
+                if (parts.size() >= 2) {
+                    int id = std::atoi(parts[1].c_str());
+
+                    Player *player = mPlayerManager->getPlayer(id);
+
+                    if (id != mPlayerID)
+                        continue;
+
+                    player->setWin();
+                }
+            }
+            else if (command.substr(0, 3) == "IDP") {
+                mPlayerID = std::atoi(command.substr(4).c_str());
+                std::cout << "OK - ID given by server is " << mPlayerID << std::endl;
+            }
+            else if (command.substr(0, 3) == "DEC") {
+                std::stringstream messageStream(command);
+                std::vector<std::string> parts;
+                std::string m;
+
+                while (std::getline(messageStream, m, ' ')) {
+                    parts.push_back(m);
+                }
+
+                if (parts.size() >= 2) {
+                    int id = std::atoi(parts[1].c_str());
+                    Player* player = mPlayerManager->getPlayer(id);
+                    if (player != nullptr) {
+                        std::cout << "Player disconnected: " << id << std::endl;
+                        mPlayerManager->removePlayer(id);
+                    }
+                }
+            }
+            else {
+                continue;
             }
         }
     }
@@ -169,6 +286,7 @@ void GameManager::init_game(int ac, char **av)
                 throw std::runtime_error("Invalid port number: " + port);
         } else if (std::string(av[i]) == "-d") {
             this->mDebugMode = true;
+            std::cout << "Debug mode enabled." << std::endl;
         } else {
             throw std::runtime_error("Invalid arguments. Usage : ./client -h <ip> -p <port> [-d]");
         }
@@ -190,14 +308,19 @@ void GameManager::init_game(int ac, char **av)
     if (connect(mPlayerSocket, (struct sockaddr *)&mAddressControl, sizeof(mAddressControl)) == -1)
         throw std::runtime_error("Impossible to connect");
     
-    read(mPlayerSocket, data, sizeof(data));
-    int size = read(mPlayerSocket, data, sizeof(data));
-    data[size] = '\0';
+    // read(mPlayerSocket, data, sizeof(data));
+    // int size = read(mPlayerSocket, data, sizeof(data));
+    // data[size] = '\0';
 
-    mPlayerID = std::atoi(std::string(data).substr(4).c_str());
+    // if (std::string(data).substr(0, 3) == "IDP") {
+        
+    // } else {
+    //     std::cout << "ERROR NOT VALID ID COMMAND" << std::endl;
+    // }
     mPlayerManager = mPlayerManager->getInstance();
     mHasUsername = false;
     mGameReady = false;
+    mScaleFactor = 60.0f;
     std::thread t(&GameManager::commandsHandler, this);
     t.detach();
 }
@@ -209,7 +332,11 @@ void GameManager::close_connection(void)
 void GameManager::move_background(void)
 {
     Player* player = mPlayerManager->getPlayer(mPlayerID);
-    std::pair<float, float> pos = player->getPosition();
+    std::pair<float, float> pos;
+
+    if (player == nullptr)
+        return;
+    pos = player->getPosition();
     sf::Sprite backgroundSprite(mBackground);
 
     if (pos.first > 17160) {
@@ -230,62 +357,104 @@ void GameManager::move_background(void)
     mWindow.draw(backgroundSprite);
 }
 
+void GameManager::handleAnimations(void)
+{
+    if (!mHasUsername || !mGameReady)
+        return;
+
+    Player* player = mPlayerManager->getPlayer(mPlayerID);
+    std::pair<float, float> pos = player->getPosition();
+    bool SpaceKeyPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && mWindow.hasFocus();
+    bool IsOnGround = (pos.second >= FLOOR);
+    bool IsPlayerDead = player->isDead();
+    bool IsFlying;
+
+    if (SpaceKeyPressed && !IsPlayerDead) {
+        if (IsOnGround) {
+            if (!mSoundManager.isSoundPlaying("jump"))
+                mSoundManager.playSound("jump");
+        } else {
+            if (!mSoundManager.isSoundPlaying("fly"))
+                mSoundManager.playSound("fly", true);
+        }
+        pos.second -= 4;
+        player->setAction(1, 2);
+    } else if (pos.second < FLOOR) {
+        pos.second += 5;
+        if (!IsPlayerDead)
+            player->setAction(1, 1);
+        else
+            player->setAction(3, 0);
+    } else {
+        if (IsFlying) {
+            mSoundManager.stopSound("fly");
+            mSoundManager.playSound("stopfly");
+        }
+        if (!IsOnGround) {
+            pos.second += 5;
+            if (!IsPlayerDead)
+                player->setAction(1, 1);
+            else
+                player->setAction(3, 0);
+        } else {
+            if (!IsPlayerDead)
+                player->setAction(0, 0);
+            else
+                player->setAction(3, 0);
+        }
+    }
+
+    player->updateScoreText();
+    pos.first += 4;
+    player->setPosition({pos.first, pos.second});
+    player->updateAnimation();
+    mView.setCenter(pos.first, mView.getCenter().y);
+    mWindow.setView(mView);
+
+    // Update Other players animations
+    for (Player *p : mPlayerManager->getAllPlayers()) {
+        bool isLocalPlayer = (p->getID() == mPlayerID);
+        if (isLocalPlayer)
+            continue;
+        pos = p->getPosition();
+        IsOnGround = (pos.second >= FLOOR);
+        IsPlayerDead = p->isDead();
+
+        if (pos.second < FLOOR) {
+            if (!IsPlayerDead)
+                p->setAction(1, 2);
+            else
+                p->setAction(3, 0);
+        } else {
+            if (!IsOnGround) {
+                if (!IsPlayerDead)
+                    p->setAction(1, 1);
+                else
+                    p->setAction(3, 0);
+            } else {
+                if (!IsPlayerDead)
+                    p->setAction(0, 0);
+                else
+                    p->setAction(3, 0);
+            }
+        }
+    }
+
+    // Update Animations
+    for (Player *p : mPlayerManager->getAllPlayers()) {
+        bool isLocalPlayer = (p->getID() == mPlayerID);
+        if (!isLocalPlayer)
+            p->updateAnimation();
+    }
+}
+
 void GameManager::run_game(void) {
     create_window();
     mWindow.setFramerateLimit(60);
 
     while (mWindow.isOpen()) {
         handle_events();
-
-        if (mHasUsername && mGameReady) {
-            Player* player = mPlayerManager->getPlayer(mPlayerID);
-            std::pair<float, float> pos = player->getPosition();
-
-            mIsOnGround = (pos.second >= FLOOR);
-
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && mWindow.hasFocus()) {
-                if (mIsOnGround) {
-                    if (!mSoundManager.isSoundPlaying("jump")) {
-                        mSoundManager.playSound("jump");
-                    }
-                } else {
-                    if (!mSoundManager.isSoundPlaying("fly")) {
-                        mSoundManager.playSound("fly", true);
-                    }
-                }
-                mIsFlying = true;
-                pos.second -= 2;
-                player->setAction(1, 2);
-                player->setScore(std::to_string(std::stoi(player->getScore()) + 1));
-            } else {
-                if (mIsFlying) {
-                    mSoundManager.stopSound("fly");
-                    mSoundManager.playSound("stopfly");
-                }
-                mIsFlying = false;
-
-                if (!mIsOnGround) {
-                    pos.second += 1.5;
-                    player->setAction(1, 1);
-                } else {
-                    player->setAction(0, 0);
-                }
-            }
-
-            player->updateScoreText();
-            pos.first += 4;
-            player->setPosition({pos.first, pos.second});
-            player->updateAnimation();
-            mView.setCenter(pos.first, mView.getCenter().y);
-            mWindow.setView(mView);
-            mWasFlying = mIsFlying;
-        }
-        std::vector<Player*> players = mPlayerManager->getAllPlayers();
-        for (int i = 0; i < players.size(); i++) {
-            if (players[i]->getID() != mPlayerID) {
-                players[i]->updateAnimation();
-            }
-        }
+        handleAnimations();
         draw();
     }
     mRunning = false;
@@ -300,6 +469,8 @@ void GameManager::handle_events(void)
 {
     while (mWindow.pollEvent(mEvent)) {
         if (mEvent.type == sf::Event::Closed) {
+            std::string m = "DEC\r\n";
+            send(mPlayerSocket, m.c_str(), m.length(), 0);
             mRunning = false;
             mWindow.close();
         }
@@ -340,7 +511,7 @@ void GameManager::draw(void)
     mMessageText.setFont(mFont);
     mMessageText.setCharacterSize(30);
     mMessageText.setFillColor(sf::Color::White);
-    
+
     for (Coin* coin : mCoins) {
         coin->updateAnimation();
         entities.push_back(coin);
@@ -349,10 +520,10 @@ void GameManager::draw(void)
         barrier->updateAnimation();
         entities.push_back(barrier);
     }
-    
+
     std::vector<Player*> players = mPlayerManager->getAllPlayers();
     entities.insert(entities.end(), players.begin(), players.end());
-    
+
     mWindow.clear(sf::Color::Black);
     if (!mHasUsername) {
         mMessageText.setString("Enter your username:");
@@ -373,11 +544,26 @@ void GameManager::draw(void)
                     color.a = 128;
                     sprite.setColor(color);
                     sprite.setPosition(player->getPosition().first / mScaleFactor - sprite.getGlobalBounds().width / 2, player->getPosition().second);
+                    mMessageText.setPosition({player->getPosition().first / mScaleFactor - mMessageText.getGlobalBounds().width / 2, player->getPosition().second - mMessageText.getGlobalBounds().height - 10});
+                    mMessageText.setCharacterSize(10);
+                    mMessageText.setString(player->getName());
+                    mWindow.draw(mMessageText);
                 } else {
                     mWindow.draw(player->getScoreText());
                 }
             }
             mWindow.draw(sprite);
+        }
+        mMessageText.setCharacterSize(30);
+        if (mPlayerManager->getPlayer(mPlayerID)->isDead()) {
+            mMessageText.setString("GAME OVER :(");
+            mMessageText.setPosition((mPlayerManager->getPlayer(mPlayerID)->getPosition().first - mMessageText.getGlobalBounds().width), 200);
+            mWindow.draw(mMessageText);
+        }
+        if (mPlayerManager->getPlayer(mPlayerID)->isWin()) {
+            mMessageText.setString("VICTORY !!!");
+            mMessageText.setPosition((mPlayerManager->getPlayer(mPlayerID)->getPosition().first - mMessageText.getGlobalBounds().width), 200);
+            mWindow.draw(mMessageText);
         }
     }
     mWindow.display();

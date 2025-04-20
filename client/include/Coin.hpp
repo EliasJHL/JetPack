@@ -14,13 +14,15 @@ public:
     std::pair<float, float> getPosition() const override;
     void updateAnimation() override;
     sf::Sprite &getSprite() override;
+    void toDisplay(bool to_display);
 
 private:
     sf::Sprite mSprite;
     sf::Texture mTexture;
     sf::Vector2f mPos;
     SpriteAnimator mAnimator;
-    Clock mAnimationTimer; // Utilisation de la classe Timer
+    Clock mAnimationTimer;
+    bool mToDisplay;
 };
 
 #endif /* COIN_HPP_ */
