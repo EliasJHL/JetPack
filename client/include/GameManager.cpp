@@ -46,6 +46,9 @@ void GameManager::posSender(void)
         oss << "POS " << std::fixed << std::setprecision(2) << x << " " << y;
         message = oss.str();
         send(mPlayerSocket, message.c_str(), message.size(), 0);
+        if (mDebugMode) {
+            std::cout << "[DEBUG] Sent: " << message << std::endl;
+        }
         std::this_thread::sleep_for(std::chrono::milliseconds(2));
     }
 }
@@ -67,6 +70,10 @@ void GameManager::commandsHandler(void)
         buffer[bytes] = '\0';
         
         messageBuffer += std::string(buffer);
+
+        if (mDebugMode) {
+            std::cout << "[DEBUG] Received: " << buffer << std::endl;
+        }
         
         int pos;
         while ((pos = messageBuffer.find("\r\n")) != std::string::npos) {
@@ -274,6 +281,7 @@ void GameManager::init_game(int ac, char **av)
                 throw std::runtime_error("Invalid port number: " + port);
         } else if (std::string(av[i]) == "-d") {
             this->mDebugMode = true;
+            std::cout << "Debug mode enabled." << std::endl;
         } else {
             throw std::runtime_error("Invalid arguments. Usage : ./client -h <ip> -p <port> [-d]");
         }
