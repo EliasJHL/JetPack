@@ -29,6 +29,7 @@ class Server {
         void start_server();
         
     protected:
+        void threadCheckCollisions(void);
         void handlePlayerCommands(Player *player);
         void updatePlayersInfo();
         void initNewPlayer();

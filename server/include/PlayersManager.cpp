@@ -70,7 +70,7 @@ std::vector<Player *> PlayersManager::getReadyPlayer(void)
     std::lock_guard<std::mutex> guard(mMutex);
     std::vector<Player *> ret;
     for (const auto& [key, player] : mPlayers) {
-        if (player.get()->getName() != "Dummy") {
+        if (player.get()->getName() != "Dummy" && !player->isToDelete() && player != nullptr) {
             ret.push_back(player.get());
         }
     }

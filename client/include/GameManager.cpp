@@ -164,7 +164,35 @@ void GameManager::commandsHandler(void)
                 mBarriers.push_back(barrier);
 
                 std::cout << "Barrier position: " << x * mScaleFactor << ", " << y * mScaleFactor << std::endl;
-            } else {
+            }
+            else if (command.substr(0, 3) == "COC") {
+                std::stringstream messageStream(command);
+                std::vector<std::string> parts;
+                std::string m;
+                
+                while (std::getline(messageStream, m, ' ')) {
+                    parts.push_back(m);
+                }
+
+                if (parts.size() >= 4) {
+                    int id = std::atoi(parts[1].c_str());
+                    float x = std::atof(parts[2].c_str());
+                    float y = std::atof(parts[3].c_str());
+
+                    if (id != mPlayerID)
+                        continue;
+
+                    for (const auto &coin : mCoins) {
+                        std::pair <float, float> pos = coin->getPosition();
+                        if (pos.first == x && pos.second == y)
+                            coin->toDisplay(false);
+                    }
+                }
+            }
+            else if (command.substr(0, 3) == "DED") {
+                continue;
+            }
+            else {
                 continue;
             }
         }

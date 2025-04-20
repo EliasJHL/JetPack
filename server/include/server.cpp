@@ -92,6 +92,51 @@ int Server::parseArguments(int ac, char **av)
     return std::stoi(port);
 }
 
+void Server::threadCheckCollisions(void)
+{
+    std::string message;
+    float scale = 600 / mMapHeight;
+    float x1, y1, x2, y2;
+    float ox1, oy1, ox2, oy2;
+    
+    while (true) {
+        for (Player *player : mPlayerManager->getReadyPlayer()) {
+            try {
+                x1 = player->getPosition().first;
+                y1 = player->getPosition().second;
+                x2 = player->getPosition().first + 134.5;
+                y2 = player->getPosition().second + 134.5;
+
+                for (const auto &coin : mCoins) {
+                    ox1 = coin.first * scale;
+                    oy1 = coin.second * scale;
+                    ox2 = ox1 + 171;
+                    oy2 = oy1 + 171;
+                    if (x1 < ox2 && x2 > ox1 && y1 < oy2 && y2 > oy1) {
+                        std::string coinMessage = "COC " + std::to_string(player->getID()) + " " + std::to_string(ox1) + " " + std::to_string(oy1) + "\r\n";
+                        player->getSalon()->CreateMessage(coinMessage, Type::COIN, player->getID());
+                        player->addCoins(1);
+                    }
+                }
+            
+                for (const auto &barrier : mElectricBarriers) {
+                    ox1 = barrier.first * scale;
+                    oy1 = barrier.second * scale;
+                    ox2 = ox1 + 171;
+                    oy2 = oy1 + 171;
+                    if (x1 < ox2 && x2 > ox1 && y1 < oy2 && y2 > oy1) {
+                        std::string deadMessage = "DED " + std::to_string(player->getID());
+                        player->getSalon()->CreateMessage(deadMessage, Type::DIE, player->getID()); + "\r\n";
+                    }
+                }
+            } catch (...) {
+                continue;
+            }
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+    }
+}
+
 //https://stackoverflow.com/questions/71572056/multithreaded-server-c-socket-programming
 // ---------------------Server side-------------------------
 // PLR id x y coin      -> Update envoyé      - Server Send
@@ -101,6 +146,8 @@ int Server::parseArguments(int ac, char **av)
 // DED id               -> Player who dead    - Server Send
 // WIN id               -> Player who win     - Server Send
 // RET                  -> Restart Game       - Server Send
+// COC id x y           -> Collision pièce    - Server Send
+// COB id x y           -> Collision avec obstacle - Server Send
 // HIH taille           -> Envoi de la hauteur de la map - Server Send when client join
 // CON X Y (par rapport à la ligne) -> Envoi de pièces X et Y via X et Y du fichier
 // BAR X Y (par rapport à la ligne) -> Envoi des barrières X et Y via X et Y du fichier
@@ -234,6 +281,8 @@ void Server::start_server()
 {
     std::thread updateThread(&Server::updatePlayersInfo, this);
     updateThread.detach();
+    std::thread CollisionsThread(&Server::threadCheckCollisions, this);
+    CollisionsThread.detach();
     while (true) {
         int rc = poll(mPoll.data(), mPoll.size(), 180000);
 

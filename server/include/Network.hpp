@@ -25,7 +25,9 @@ enum Type {
     RESTART = 7,
     NB_PLAYERS = 8,
     POSITION = 9,
-    START = 10
+    START = 10,
+    COIN = 11,
+    OBSTACLE = 12
 };
 
 struct Message {

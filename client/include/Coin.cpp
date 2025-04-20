@@ -32,5 +32,14 @@ void Coin::updateAnimation() {
 }
 
 sf::Sprite &Coin::getSprite() {
+    if (mToDisplay)
+        mSprite.setColor(sf::Color(255, 255, 255, 255));
+    else
+        mSprite.setColor(sf::Color(255, 255, 255, 0));
     return mSprite;
+}
+
+void Coin::toDisplay(bool to_display)
+{
+    mToDisplay = to_display;
 }
