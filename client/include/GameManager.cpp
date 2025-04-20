@@ -30,7 +30,7 @@ GameManager::GameManager()
     mSoundManager.loadSound("touchfloor", "./client/ressources/sounds/jetpack_lp.wav");
     mSoundManager.loadMusic("./client/ressources/sounds/theme.ogg");
     mBackground.loadFromFile("./client/ressources/sprites/background.png");
-    mSoundManager.setVolume(50, 10);
+    mSoundManager.setVolume(40, 10);
     mSoundManager.playMusic();
 }
 
@@ -394,11 +394,15 @@ void GameManager::handleAnimations(void)
     bool IsOnGround = (pos.second >= FLOOR);
     bool IsPlayerDead = player->isDead();
     bool IsFlying = !IsOnGround && SpaceKeyPressed;
+    bool IsWasFlying = !IsOnGround && !SpaceKeyPressed;
 
     if (SpaceKeyPressed && !IsPlayerDead) {
         if (IsOnGround) {
             if (!mSoundManager.isSoundPlaying("jump"))
                 mSoundManager.playSound("jump");
+        } else {
+            if (!mSoundManager.isSoundPlaying("fly"))
+                mSoundManager.playSound("fly", true);
         }
         if (pos.second > 0) {
             pos.second -= 5;
@@ -406,12 +410,12 @@ void GameManager::handleAnimations(void)
         player->setAction(1, 2);
     } else if (pos.second < FLOOR) {
         pos.second += 5;
-        if (!IsPlayerDead)
+        if (!IsPlayerDead) {
             player->setAction(1, 1);
-        else
+        } else
             player->setAction(3, 0);
     } else {
-        if (IsFlying) {
+        if (!IsWasFlying) {
             mSoundManager.stopSound("fly");
             mSoundManager.playSound("stopfly");
         }
@@ -479,6 +483,8 @@ void GameManager::handleAnimations(void)
         if (!isLocalPlayer && p != nullptr)
             p->updateAnimation();
     }
+
+    IsWasFlying = !IsOnGround && !SpaceKeyPressed;
 }
 
 void GameManager::run_game(void) {
