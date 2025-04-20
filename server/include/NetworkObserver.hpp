@@ -16,13 +16,14 @@
 
 class NetworkObserver : public INetworkObserver {
     public:
-        NetworkObserver(NetworkSalon &salon, int PlayerSocket);
+        NetworkObserver(NetworkSalon &salon, int PlayerSocket, bool debugMode);
         virtual ~NetworkObserver();
         void Update(const Message &message) override;
         void RemoveMe();
         NetworkSalon *getNetworkSalon();
     private:
         int mSocket;
+        bool mDebugMode;
         static int mNumber;
         Message mMessageFromSubject;
         NetworkSalon &mNetworkSalon;

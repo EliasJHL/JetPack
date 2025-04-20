@@ -13,7 +13,7 @@
 class SNA_Command : public IServerCommands {
     public:
         SNA_Command() {};
-        void execute(int id, std::string command) override {
+        void execute(int id, std::string command, bool debugMode) override {
             std::smatch m;
             PlayersManager *plyManager = PlayersManager::getInstance();
             Player *player = plyManager->getPlayer(id);
@@ -40,7 +40,8 @@ class SNA_Command : public IServerCommands {
             // Lancer le jeu si +2 joueurs sont connectés
             std::string srt_msg = "SRT\r\n";
             if (plyManager->getReadyPlayer().size() >= 2) {
-                std::cout << "OK 2 Players online" << std::endl;
+                if (debugMode)
+                    std::cout << "[DEBUG] OK 2 Players online - Send READY to all players" << std::endl;
                 player->getSalon()->CreateMessage(srt_msg, Type::START, player->getID());
             }
         };

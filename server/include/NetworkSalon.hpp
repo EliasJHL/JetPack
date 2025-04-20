@@ -16,7 +16,7 @@
 
 class NetworkSalon : public INetwork {
     public:
-        NetworkSalon(const std::string &name);
+        NetworkSalon(const std::string &name, bool debugMode);
         virtual ~NetworkSalon() {};
         
         void Join(INetworkObserver *obs) override;
@@ -33,6 +33,7 @@ class NetworkSalon : public INetwork {
     private:
         std::list<INetworkObserver *> mListObserver;
         Message mMessage;
+        bool mDebugMode;
         std::string mSalonName;
 };
 

@@ -13,7 +13,7 @@
 class DEC_Command : public IServerCommands {
     public:
         DEC_Command() {};
-        void execute(int id, std::string command) override {
+        void execute(int id, std::string command, bool debugMode) override {
             PlayersManager *plyManager = PlayersManager::getInstance();
             Player *player = plyManager->getPlayer(id);
             

@@ -9,17 +9,20 @@
 
 int NetworkObserver::mNumber = 0;
 
-NetworkObserver::NetworkObserver(NetworkSalon &salon, int PlayerSocket) : mNetworkSalon(salon) 
+NetworkObserver::NetworkObserver(NetworkSalon &salon, int PlayerSocket, bool debugMode) : mNetworkSalon(salon) 
 {
     mNetworkSalon.Join(this);
     mNumber = mNumber++;
     mSocket = PlayerSocket;
-    std::cout << "Hi new player, welcome into salon " << salon.getSalonName() << " \n";
+    mDebugMode = debugMode;
+    if (mDebugMode)
+        std::cout << "[DEBUG] Welcome into salon " << salon.getSalonName() << " \n";
 }
 
 NetworkObserver::~NetworkObserver()
 {
-    std::cout << "Goodbye, I was the Observer \"" << this->mNumber << "\".\n";
+    if (mDebugMode)
+        std::cout << "[DEBUG] Goodbye, I was the Observer \"" << this->mNumber << "\".\n";
 }
 
 void NetworkObserver::Update(const Message &message)

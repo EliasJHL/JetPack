@@ -33,10 +33,10 @@ class Player {
         const std::pair<float, float> &getPosition(void) const;
         void setPosition(std::pair<float, float> pos);
         void setConnection(bool connexion);
-        void setSalon(NetworkSalon &salon);
+        void setSalon(NetworkSalon &salon, bool debugMode);
         void setPlayerSocket(int fd);
         void setPlayerName(const std::string &name);
-        void addCoins(int nb, std::pair<float, float> coin);
+        void addCoins(int nb, std::pair<float, float> coin, bool debugMode);
 
         void playerWin(void);
         void playerDie(void);

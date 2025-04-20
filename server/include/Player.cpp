@@ -30,11 +30,13 @@ int Player::getCoins()
     return mPlayerCoin;
 }
 
-void Player::addCoins(int nb, std::pair<float, float> coin) {
+void Player::addCoins(int nb, std::pair<float, float> coin, bool debugMode) {
     if (std::find(mCollectedCoins.begin(), mCollectedCoins.end(), coin) != mCollectedCoins.end())
         return;
     mPlayerCoin += nb;
     mCollectedCoins.push_back(coin);
+    if (debugMode)
+        std::cout << "[DEBUG] Player " << mPlayerID << " collected a coin !" << std::endl;
 }
 
 const std::string &Player::getName(void) const
@@ -100,12 +102,12 @@ NetworkSalon *Player::getSalon()
     return mObserver->getNetworkSalon();
 }
 
-void Player::setSalon(NetworkSalon &salon) {
+void Player::setSalon(NetworkSalon &salon, bool debugMode) {
     if (mObserver != nullptr) {
         mObserver->RemoveMe();
         delete mObserver;
     }
-    mObserver = new NetworkObserver(salon, mPlayerSocket);
+    mObserver = new NetworkObserver(salon, mPlayerSocket, debugMode);
 }
 
 int Player::getPlayerSocket() {

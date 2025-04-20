@@ -49,7 +49,7 @@ void Server::init_server(int ac, char **av)
     });
 
     mPlayerManager = mPlayerManager->getInstance();
-    mRooms.push_back(new NetworkSalon("Default"));
+    mRooms.push_back(new NetworkSalon("Default", mDebugMode));
 }
 
 int Server::parseArguments(int ac, char **av)
@@ -109,7 +109,7 @@ void Server::threadCheckCollisions(void)
                     if (x1 < ox2 && x2 > ox1 && y1 < oy2 && y2 > oy1) {
                         std::string coinMessage = "COC " + std::to_string(player->getID()) + " " + std::to_string(ox1) + " " + std::to_string(oy1) + "\r\n";
                         player->getSalon()->CreateMessage(coinMessage, Type::COIN, player->getID());
-                        player->addCoins(1, {ox1, oy1});
+                        player->addCoins(1, {ox1, oy1}, mDebugMode);
                     }
                 }
             
@@ -128,6 +128,8 @@ void Server::threadCheckCollisions(void)
                             std::string winMessage = "WIN " + std::to_string(p->getID());
                             p->playerWin();
                             p->getSalon()->CreateMessage(winMessage, Type::WIN, p->getID()); + "\r\n";
+                            if (mDebugMode)
+                                std::cout << "[DEBUG] Player " << player->getID() << " touched a barrier !" << std::endl;
                         }
                     }
                 }
@@ -157,15 +159,12 @@ void Server::handlePlayerCommands(Player *player)
             }
             close(player->getPlayerSocket());
             mPlayerManager->removePlayer(player->getID());
-            std::cout << "Players left : " << mPlayerManager->getAllPlayers().size() << std::endl;
+            if (mDebugMode)
+                std::cout << "[DEBUG] Players left : " << mPlayerManager->getAllPlayers().size() << std::endl;
             return;
         }
         memory[n] = '\0';
         command = std::string(memory);
-
-        if (mDebugMode) {
-            std::cout << "[DEBUG] Received from Player " << player->getID() << ": " << command << std::endl;
-        }
 
         command.erase(std::remove(command.begin(), command.end(), '\n'), command.end());
         command.erase(std::remove(command.begin(), command.end(), '\r'), command.end());
@@ -176,7 +175,7 @@ void Server::handlePlayerCommands(Player *player)
         if (serverCommand == nullptr)
             continue;
 
-        serverCommand->execute(player->getID(), command);
+        serverCommand->execute(player->getID(), command, mDebugMode);
         
         if (command.substr(0, 3) == "DEC") {
             for (auto it = mPoll.begin(); it != mPoll.end(); ++it) {
@@ -226,18 +225,16 @@ void Server::sendMapData(int player_socket)
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
     std::string heightMessage = "HIH " + std::to_string(mMapHeight) + "\r\n";
     write(player_socket, heightMessage.c_str(), heightMessage.length());
-    if (mDebugMode) {
+    if (mDebugMode)
         std::cout << "[DEBUG] Sent to Player: " << heightMessage << std::endl;
-    }
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
     // Envoi des pièces
     for (const auto &coin : mCoins) {
         std::string coinMessage = "CON " + std::to_string(coin.first) + " " + std::to_string(coin.second) + "\r\n";
         write(player_socket, coinMessage.c_str(), coinMessage.length());
-        if (mDebugMode) {
+        if (mDebugMode)
             std::cout << "[DEBUG] Sent to Player: " << coinMessage << std::endl;
-        }
         std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -246,9 +243,8 @@ void Server::sendMapData(int player_socket)
     for (const auto &barrier : mElectricBarriers) {
         std::string barrierMessage = "BAR " + std::to_string(barrier.first) + " " + std::to_string(barrier.second) + "\r\n";
         write(player_socket, barrierMessage.c_str(), barrierMessage.length());
-        if (mDebugMode) {
+        if (mDebugMode)
             std::cout << "[DEBUG] Sent to Player: " << barrierMessage << std::endl;
-        }
         std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
 }
@@ -274,7 +270,7 @@ void Server::initNewPlayer()
     write(mPlayerManager->getPlayer(new_player_id)->getPlayerSocket(), "Welcome\r\n", std::string("Welcome\r\n").length());
     std::string message = std::string("IDP " + std::to_string(new_player_id) + "\r\n");
     write(mPlayerManager->getPlayer(new_player_id)->getPlayerSocket(), message.c_str(), message.length());
-    mPlayerManager->getPlayer(new_player_id)->setSalon(*mRooms[0]);
+    mPlayerManager->getPlayer(new_player_id)->setSalon(*mRooms[0], mDebugMode);
 
     sendMapData(new_player_socket);
 

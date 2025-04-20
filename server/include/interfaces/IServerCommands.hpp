@@ -15,7 +15,7 @@
 class IServerCommands {
     public:
         virtual ~IServerCommands() = default;
-        virtual void execute(int id, std::string command) = 0;
+        virtual void execute(int id, std::string command, bool debugMode) = 0;
 };
 
 #endif /* !ISERVERCOMMANDS_HPP_ */

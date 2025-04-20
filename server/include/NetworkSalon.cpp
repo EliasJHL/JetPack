@@ -7,13 +7,15 @@
 
 #include "NetworkSalon.hpp"
 
-NetworkSalon::NetworkSalon(const std::string &name) : mSalonName(name)
+NetworkSalon::NetworkSalon(const std::string &name, bool debugMode) : mSalonName(name)
 {
+    mDebugMode = debugMode;
 }
 
 void NetworkSalon::Join(INetworkObserver *obs)
 {
-    std::cout << "New player joined" << std::endl;
+    if (mDebugMode)
+        std::cout << "[DEBUG] " << mSalonName << " : New player joined the salon" << std::endl;
     mListObserver.push_back(obs);
 };
 

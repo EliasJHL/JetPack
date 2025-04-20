@@ -13,7 +13,7 @@
 class POS_Command : public IServerCommands {
     public:
         POS_Command() {};
-        void execute(int id, std::string command) override {
+        void execute(int id, std::string command, bool debugMode) override {
             PlayersManager *plyManager = PlayersManager::getInstance();
             Player *player = plyManager->getPlayer(id);
             std::stringstream messageStream(command);
