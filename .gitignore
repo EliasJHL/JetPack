@@ -3,6 +3,7 @@ jetpack_*
 .vscode/
 .jetpack/
 
+coding-style-reports.log
 !*.wav
 
 test/
