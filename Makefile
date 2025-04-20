@@ -17,7 +17,8 @@ SFML_CFLAGS	=	$(shell pkg-config --cflags sfml-all)
 all:	server	client
 
 $(NAME_CLIENT): $(SRC_CLIENT)
-	g++ -o $(NAME_CLIENT) $(SRC_CLIENT) $(SFML_CFLAGS) -I client/include/ $(SFML_FLAGS)
+	g++ -o $(NAME_CLIENT) $(SRC_CLIENT) $(SFML_CFLAGS) -I \
+	client/include/ $(SFML_FLAGS)
 	@echo "\033[32m= = = = =  COMPILATION COMPLETED  = = = = =\033[0m"
 
 $(NAME_SERVER): $(SRC_SERVER)
