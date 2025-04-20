@@ -115,7 +115,7 @@ void Server::threadCheckCollisions(void)
                     if (x1 < ox2 && x2 > ox1 && y1 < oy2 && y2 > oy1) {
                         std::string coinMessage = "COC " + std::to_string(player->getID()) + " " + std::to_string(ox1) + " " + std::to_string(oy1) + "\r\n";
                         player->getSalon()->CreateMessage(coinMessage, Type::COIN, player->getID());
-                        player->addCoins(1);
+                        player->addCoins(1, {ox1, oy1});
                     }
                 }
             

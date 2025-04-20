@@ -12,7 +12,8 @@
 #include "GameManager.hpp"
 
 Player::Player(int id, std::string name)
-    : mPlayerID(id), mPlayerName(name), mAnimator(mSprite, 134.5, 133.83, 6), mAnimationTimer(0.15f) // Initialisation du Timer
+    : mPlayerID(id), mPlayerName(name), mAnimator(mSprite, 134.5, 133.83, 6),
+    mAnimationTimer(0.15f), mIsDead(false)
 {
     if (!mTexture.loadFromFile("./client/ressources/sprites/player_sprite_sheet.png")) {
         throw std::runtime_error("Failed to load spritesheet");
@@ -49,6 +50,11 @@ void Player::setName(std::string name) {
     mPlayerName = name;
 }
 
+void Player::setDead(void)
+{
+    mIsDead = true;
+}
+
 std::pair<float, float> Player::getPosition(void) const {
     return {mPos.x, mPos.y};
 }
@@ -60,14 +66,26 @@ void Player::updateOnlinePlayersPosition(std::pair<float, float> pos)
     mSprite.setPosition(mPos);
 }
 
+bool Player::isDead(void)
+{
+    return mIsDead;
+}
+
 void Player::setPosition(std::pair<float, float> pos) {
-    mPos.x = pos.first;
-    mPos.y = pos.second;
-    if (mPos.y > FLOOR)
-        mPos.y = FLOOR;
-    if (mPos.y < CEILING)
-        mPos.y = CEILING;
-    mSprite.setPosition(mPos);
+    if (mIsDead) {
+        mPos.y = pos.second;
+        if (mPos.y > FLOOR)
+            mPos.y = FLOOR;
+        mSprite.setPosition(mPos);
+    } else {
+        mPos.x = pos.first;
+        mPos.y = pos.second;
+        if (mPos.y > FLOOR)
+            mPos.y = FLOOR;
+        if (mPos.y < CEILING)
+            mPos.y = CEILING;
+        mSprite.setPosition(mPos);
+    }
 }
 
 sf::Sprite &Player::getSprite(void) {

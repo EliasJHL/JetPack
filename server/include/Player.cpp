@@ -33,9 +33,11 @@ int Player::getCoins()
     return mPlayerCoin;
 }
 
-void Player::addCoins(int nb)
-{
+void Player::addCoins(int nb, std::pair<float, float> coin) {
+    if (std::find(mCollectedCoins.begin(), mCollectedCoins.end(), coin) != mCollectedCoins.end())
+        return;
     mPlayerCoin += nb;
+    mCollectedCoins.push_back(coin);
 }
 
 const std::string &Player::getName(void) const

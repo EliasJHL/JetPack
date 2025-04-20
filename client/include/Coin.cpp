@@ -11,6 +11,7 @@ Coin::Coin() : mAnimator(mSprite, 191.933, 171, 1), mAnimationTimer(0.15f) {
     mPos.x = 400;
     mPos.y = 450;
     mSprite.setPosition(mPos);
+    mToDisplay = true;
 }
 
 void Coin::setPosition(std::pair<float, float> pos) {

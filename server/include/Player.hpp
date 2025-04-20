@@ -14,6 +14,8 @@
 #include <string>
 #include "Network.hpp"
 #include <mutex>
+#include <vector>
+#include <algorithm>
 
 class Player {
     public:
@@ -34,7 +36,7 @@ class Player {
         void setSalon(NetworkSalon &salon);
         void setPlayerSocket(int fd);
         void setPlayerName(const std::string &name);
-        void addCoins(int nb);
+        void addCoins(int nb, std::pair<float, float> coin);
 
         bool isToDelete() {
             std::lock_guard<std::mutex> lock(mAccessMutex);
@@ -54,6 +56,7 @@ class Player {
         NetworkObserver *mObserver;
         std::mutex mAccessMutex;
         bool mToDelete;
+        std::vector<std::pair<float, float>> mCollectedCoins;
 };
 
 #endif /* !PLAYER_HPP_ */

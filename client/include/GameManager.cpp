@@ -190,7 +190,28 @@ void GameManager::commandsHandler(void)
                 }
             }
             else if (command.substr(0, 3) == "DED") {
-                continue;
+                std::stringstream messageStream(command);
+                std::vector<std::string> parts;
+                std::string m;
+                
+                while (std::getline(messageStream, m, ' ')) {
+                    parts.push_back(m);
+                }
+
+                if (parts.size() >= 2) {
+                    int id = std::atoi(parts[1].c_str());
+
+                    std::cout << "PLAYER " << id << " died !!!" << std::endl;
+
+                    if (id == mPlayerID) {
+                        Player *player = mPlayerManager->getPlayer(id);
+
+                        player->setDead();
+                    } else {
+                        continue;
+                    }
+
+                }
             }
             else {
                 continue;
@@ -285,9 +306,10 @@ void GameManager::handleAnimations(void)
     std::pair<float, float> pos = player->getPosition();
     bool SpaceKeyPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && mWindow.hasFocus();
     bool IsOnGround = (pos.second >= FLOOR);
+    bool IsPlayerDead = player->isDead();
     bool IsFlying;
 
-    if (SpaceKeyPressed) {
+    if (SpaceKeyPressed && !IsPlayerDead) {
         if (IsOnGround) {
             if (!mSoundManager.isSoundPlaying("jump"))
                 mSoundManager.playSound("jump");
@@ -299,7 +321,10 @@ void GameManager::handleAnimations(void)
         player->setAction(1, 2);
     } else if (pos.second < FLOOR) {
         pos.second += 5;
-        player->setAction(1, 1);
+        if (!IsPlayerDead)
+            player->setAction(1, 1);
+        else
+            player->setAction(3, 0);
     } else {
         if (IsFlying) {
             mSoundManager.stopSound("fly");
@@ -307,9 +332,16 @@ void GameManager::handleAnimations(void)
         }
         if (!IsOnGround) {
             pos.second += 5;
-            player->setAction(1, 1);
+            if (!IsPlayerDead)
+                player->setAction(1, 1);
+            else
+                player->setAction(3, 0);
         } else {
-            player->setAction(0, 0);
+            if (!IsPlayerDead)
+                player->setAction(0, 0);
+            else
+                player->setAction(3, 0);
+            //player->setAction(0, 0);
         }
     }
 

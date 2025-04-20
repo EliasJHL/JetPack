@@ -40,6 +40,9 @@ class Player : public IEntity {
         void setScore(std::string score);
         std::string getScore() const;
 
+        void setDead(void);
+        bool isDead(void);
+
     private:
         int mPlayerID;
         sf::Sprite mSprite;
@@ -51,6 +54,7 @@ class Player : public IEntity {
         sf::Font mFont; 
         SpriteAnimator mAnimator;
         Clock mAnimationTimer;
+        bool mIsDead;
 };
 
 #endif /* !PLAYER_HPP_ */
