@@ -162,6 +162,11 @@ void Server::handlePlayerCommands(Player *player)
         }
         memory[n] = '\0';
         command = std::string(memory);
+
+        if (mDebugMode) {
+            std::cout << "[DEBUG] Received from Player " << player->getID() << ": " << command << std::endl;
+        }
+
         command.erase(std::remove(command.begin(), command.end(), '\n'), command.end());
         command.erase(std::remove(command.begin(), command.end(), '\r'), command.end());
 
@@ -221,12 +226,18 @@ void Server::sendMapData(int player_socket)
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
     std::string heightMessage = "HIH " + std::to_string(mMapHeight) + "\r\n";
     write(player_socket, heightMessage.c_str(), heightMessage.length());
+    if (mDebugMode) {
+        std::cout << "[DEBUG] Sent to Player: " << heightMessage << std::endl;
+    }
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
     // Envoi des pièces
     for (const auto &coin : mCoins) {
         std::string coinMessage = "CON " + std::to_string(coin.first) + " " + std::to_string(coin.second) + "\r\n";
         write(player_socket, coinMessage.c_str(), coinMessage.length());
+        if (mDebugMode) {
+            std::cout << "[DEBUG] Sent to Player: " << coinMessage << std::endl;
+        }
         std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -235,6 +246,9 @@ void Server::sendMapData(int player_socket)
     for (const auto &barrier : mElectricBarriers) {
         std::string barrierMessage = "BAR " + std::to_string(barrier.first) + " " + std::to_string(barrier.second) + "\r\n";
         write(player_socket, barrierMessage.c_str(), barrierMessage.length());
+        if (mDebugMode) {
+            std::cout << "[DEBUG] Sent to Player: " << barrierMessage << std::endl;
+        }
         std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
 }
