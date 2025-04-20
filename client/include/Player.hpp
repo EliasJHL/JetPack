@@ -44,7 +44,7 @@ class Player : public IEntity {
         bool isDead(void);
 
         void setWin(void);
-        bool isWin(void);
+        bool isWin(void) const;
 
     private:
         int mPlayerID;

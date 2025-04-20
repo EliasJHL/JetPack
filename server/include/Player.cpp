@@ -50,6 +50,26 @@ bool Player::isConnected(void) const
     return mConnected;
 }
 
+void Player::playerDie()
+{
+    mDied = true;
+}
+
+void Player::playerWin()
+{
+    mWin = true;
+}
+
+bool Player::isPlayerDied()
+{
+    return mDied;
+}
+
+bool Player::isPlayerWin()
+{
+    return mWin;
+}
+
 const std::pair<float, float> &Player::getPosition(void) const
 {
     return mCoordinates;

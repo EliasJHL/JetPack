@@ -38,6 +38,12 @@ class Player {
         void setPlayerName(const std::string &name);
         void addCoins(int nb, std::pair<float, float> coin);
 
+        void playerWin(void);
+        void playerDie(void);
+
+        bool isPlayerDied(void);
+        bool isPlayerWin(void);
+
         bool isToDelete() {
             std::lock_guard<std::mutex> lock(mAccessMutex);
             return mToDelete;
@@ -56,6 +62,8 @@ class Player {
         NetworkObserver *mObserver;
         std::mutex mAccessMutex;
         bool mToDelete;
+        bool mWin;
+        bool mDied;
         std::vector<std::pair<float, float>> mCollectedCoins;
 };
 

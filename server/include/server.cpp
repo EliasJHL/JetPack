@@ -124,9 +124,17 @@ void Server::threadCheckCollisions(void)
                     oy1 = barrier.second * scale;
                     ox2 = ox1 + 60;
                     oy2 = oy1 + 60;
-                    if (x1 < ox2 && x2 > ox1 && y1 < oy2 && y2 > oy1) {
+                    if (!player->isPlayerDied() && !player->isPlayerWin() && x1 < ox2 && x2 > ox1 && y1 < oy2 && y2 > oy1) {
                         std::string deadMessage = "DED " + std::to_string(player->getID());
+                        player->playerDie();
                         player->getSalon()->CreateMessage(deadMessage, Type::DIE, player->getID()); + "\r\n";
+                        for (Player *p : mPlayerManager->getReadyPlayer()) {
+                            if (p->getID() == player->getID())
+                                continue;
+                            std::string winMessage = "WIN " + std::to_string(p->getID());
+                            p->playerWin();
+                            p->getSalon()->CreateMessage(winMessage, Type::WIN, p->getID()); + "\r\n";
+                        }
                     }
                 }
             } catch (...) {

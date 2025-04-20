@@ -203,16 +203,30 @@ void GameManager::commandsHandler(void)
 
                     Player *player = mPlayerManager->getPlayer(id);
 
-                    if (player->isWin() || player->isDead())
+                    if (id != mPlayerID)
                         continue;
 
-                    if (id == mPlayerID) {
-                        player->setDead();
-                        std::cout << "GAME OVER !" << std::endl;
-                    } else {
-                        player->setWin();
-                        std::cout << "VICTORY !" << std::endl;
-                    }
+                    player->setDead();
+                }
+            }
+            else if (command.substr(0, 3) == "WIN") {
+                std::stringstream messageStream(command);
+                std::vector<std::string> parts;
+                std::string m;
+                
+                while (std::getline(messageStream, m, ' ')) {
+                    parts.push_back(m);
+                }
+
+                if (parts.size() >= 2) {
+                    int id = std::atoi(parts[1].c_str());
+
+                    Player *player = mPlayerManager->getPlayer(id);
+
+                    if (id != mPlayerID)
+                        continue;
+
+                    player->setWin();
                 }
             }
             else {

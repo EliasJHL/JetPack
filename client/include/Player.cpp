@@ -76,13 +76,12 @@ void Player::setWin(void)
     mWin = true;
 }
 
-bool Player::isWin(void)
+bool Player::isWin(void) const
 {
     return mWin;
 }
 
 void Player::setPosition(std::pair<float, float> pos) {
-    std::cout << std::to_string(mWin) << std::endl;
     if (mIsDead || mWin) {
         mPos.y = pos.second;
         if (mPos.y > FLOOR)
