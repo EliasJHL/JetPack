@@ -194,6 +194,7 @@ void GameManager::commandsHandler(void)
                     if (player) {
                         if (mDebugMode)
                             std::cout << "[DEBUG] Player " << id << " map reset triggered." << std::endl;
+                        mViewPos.x = 0;
                         player->setPosition({0, player->getPosition().second});
                         for (auto &coin : mCoins) {
                             coin->toDisplay(true);
@@ -359,9 +360,8 @@ void GameManager::move_background(void)
     pos = player->getPosition();
     sf::Sprite backgroundSprite(mBackground);
 
-    //float offsetX = static_cast<int>(pos.first) % static_cast<int>(mMapWidth * mScaleFactor);
-
-    if (pos.first > 17160) {
+    if (mViewPos.x > mMapWidth * mScaleFactor) {
+        mViewPos.x = 0;
         player->setPosition({0, pos.second});
     }
     backgroundSprite.setScale(2.5f, 2.5f);
@@ -385,11 +385,10 @@ void GameManager::handleAnimations(void)
         return;
 
     Player* player = mPlayerManager->getPlayer(mPlayerID);
-    static float acceleration = 0.0f;
     std::pair<float, float> pos = player->getPosition();
-    bool SpaceKeyPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && mWindow.hasFocus();
-    bool ArrowLeftPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Left) && mWindow.hasFocus();
-    bool RightArrowPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Right) && mWindow.hasFocus();
+    bool SpaceKeyPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Space);
+    bool ArrowLeftPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Left);
+    bool RightArrowPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Right);
     bool IsOnGround = (pos.second >= FLOOR);
     bool IsPlayerDead = player->isDead();
     bool IsFlying;
@@ -403,33 +402,22 @@ void GameManager::handleAnimations(void)
                 mSoundManager.playSound("fly", true);
         }
         if (pos.second > 0) {
-            acceleration += 0.025f;
-            pos.second -= (5 + acceleration);
-        }
-        if (pos.second <= 0) {
-            acceleration -= 0.05f;
+            pos.second -= 5;
         }
         player->setAction(1, 2);
     } else if (pos.second < FLOOR) {
-        acceleration -= 0.05f;
-        pos.second += (5 - acceleration);
+        pos.second += 5;
         if (!IsPlayerDead)
             player->setAction(1, 1);
         else
             player->setAction(3, 0);
     } else {
-        acceleration -= 0.05f;
         if (IsFlying) {
             mSoundManager.stopSound("fly");
             mSoundManager.playSound("stopfly");
         }
         if (!IsOnGround) {
-            static float deceleration = 0.0f;
-            deceleration += 0.1f;
-            pos.second += (5 + deceleration);
-            if (pos.second >= FLOOR) {
-                deceleration = 0.0f;
-            }
+            pos.second += 5;
             if (!IsPlayerDead)
                 player->setAction(1, 1);
             else
@@ -589,8 +577,8 @@ void GameManager::draw(void)
                     sf::Color color = sprite.getColor();
                     color.a = 128;
                     sprite.setColor(color);
-                    sprite.setPosition(player->getPosition().first / mScaleFactor - sprite.getGlobalBounds().width / 2, player->getPosition().second);
-                    mMessageText.setPosition({player->getPosition().first / mScaleFactor - mMessageText.getGlobalBounds().width / 2, player->getPosition().second - mMessageText.getGlobalBounds().height - 10});
+                    sprite.setPosition(player->getPosition().first / mScaleFactor, player->getPosition().second);
+                    mMessageText.setPosition({player->getPosition().first / mScaleFactor + 55, player->getPosition().second - mMessageText.getGlobalBounds().height - 10});
                     mMessageText.setCharacterSize(10);
                     mMessageText.setString(player->getName());
                     mWindow.draw(mMessageText);

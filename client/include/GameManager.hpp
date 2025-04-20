@@ -14,6 +14,7 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 #include <SFML/System.hpp>
+#include <SFML/Audio.hpp>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
