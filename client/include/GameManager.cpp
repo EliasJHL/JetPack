@@ -116,7 +116,7 @@ void GameManager::commandsHandler(void)
                 //std::cout << "Map height received: " << mMapHeight << std::endl;
                 mScaleFactor = static_cast<float>(mMode.height) / mMapHeight;
             }
-            else if (command.substr(0.3) == "WIH") {
+            else if (command.substr(0,3) == "WIH") {
                 std::istringstream iss(command.substr(4));
                 iss >> mMapWidth;
                 std::cout << "Map width received: " << mMapWidth << std::endl;
@@ -366,15 +366,17 @@ void GameManager::move_background(void)
     pos = player->getPosition();
     sf::Sprite backgroundSprite(mBackground);
 
-    float offsetX = static_cast<int>(pos.first) % static_cast<int>(mMapWidth * mScaleFactor);
+    //float offsetX = static_cast<int>(pos.first) % static_cast<int>(mMapWidth * mScaleFactor);
 
     if (pos.first > 17160) {
         player->setPosition({0, pos.second});
     }
     backgroundSprite.setScale(2.5f, 2.5f);
-    backgroundSprite.setPosition(-offsetX, -70);
+    backgroundSprite.setPosition(-4315, -70);
     mWindow.draw(backgroundSprite);
-    backgroundSprite.setPosition(mMapWidth - offsetX, -70);
+    backgroundSprite.setPosition(4315, -70);
+    mWindow.draw(backgroundSprite);
+    backgroundSprite.setPosition(0, -70);
     mWindow.draw(backgroundSprite);
     backgroundSprite.setPosition(8630, -70);
     mWindow.draw(backgroundSprite);
@@ -391,7 +393,7 @@ void GameManager::handleAnimations(void)
 
     Player* player = mPlayerManager->getPlayer(mPlayerID);
     std::pair<float, float> pos = player->getPosition();
-    bool SpaceKeyPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && mWindow.hasFocus();
+    bool SpaceKeyPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Space);
     bool IsOnGround = (pos.second >= FLOOR);
     bool IsPlayerDead = player->isDead();
     bool IsFlying;
