@@ -1,11 +1,8 @@
 /*
-** Player.cpp for B-NWP-400-MPL-4-1-jetpack-elias-josue.hajjar-llauquen in /home/elias/Documents/Epitech/JetPack/B-NWP-400-MPL-4-1-jetpack-elias-josue.hajjar-llauquen/server/include
-**
-** Made by Elias Josué HAJJAR LLAUQUEN
-** Login   <elias-josue.hajjar-llauquen@epitech.eu>
-**
-** Started on  Tue Mar 25 11:43:11 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Fri Apr 3 15:02:02 2025 Elias Josué HAJJAR LLAUQUEN
+** EPITECH PROJECT, 2025
+** B-NWP-400-MPL-4-1-jetpack-elias-josue.hajjar-llauquen
+** File description:
+** Player
 */
 
 #include "Player.hpp"

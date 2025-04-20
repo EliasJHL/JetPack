@@ -10,16 +10,21 @@
 
 #ifndef SERVER_HPP_
 # define SERVER_HPP_
-#include "Network.hpp"
 #include "Player.hpp"
+#include "NetworkSalon.hpp"
 #include "PlayersManager.hpp"
-#include "Encapsulation.hpp"
 #include "commands/Factory.hpp"
-#include <thread>
-#include <string>
-#include <iostream>
 #include <map>
 #include <regex>
+#include <thread>
+#include <string>
+#include <poll.h>
+#include <iomanip>
+#include <fstream>
+#include <sstream>
+#include <iostream>
+#include <arpa/inet.h>
+#include <netinet/in.h>
 
 class Server {
     public:

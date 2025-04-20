@@ -9,10 +9,6 @@
 */
 
 #include "server.hpp"
-#include <fstream>
-#include <cctype>
-#include <sstream>
-#include <iomanip>
 
 Server::Server() 
 {
@@ -181,7 +177,6 @@ void Server::handlePlayerCommands(Player *player)
             for (auto it = mPoll.begin(); it != mPoll.end(); ++it) {
                 if (it->fd == player->getPlayerSocket()) {
                     mPoll.erase(it);
-                    close(player->getPlayerSocket());
                     break;
                 }
             }

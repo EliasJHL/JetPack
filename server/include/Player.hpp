@@ -12,7 +12,7 @@
 #define PLAYER_HPP_
 #include <memory>
 #include <string>
-#include "Network.hpp"
+#include "NetworkObserver.hpp"
 #include <mutex>
 #include <vector>
 #include <algorithm>
@@ -54,16 +54,16 @@ class Player {
         };
     private:
         int mPlayerID;
-        int mPlayerSocket;
         int mPlayerCoin;
-        std::string mPlayerName;
-        std::pair<float, float> mCoordinates;
-        bool mConnected;
-        NetworkObserver *mObserver;
-        std::mutex mAccessMutex;
-        bool mToDelete;
+        int mPlayerSocket;
         bool mWin;
         bool mDied;
+        bool mToDelete;
+        bool mConnected;
+        std::string mPlayerName;
+        std::mutex mAccessMutex;
+        NetworkObserver *mObserver;
+        std::pair<float, float> mCoordinates;
         std::vector<std::pair<float, float>> mCollectedCoins;
 };
 
