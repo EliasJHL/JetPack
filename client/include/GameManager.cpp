@@ -381,7 +381,7 @@ void GameManager::handleAnimations(void)
 
     Player* player = mPlayerManager->getPlayer(mPlayerID);
     std::pair<float, float> pos = player->getPosition();
-    bool SpaceKeyPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Space);
+    bool SpaceKeyPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && mWindow.hasFocus();
     bool IsOnGround = (pos.second >= FLOOR);
     bool IsPlayerDead = player->isDead();
     bool IsFlying;
