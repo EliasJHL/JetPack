@@ -43,6 +43,9 @@ class Player : public IEntity {
         void setDead(void);
         bool isDead(void);
 
+        void setWin(void);
+        bool isWin(void);
+
     private:
         int mPlayerID;
         sf::Sprite mSprite;
@@ -55,6 +58,7 @@ class Player : public IEntity {
         SpriteAnimator mAnimator;
         Clock mAnimationTimer;
         bool mIsDead;
+        bool mWin;
 };
 
 #endif /* !PLAYER_HPP_ */

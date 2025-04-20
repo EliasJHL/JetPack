@@ -13,7 +13,7 @@
 
 Player::Player(int id, std::string name)
     : mPlayerID(id), mPlayerName(name), mAnimator(mSprite, 134.5, 133.83, 6),
-    mAnimationTimer(0.15f), mIsDead(false)
+    mAnimationTimer(0.15f), mIsDead(false), mWin(false)
 {
     if (!mTexture.loadFromFile("./client/ressources/sprites/player_sprite_sheet.png")) {
         throw std::runtime_error("Failed to load spritesheet");
@@ -71,8 +71,19 @@ bool Player::isDead(void)
     return mIsDead;
 }
 
+void Player::setWin(void)
+{
+    mWin = true;
+}
+
+bool Player::isWin(void)
+{
+    return mWin;
+}
+
 void Player::setPosition(std::pair<float, float> pos) {
-    if (mIsDead) {
+    std::cout << std::to_string(mWin) << std::endl;
+    if (mIsDead || mWin) {
         mPos.y = pos.second;
         if (mPos.y > FLOOR)
             mPos.y = FLOOR;

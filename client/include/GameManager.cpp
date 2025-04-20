@@ -201,16 +201,18 @@ void GameManager::commandsHandler(void)
                 if (parts.size() >= 2) {
                     int id = std::atoi(parts[1].c_str());
 
-                    std::cout << "PLAYER " << id << " died !!!" << std::endl;
+                    Player *player = mPlayerManager->getPlayer(id);
+
+                    if (player->isWin() || player->isDead())
+                        continue;
 
                     if (id == mPlayerID) {
-                        Player *player = mPlayerManager->getPlayer(id);
-
                         player->setDead();
+                        std::cout << "GAME OVER !" << std::endl;
                     } else {
-                        continue;
+                        player->setWin();
+                        std::cout << "VICTORY !" << std::endl;
                     }
-
                 }
             }
             else {
@@ -439,7 +441,7 @@ void GameManager::draw(void)
     mMessageText.setFont(mFont);
     mMessageText.setCharacterSize(30);
     mMessageText.setFillColor(sf::Color::White);
-    
+
     for (Coin* coin : mCoins) {
         coin->updateAnimation();
         entities.push_back(coin);
@@ -448,10 +450,10 @@ void GameManager::draw(void)
         barrier->updateAnimation();
         entities.push_back(barrier);
     }
-    
+
     std::vector<Player*> players = mPlayerManager->getAllPlayers();
     entities.insert(entities.end(), players.begin(), players.end());
-    
+
     mWindow.clear(sf::Color::Black);
     if (!mHasUsername) {
         mMessageText.setString("Enter your username:");
@@ -463,13 +465,8 @@ void GameManager::draw(void)
         mMessageText.setPosition((mWindow.getSize().x - mMessageText.getGlobalBounds().width) / 2, 200);
         mWindow.draw(mMessageText);
     } else {
-        // Créer un rectangle pour les bordures de débogage
-        sf::RectangleShape debugBorder;
-        debugBorder.setFillColor(sf::Color::Transparent);
-        
         for (IEntity* entity : entities) {
             sf::Sprite sprite = entity->getSprite();
-            
             if (Player* player = dynamic_cast<Player*>(entity)) {
                 if (player->getID() != mPlayerID) {
                     sf::Color color = sprite.getColor();
@@ -480,78 +477,23 @@ void GameManager::draw(void)
                     mMessageText.setCharacterSize(10);
                     mMessageText.setString(player->getName());
                     mWindow.draw(mMessageText);
-                    
-                    // Bordure de débogage pour les autres joueurs
-                    debugBorder.setOutlineColor(sf::Color::Blue);
-                    debugBorder.setOutlineThickness(1.0f);
-                    debugBorder.setSize(sf::Vector2f(sprite.getGlobalBounds().width, sprite.getGlobalBounds().height));
-                    debugBorder.setPosition(sprite.getGlobalBounds().left, sprite.getGlobalBounds().top);
-                    mWindow.draw(debugBorder);
                 } else {
                     mWindow.draw(player->getScoreText());
-                    
-                    // Bordure de débogage pour le joueur principal
-                    debugBorder.setOutlineColor(sf::Color::Green);
-                    debugBorder.setOutlineThickness(1.0f);
-                    debugBorder.setSize(sf::Vector2f(sprite.getGlobalBounds().width, sprite.getGlobalBounds().height));
-                    debugBorder.setPosition(sprite.getGlobalBounds().left, sprite.getGlobalBounds().top);
-                    mWindow.draw(debugBorder);
                 }
-            } else if (Coin* coin = dynamic_cast<Coin*>(entity)) {
-                // Bordure de débogage pour les pièces
-                debugBorder.setOutlineColor(sf::Color::Yellow);
-                debugBorder.setOutlineThickness(1.0f);
-                debugBorder.setSize(sf::Vector2f(sprite.getGlobalBounds().width, sprite.getGlobalBounds().height));
-                debugBorder.setPosition(sprite.getGlobalBounds().left, sprite.getGlobalBounds().top);
-                mWindow.draw(debugBorder);
-                
-                // Ajouter les coordonnées pour le débogage
-                sf::Text coordText;
-                coordText.setFont(mFont);
-                coordText.setCharacterSize(8);
-                coordText.setFillColor(sf::Color::Yellow);
-                coordText.setString("(" + std::to_string(int(sprite.getPosition().x)) + "," + 
-                                    std::to_string(int(sprite.getPosition().y)) + ")");
-                coordText.setPosition(sprite.getPosition().x, sprite.getPosition().y - 10);
-                mWindow.draw(coordText);
-            } else if (ElectricBarrier* barrier = dynamic_cast<ElectricBarrier*>(entity)) {
-                // Bordure de débogage pour les barrières
-                debugBorder.setOutlineColor(sf::Color::Red);
-                debugBorder.setOutlineThickness(1.0f);
-                debugBorder.setSize(sf::Vector2f(sprite.getGlobalBounds().width, sprite.getGlobalBounds().height));
-                debugBorder.setPosition(sprite.getGlobalBounds().left, sprite.getGlobalBounds().top);
-                mWindow.draw(debugBorder);
-                
-                // Ajouter les coordonnées pour le débogage
-                sf::Text coordText;
-                coordText.setFont(mFont);
-                coordText.setCharacterSize(8);
-                coordText.setFillColor(sf::Color::Red);
-                coordText.setString("(" + std::to_string(int(sprite.getPosition().x)) + "," + 
-                                    std::to_string(int(sprite.getPosition().y)) + ")");
-                coordText.setPosition(sprite.getPosition().x, sprite.getPosition().y - 10);
-                mWindow.draw(coordText);
             }
-            
             mWindow.draw(sprite);
         }
-        
-        // Afficher l'échelle et quelques informations supplémentaires
-        sf::Text debugInfo;
-        debugInfo.setFont(mFont);
-        debugInfo.setCharacterSize(12);
-        debugInfo.setFillColor(sf::Color::White);
-        
-        Player* player = mPlayerManager->getPlayer(mPlayerID);
-        std::string posInfo = "Position: (" + 
-                            std::to_string(int(player->getPosition().first)) + "," + 
-                            std::to_string(int(player->getPosition().second)) + ")";
-        std::string scaleInfo = "Scale Factor: " + std::to_string(mScaleFactor);
-        std::string mapInfo = "Map Height: " + std::to_string(int(mMapHeight));
-        
-        debugInfo.setString(posInfo + "\n" + scaleInfo + "\n" + mapInfo);
-        debugInfo.setPosition(10, 10);
-        mWindow.draw(debugInfo);
+        mMessageText.setCharacterSize(30);
+        if (mPlayerManager->getPlayer(mPlayerID)->isDead()) {
+            mMessageText.setString("GAME OVER :(");
+            mMessageText.setPosition((mPlayerManager->getPlayer(mPlayerID)->getPosition().first - mMessageText.getGlobalBounds().width), 200);
+            mWindow.draw(mMessageText);
+        }
+        if (mPlayerManager->getPlayer(mPlayerID)->isWin()) {
+            mMessageText.setString("VICTORY !!!");
+            mMessageText.setPosition((mPlayerManager->getPlayer(mPlayerID)->getPosition().first - mMessageText.getGlobalBounds().width), 200);
+            mWindow.draw(mMessageText);
+        }
     }
     mWindow.display();
 }
