@@ -307,15 +307,6 @@ void GameManager::init_game(int ac, char **av)
     if (connect(mPlayerSocket, (struct sockaddr *)&mAddressControl, sizeof(mAddressControl)) == -1)
         throw std::runtime_error("Impossible to connect");
     
-    // read(mPlayerSocket, data, sizeof(data));
-    // int size = read(mPlayerSocket, data, sizeof(data));
-    // data[size] = '\0';
-
-    // if (std::string(data).substr(0, 3) == "IDP") {
-        
-    // } else {
-    //     std::cout << "ERROR NOT VALID ID COMMAND" << std::endl;
-    // }
     mPlayerManager = mPlayerManager->getInstance();
     mHasUsername = false;
     mGameReady = false;
@@ -358,6 +349,7 @@ void GameManager::handleAnimations(void)
         return;
 
     Player* player = mPlayerManager->getPlayer(mPlayerID);
+    static float acceleration = 0.0f;
     std::pair<float, float> pos = player->getPosition();
     bool SpaceKeyPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && mWindow.hasFocus();
     bool ArrowLeftPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Left) && mWindow.hasFocus();
@@ -374,21 +366,34 @@ void GameManager::handleAnimations(void)
             if (!mSoundManager.isSoundPlaying("fly"))
                 mSoundManager.playSound("fly", true);
         }
-        pos.second -= 4;
+        if (pos.second > 0) {
+            acceleration += 0.025f;
+            pos.second -= (5 + acceleration);
+        }
+        if (pos.second <= 0) {
+            acceleration -= 0.05f;
+        }
         player->setAction(1, 2);
     } else if (pos.second < FLOOR) {
-        pos.second += 5;
+        acceleration -= 0.05f;
+        pos.second += (5 - acceleration);
         if (!IsPlayerDead)
             player->setAction(1, 1);
         else
             player->setAction(3, 0);
     } else {
+        acceleration -= 0.05f;
         if (IsFlying) {
             mSoundManager.stopSound("fly");
             mSoundManager.playSound("stopfly");
         }
         if (!IsOnGround) {
-            pos.second += 5;
+            static float deceleration = 0.0f;
+            deceleration += 0.1f;
+            pos.second += (5 + deceleration);
+            if (pos.second >= FLOOR) {
+                deceleration = 0.0f;
+            }
             if (!IsPlayerDead)
                 player->setAction(1, 1);
             else
@@ -402,12 +407,13 @@ void GameManager::handleAnimations(void)
     }
 
     player->updateScoreText(mViewPos);
-    if (ArrowLeftPressed)
+    if (ArrowLeftPressed) {
         pos.first += 1;
-    else if (RightArrowPressed)
+    } else if (RightArrowPressed) {
         pos.first += 8;
-    else
+    } else {
         pos.first += 4;
+    }
     if (!player->isDead() && !player->isWin())
         mViewPos.x += 4;
     player->setPosition({pos.first, pos.second});
