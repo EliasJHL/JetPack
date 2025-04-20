@@ -136,5 +136,5 @@ void Player::setScore(std::string score) {
 }
 
 std::string Player::getScore() const {
-    return mScore;
+    return mScore;  
 }

@@ -192,8 +192,10 @@ void GameManager::commandsHandler(void)
 
                     for (const auto &coin : mCoins) {
                         std::pair <float, float> pos = coin->getPosition();
-                        if (pos.first == x && pos.second == y)
+                        if (pos.first == x && pos.second == y) {
+                            mSoundManager.playSound("coin");
                             coin->toDisplay(false);
+                        }
                     }
                 }
             }
@@ -212,6 +214,8 @@ void GameManager::commandsHandler(void)
                     Player *player = mPlayerManager->getPlayer(id);
 
                     player->setDead();
+
+                    mSoundManager.playSound("barrier");
                 }
             }
             else if (command.substr(0, 3) == "WIN") {
