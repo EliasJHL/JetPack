@@ -29,6 +29,7 @@ GameManager::GameManager()
     mSoundManager.loadSound("stopfly", "./client/ressources/sounds/jetpack_stop.wav");
     mSoundManager.loadSound("touchfloor", "./client/ressources/sounds/jetpack_lp.wav");
     mSoundManager.loadMusic("./client/ressources/sounds/theme.ogg");
+    mBackground.loadFromFile("./client/ressources/sprites/background.png");
     mSoundManager.setVolume(50, 10);
     mSoundManager.playMusic();
 }
@@ -71,15 +72,14 @@ void GameManager::commandsHandler(void)
         
         messageBuffer += std::string(buffer);
 
-        if (mDebugMode) {
+        if (mDebugMode)
             std::cout << "[DEBUG] Received: " << buffer << std::endl;
-        }
         
         int pos;
         while ((pos = messageBuffer.find("\r\n")) != std::string::npos) {
             std::string command = messageBuffer.substr(0, pos);
             messageBuffer.erase(0, pos + 2);
-            
+
             if (command.empty())
                 continue;
                         
@@ -115,6 +115,11 @@ void GameManager::commandsHandler(void)
                 iss >> mMapHeight;
                 //std::cout << "Map height received: " << mMapHeight << std::endl;
                 mScaleFactor = static_cast<float>(mMode.height) / mMapHeight;
+            }
+            else if (command.substr(0,3) == "WIH") {
+                std::istringstream iss(command.substr(4));
+                iss >> mMapWidth;
+                std::cout << "Map width received: " << mMapWidth << std::endl;
             }
             else if (command == "SRT") {
                 std::cout << "Ready received from the server" << std::endl;
@@ -172,6 +177,29 @@ void GameManager::commandsHandler(void)
                 mBarriers.push_back(barrier);
 
                 std::cout << "Barrier position: " << x * mScaleFactor << ", " << y * mScaleFactor << std::endl;
+            }
+            else if (command.substr(0, 3) == "RST") {
+                std::stringstream messageStream(command);
+                std::vector<std::string> parts;
+                std::string m;
+            
+                while (std::getline(messageStream, m, ' ')) {
+                    parts.push_back(m);
+                }
+            
+                if (parts.size() >= 2) {
+                    int id = std::atoi(parts[1].c_str());
+                    Player *player = mPlayerManager->getPlayer(id);
+            
+                    if (player) {
+                        if (mDebugMode)
+                            std::cout << "[DEBUG] Player " << id << " map reset triggered." << std::endl;
+                        player->setPosition({0, player->getPosition().second});
+                        for (auto &coin : mCoins) {
+                            coin->toDisplay(true);
+                        }
+                    }
+                }
             }
             else if (command.substr(0, 3) == "COC") {
                 std::stringstream messageStream(command);
@@ -331,15 +359,23 @@ void GameManager::move_background(void)
     pos = player->getPosition();
     sf::Sprite backgroundSprite(mBackground);
 
-    if (pos.first > 4315) {
+    //float offsetX = static_cast<int>(pos.first) % static_cast<int>(mMapWidth * mScaleFactor);
+
+    if (pos.first > 17160) {
         player->setPosition({0, pos.second});
     }
     backgroundSprite.setScale(2.5f, 2.5f);
     backgroundSprite.setPosition(-4315, -70);
     mWindow.draw(backgroundSprite);
+    backgroundSprite.setPosition(4315, -70);
+    mWindow.draw(backgroundSprite);
     backgroundSprite.setPosition(0, -70);
     mWindow.draw(backgroundSprite);
-    backgroundSprite.setPosition(4315, -70);
+    backgroundSprite.setPosition(8630, -70);
+    mWindow.draw(backgroundSprite);
+    backgroundSprite.setPosition(12945, -70);
+    mWindow.draw(backgroundSprite);
+    backgroundSprite.setPosition(17160, -70);
     mWindow.draw(backgroundSprite);
 }
 
@@ -545,6 +581,7 @@ void GameManager::draw(void)
         mMessageText.setPosition((mWindow.getSize().x - mMessageText.getGlobalBounds().width) / 2, 200);
         mWindow.draw(mMessageText);
     } else {
+        move_background();
         for (IEntity* entity : entities) {
             sf::Sprite sprite = entity->getSprite();
             if (Player* player = dynamic_cast<Player*>(entity)) {

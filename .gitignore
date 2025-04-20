@@ -4,3 +4,5 @@ jetpack_*
 .jetpack/
 
 !*.wav
+
+test/

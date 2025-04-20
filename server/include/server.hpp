@@ -44,7 +44,8 @@ class Server {
         void parseMap();
     private:
         int mPort;
-        float mMapHeight;
+        int mMapHeight;
+        int mMapWidth;
         int mServerSocket;
         bool mDebugMode;
         std::string mMapContent;

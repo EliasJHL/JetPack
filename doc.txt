@@ -1,0 +1,167 @@
+Network Working Group                                        A. Severan
+Request for Comments: XXXX                           E. Lobato Coutinho
+Category: Informational                            E-J. Hajjar Lauquenn
+                                                             April 2025
+
+          Protocol Specification and Map Format for Jetpack
+
+Abstract
+
+   This document describes the protocol and map format developed for
+   the Jetpack project. It includes the packet structure, state
+   machines, and message flow, as well as the definition of the map
+   file format used by the system.
+
+Status of This Memo
+
+   This memo provides information for the Internet community. It does
+   not specify an Internet standard of any kind. Distribution of this
+   memo is unlimited.
+
+Copyright Notice
+
+   Copyright (c) 2025 EPITECH Technology and the persons identified as
+   the document authors.  All rights reserved.
+
+Table of Contents
+
+   1. Introduction ...................................................1
+   2. Conventions and Terminology ....................................2
+   3. Protocol Overview ..............................................2
+   4. Protocol Specification .........................................2
+      4.1. Connection Model ..........................................2
+      4.2. Message Types .............................................2
+      4.3. Packet Structure ..........................................2
+   5. Map Format Specification .......................................2
+   6. Security Considerations ........................................3
+	Acknowledgements ..................................................3
+   Authors' Addresses ................................................3
+
+1.  Introduction
+
+   The Jetpack project is a multiplayer game where players navigate
+   through a map, collecting coins and avoiding obstacles. This document
+   specifies the communication protocol between the client and server,
+   as well as the format of the map files used in the game.
+
+
+
+
+
+Severan, Lobato Coutinho & Hajjar Lauquenn     Informational    [Page 1]
+
+RFC XXXX                     RFC Style Guide                  April 2025
+
+
+2.  Conventions and Terminology
+
+   The following terms are used in this document:
+   - Client: The game application running on the player's machine.
+   - Server: The central server managing game state and player interactions.
+   - Map: A 2D grid defining the game environment, including coins and
+		obstacles.
+
+3.  Protocol Overview
+
+   The Jetpack protocol is a text-based protocol over TCP.   It supports
+   commands for player registration, position updates, and game events.
+   Each message is terminated by a CRLF ("\r\n").
+
+4.  Protocol Specification
+
+4.1.  Connection Model
+
+   Clients connect to the server using a TCP socket. Upon connection,
+   the server assigns a unique player ID and sends the map data.
+
+4.2.  Message Types
+
+   - IDP <player_id>: Sent by the server to assign a player ID.
+   - POS <x> <y>: Sent by the client to update the player's position.
+   - CON <x> <y>: Sent by the server to define a coin's position.
+   - BAR <x> <y>: Sent by the server to define a barrier's position.
+   - COC <player_id> <x> <y>: Sent by the server when a player collects
+		a coin.
+   - DED <player_id>: Sent by the server when a player dies.
+   - WIN <player_id>: Sent by the server when a player wins.
+
+4.3.  Packet Structure
+
+   Each packet consists of a command followed by arguments, separated by
+   spaces.  For example:
+
+      "POS 100.5 200.0\r\n"
+
+5.  Map Format Specification
+
+      The map is a text file where each character represents a tile:
+         - 'c': Coin
+         - 'e': Electric barrier
+         - '_': Empty space
+
+		Example:
+      
+      	"________e______cccccc__________"
+
+
+
+
+
+
+Severan, Lobato Coutinho & Hajjar Lauquenn     Informational    [Page 2]
+
+RFC XXXX                     RFC Style Guide                  April 2025
+
+
+6.  Security Considerations
+
+	The protocol does not include encryption or authentication. It is
+	recommended to use a secure transport layer (e.g., TLS) for production
+	deployments.
+
+Acknowledgements
+
+   This document refers heavily to RFC 7322 [RFC7322]; as such, we
+	are grateful to the authors of those documents for putting their
+	time and effort into the RFC Series.
+
+   Heather Flanagan
+   RFC Series Editor
+
+   Sandy Ginoza
+   RFC Production Center
+
+Authors' Addresses
+
+	Angel Severan
+	EMail: angel.severan@epitech.eu
+
+	Enzo Lobato Coutinho
+	EMail: enzo.lobato-coutinho@epitech.eu
+
+	Elias Josue Hajjar Lauquenn
+	EMail: elias-josue.hajjar-lauquenn@epitech.eu
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Severan, Lobato Coutinho & Hajjar Lauquenn     Informational    [Page 3]
+
+RFC XXXX                     RFC Style Guide                  April 2025

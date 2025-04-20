@@ -58,6 +58,7 @@ class GameManager {
         struct sockaddr_in mAddressControl;
         PlayersManager *mPlayerManager;
         float mMapHeight;
+        float mMapWidth;
         float mScaleFactor;
         std::vector<Coin*> mCoins;
         std::vector<ElectricBarrier*> mBarriers;

@@ -101,6 +101,17 @@ void Server::threadCheckCollisions(void)
                 x2 = player->getPosition().first + 134.5;
                 y2 = player->getPosition().second + 134.5;
 
+                if (x1 >= mMapWidth * scale) {
+                    if (mDebugMode)
+                        std::cout << "[DEBUG] Player " << player->getID() << " reached the end of the map." << std::endl;
+                    player->setPosition({0, y1});
+                    std::string resetMessage = "RST " + std::to_string(player->getID()) + "\r\n";
+                    player->getSalon()->CreateMessage(resetMessage, Type::RESTART, player->getID());
+                    for (Player *p : mPlayerManager->getReadyPlayer()) {
+                        p->clearCollectedCoins();
+                    }
+                }
+
                 for (const auto &coin : mCoins) {
                     ox1 = coin.first * scale;
                     oy1 = coin.second * scale;
@@ -229,6 +240,12 @@ void Server::sendMapData(int player_socket)
         std::cout << "[DEBUG] Sent to Player: " << heightMessage << std::endl;
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
+    // Envoi de la largeur
+    std::string widthMessage = "WIH " + std::to_string(mMapWidth) + "\r\n";
+    write(player_socket, widthMessage.c_str(), widthMessage.length());
+    if (mDebugMode)
+        std::cout << "[DEBUG] Sent to Player: " << widthMessage << std::endl;
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
     // Envoi des pièces
     for (const auto &coin : mCoins) {
         std::string coinMessage = "CON " + std::to_string(coin.first) + " " + std::to_string(coin.second) + "\r\n";
@@ -324,5 +341,6 @@ void Server::parseMap() {
         }
         ++y;
     }
+    mMapWidth = line.size();
     mMapHeight = y;
 }
