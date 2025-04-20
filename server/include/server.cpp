@@ -122,8 +122,8 @@ void Server::threadCheckCollisions(void)
                 for (const auto &barrier : mElectricBarriers) {
                     ox1 = barrier.first * scale;
                     oy1 = barrier.second * scale;
-                    ox2 = ox1 + 171;
-                    oy2 = oy1 + 171;
+                    ox2 = ox1 + 60;
+                    oy2 = oy1 + 60;
                     if (x1 < ox2 && x2 > ox1 && y1 < oy2 && y2 > oy1) {
                         std::string deadMessage = "DED " + std::to_string(player->getID());
                         player->getSalon()->CreateMessage(deadMessage, Type::DIE, player->getID()); + "\r\n";
