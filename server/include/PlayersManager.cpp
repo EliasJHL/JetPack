@@ -23,10 +23,8 @@ PlayersManager *PlayersManager::getInstance() {
 
 int PlayersManager::createPlayer(const std::string &name, int socket) {
     std::lock_guard<std::mutex> guard(mMutex);
-    int id = mNextPlayerID;
-    mNextPlayerID++;
-    mPlayers[id] = std::make_unique<Player>(id, name, socket);
-    return id;
+    mPlayers[mNextPlayerID] = std::make_unique<Player>(mNextPlayerID, name, socket);
+    return mNextPlayerID++;
 }
 
 void PlayersManager::removePlayer(int id) {

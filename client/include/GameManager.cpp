@@ -106,7 +106,7 @@ void GameManager::commandsHandler(void)
             else if (command.substr(0, 3) == "HIH") {
                 std::istringstream iss(command.substr(4));
                 iss >> mMapHeight;
-                std::cout << "Map height received: " << mMapHeight << std::endl;
+                //std::cout << "Map height received: " << mMapHeight << std::endl;
                 mScaleFactor = static_cast<float>(mMode.height) / mMapHeight;
             }
             else if (command == "SRT") {
@@ -140,7 +140,6 @@ void GameManager::commandsHandler(void)
                 }
             }
             else if (command.substr(0, 3) == "CON") {
-                std::cout << command << std::endl;
                 std::stringstream coinStream(command);
                 std::string type;
                 float x = 0;
@@ -228,6 +227,10 @@ void GameManager::commandsHandler(void)
                     player->setWin();
                 }
             }
+            else if (command.substr(0, 3) == "IDP") {
+                mPlayerID = std::atoi(command.substr(4).c_str());
+                std::cout << "OK - ID given by server is " << mPlayerID << std::endl;
+            }
             else {
                 continue;
             }
@@ -274,11 +277,15 @@ void GameManager::init_game(int ac, char **av)
     if (connect(mPlayerSocket, (struct sockaddr *)&mAddressControl, sizeof(mAddressControl)) == -1)
         throw std::runtime_error("Impossible to connect");
     
-    read(mPlayerSocket, data, sizeof(data));
-    int size = read(mPlayerSocket, data, sizeof(data));
-    data[size] = '\0';
+    // read(mPlayerSocket, data, sizeof(data));
+    // int size = read(mPlayerSocket, data, sizeof(data));
+    // data[size] = '\0';
 
-    mPlayerID = std::atoi(std::string(data).substr(4).c_str());
+    // if (std::string(data).substr(0, 3) == "IDP") {
+        
+    // } else {
+    //     std::cout << "ERROR NOT VALID ID COMMAND" << std::endl;
+    // }
     mPlayerManager = mPlayerManager->getInstance();
     mHasUsername = false;
     mGameReady = false;

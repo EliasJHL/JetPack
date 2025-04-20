@@ -145,24 +145,6 @@ void Server::threadCheckCollisions(void)
     }
 }
 
-//https://stackoverflow.com/questions/71572056/multithreaded-server-c-socket-programming
-// ---------------------Server side-------------------------
-// PLR id x y coin      -> Update envoyé      - Server Send
-// DEC id               -> Player disconnect  - Server Send
-// JON id name          -> Player Connect     - Server Send
-// SRT                  -> Start Game         - Server Send
-// DED id               -> Player who dead    - Server Send
-// WIN id               -> Player who win     - Server Send
-// RET                  -> Restart Game       - Server Send
-// COC id x y           -> Collision pièce    - Server Send
-// COB id x y           -> Collision avec obstacle - Server Send
-// HIH taille           -> Envoi de la hauteur de la map - Server Send when client join
-// CON X Y (par rapport à la ligne) -> Envoi de pièces X et Y via X et Y du fichier
-// BAR X Y (par rapport à la ligne) -> Envoi des barrières X et Y via X et Y du fichier
-// -------------------- Client Send ------------------------
-// SNA name             -> Set Username       - Client Send
-// POS x y              -> Envoyer la position- Client Send
-// DEC                  -> Player disconnect  - Client Send
 void Server::handlePlayerCommands(Player *player)
 {
     char memory[1024] = { 0 };
@@ -203,7 +185,6 @@ void Server::handlePlayerCommands(Player *player)
     }
 }
 
-// PLR id x y coin      -> Update envoyé      - Server Send
 void Server::updatePlayersInfo()
 {
     std::vector<Player*> players;
@@ -242,12 +223,10 @@ void Server::sendMapData(int player_socket)
     std::string heightMessage = "HIH " + std::to_string(mMapHeight) + "\r\n";
     write(player_socket, heightMessage.c_str(), heightMessage.length());
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
-    std::cout << heightMessage;
 
     // Envoi des pièces
     for (const auto &coin : mCoins) {
         std::string coinMessage = "CON " + std::to_string(coin.first) + " " + std::to_string(coin.second) + "\r\n";
-        std::cout << coinMessage << std::endl;
         write(player_socket, coinMessage.c_str(), coinMessage.length());
         std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
@@ -256,7 +235,6 @@ void Server::sendMapData(int player_socket)
     // Envoi des barrières
     for (const auto &barrier : mElectricBarriers) {
         std::string barrierMessage = "BAR " + std::to_string(barrier.first) + " " + std::to_string(barrier.second) + "\r\n";
-        std::cout << barrierMessage << std::endl;
         write(player_socket, barrierMessage.c_str(), barrierMessage.length());
         std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
@@ -279,7 +257,7 @@ void Server::initNewPlayer()
         .fd = new_player_socket
     });
     new_player_id = mPlayerManager->createPlayer("Dummy", new_player_socket);
-    std::cout << "Connection from " << inet_ntoa(mClientAddr.sin_addr) << ":" << ntohs(mClientAddr.sin_port) << std::endl;
+    std::cout << "Connection from " << inet_ntoa(mClientAddr.sin_addr) << ":" << ntohs(mClientAddr.sin_port) << " with ID " << new_player_id << std::endl;
     write(mPlayerManager->getPlayer(new_player_id)->getPlayerSocket(), "Welcome\r\n", std::string("Welcome\r\n").length());
     std::string message = std::string("IDP " + std::to_string(new_player_id) + "\r\n");
     write(mPlayerManager->getPlayer(new_player_id)->getPlayerSocket(), message.c_str(), message.length());
