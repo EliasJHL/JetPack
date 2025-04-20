@@ -30,14 +30,14 @@ public:
 private:
     void updateTextureRect();
     sf::Sprite &mSprite;
-    int mFrameWidth; // Width of a single frame
-    int mFrameHeight; // Height of a single frame
-    int mActions; // Number of actions (rows in the spritesheet)
-    int mFramesPerAction; // Number of frames per action (columns in the spritesheet)
-    int mCurrentFrame; // Current frame index (column)
-    int mCurrentAction; // Current action index (row)
-    bool mDefaultMode = false; // Whether the animator is in default mode
-    bool mOneActionMode = false; // Whether the animator is in one-action mode
+    int mFrameWidth;
+    int mFrameHeight;
+    int mActions;
+    int mFramesPerAction;
+    int mCurrentFrame;
+    int mCurrentAction;
+    bool mDefaultMode = false;
+    bool mOneActionMode = false;
 };
 
 #endif /* SPRITEANIMATOR_HPP_ */

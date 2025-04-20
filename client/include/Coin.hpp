@@ -20,7 +20,7 @@ private:
     sf::Texture mTexture;
     sf::Vector2f mPos;
     SpriteAnimator mAnimator;
-    Clock mAnimationTimer; // Utilisation de la classe Timer
+    Clock mAnimationTimer;
 };
 
 #endif /* COIN_HPP_ */

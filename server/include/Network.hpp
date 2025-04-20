@@ -24,7 +24,8 @@ enum Type {
     PAUSE = 6,
     RESTART = 7,
     NB_PLAYERS = 8,
-    POSITION = 9
+    POSITION = 9,
+    START = 10
 };
 
 struct Message {

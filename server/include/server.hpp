@@ -26,11 +26,14 @@ class Server {
         
         void init_server(int ac, char **av);
         void start_server();
-        void parseMap();
         
-    protected:
+        protected:
         void handlePlayerCommands(Player *player);
         void updatePlayersInfo();
+        void initNewPlayer();
+        void sendMapData(int player_socket);
+        int parseArguments(int ac, char **av);
+        void parseMap();
     private:
         int mServerSocket;
         bool mDebugMode = false;

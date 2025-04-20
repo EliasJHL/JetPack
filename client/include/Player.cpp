@@ -20,12 +20,10 @@ Player::Player(int id, std::string name)
     mSprite.setTexture(mTexture);
     mAnimator.setFramesPerAction(4);
 
-    // Initialisation de la position
     mPos.x = 0;
     mPos.y = FLOOR;
     mSprite.setPosition(mPos);
 
-    // Initialisation du texte du score
     if (!mFont.loadFromFile("./client/ressources/font/jetpack_font.ttf")) {
         throw std::runtime_error("Failed to load font");
     }
@@ -106,7 +104,7 @@ sf::Text &Player::getScoreText() {
 
 void Player::setScore(std::string score) {
     mScore = score;
-    updateScoreText(); // Mettre à jour le texte du score
+    updateScoreText();
 }
 
 std::string Player::getScore() const {

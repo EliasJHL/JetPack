@@ -46,7 +46,7 @@ void GameManager::posSender(void)
         oss << "POS " << std::fixed << std::setprecision(2) << x << " " << y;
         message = oss.str();
         send(mPlayerSocket, message.c_str(), message.size(), 0);
-        std::this_thread::sleep_for(std::chrono::milliseconds(25));
+        std::this_thread::sleep_for(std::chrono::milliseconds(2));
     }
 }
 
