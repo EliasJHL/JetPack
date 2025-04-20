@@ -399,9 +399,6 @@ void GameManager::handleAnimations(void)
         if (IsOnGround) {
             if (!mSoundManager.isSoundPlaying("jump"))
                 mSoundManager.playSound("jump");
-        } else {
-            if (!mSoundManager.isSoundPlaying("fly"))
-                mSoundManager.playSound("fly", true);
         }
         if (pos.second > 0) {
             pos.second -= 5;
