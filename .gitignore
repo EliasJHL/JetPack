@@ -1,10 +1,7 @@
 *.o
 jetpack_*
 .vscode/
-.jetpack/
 
 coding-style-reports.log
-!*.wav
-*.map
 
 test/

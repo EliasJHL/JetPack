@@ -20,6 +20,7 @@ GameManager::GameManager()
     mPlayerInputDisplay.setString("");
     mGameReady = false;
     mPosThread = false;
+    mDebugMode = false;
     mSoundManager.loadSound("coin", "./client/ressources/sounds/coin_pickup_1.wav");
     mSoundManager.loadSound("barrier", "./client/ressources/sounds/dud_zapper_pop.wav");
     mSoundManager.loadSound("jump", "./client/ressources/sounds/jetpack_start.wav");

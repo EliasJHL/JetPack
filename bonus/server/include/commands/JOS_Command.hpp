@@ -54,7 +54,7 @@ class JOS_Commands : public IServerCommands {
                 message = "JNO\r\n";
                 write(player->getPlayerSocket(), message.c_str(), message.length());
                 return;
-            }            
+            }
 
             // Envoyer au nouveau joueur les joueurs déjà connectés
             std::string existingPlayer = "JON " + std::to_string(player->getID()) + " " + player->getName() + "\r\n";
