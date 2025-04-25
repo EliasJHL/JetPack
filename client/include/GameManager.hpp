@@ -72,7 +72,7 @@ class GameManager {
         bool mDebugMode = false;
         std::string mIp;
         int mPort;
-        std::atomic<bool> mRunning{true};
+        bool mRunning;
         sf::Font mFont;
         sf::Texture mBackground;
         sf::String mInput;
