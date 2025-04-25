@@ -118,6 +118,7 @@ class GameManager {
         sf::Vector2f mViewPos;
         sf::Texture mBackground;
         sf::RenderWindow mWindow;
+        sf::RectangleShape mRect;
         sf::String mInputServerName;
         sf::Text mServerNameDisplay;
         sf::Text mPlayerInputDisplay;

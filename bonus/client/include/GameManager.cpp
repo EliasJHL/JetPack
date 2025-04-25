@@ -31,6 +31,9 @@ GameManager::GameManager()
     mSoundManager.setVolume(40, 10);
     mSoundManager.playMusic();
 
+    mRect.setSize({1200, 150});
+    mRect.setFillColor({0, 0, 0, 255});
+
     mAlreadyJoining = false;
     mCreateServerPort = 2;
 
@@ -89,9 +92,6 @@ void GameManager::init_game(int ac, char **av)
 
     if (connect(mPlayerSocket, (struct sockaddr *)&mAddressControl, sizeof(mAddressControl)) == -1)
         throw std::runtime_error("Impossible to connect");
-
-    //std::string m = "JON 2\r\n";
-    //write(mPlayerSocket, m.c_str(), m.length());
 
     mGameMode = START;
     mLobbyMenu = BASE;
@@ -216,15 +216,21 @@ void GameManager::GameDraw(std::vector<IEntity*> entities)
         Player* localPlayer = mPlayerManager->getPlayer(mPlayerID);
         if (localPlayer != nullptr) {
             if (localPlayer->isDead()) {
-                mMessageText.setString("GAME OVER :(");
-                mMessageText.setPosition((mViewPos.x - mMessageText.getGlobalBounds().width), 200);
-                mWindow.draw(mMessageText);
+                mMessageText.setColor({255, 100, 100, 255});
+                mMessageText.setString("GAME OVER");
             }
             if (localPlayer->isWin()) {
-                mMessageText.setString("VICTORY !!!");
-                mMessageText.setPosition((mViewPos.x - mMessageText.getGlobalBounds().width), 200);
-                mWindow.draw(mMessageText);
+                mMessageText.setColor({100, 255, 100, 255});
+                mMessageText.setString("VICTORY");
             }
+            mWindow.draw(mMessageText);
+            mMessageText.setPosition((mViewPos.x - (mMessageText.getGlobalBounds().width / 2)), 200);
+            if (localPlayer->isDead() || localPlayer->isWin()) {
+                mRect.setPosition({mViewPos.x - 600, 140});
+                mWindow.draw(mRect);
+            }
+            mWindow.draw(mMessageText);
+            mMessageText.setColor({255, 255, 255, 255});
         }
     }
 }

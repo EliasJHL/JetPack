@@ -42,12 +42,12 @@ class Server {
         void sendMapData(int player_socket);
         int parseArguments(int ac, char **av);
         void parseMap();
-        private:
+    private:
         int mPort;
-        int mMapHeight;
         int mMapWidth;
-        int mServerSocket;
+        int mMapHeight;
         bool mDebugMode;
+        int mServerSocket;
         std::string mMapContent;
         PlayersManager *mPlayerManager;
         struct sockaddr_in mClientAddr;
