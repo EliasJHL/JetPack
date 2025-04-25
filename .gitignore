@@ -1,7 +1,9 @@
 *.o
-jetpack_*
+jetpack_server
+jetpack_client
 .vscode/
 
 coding-style-reports.log
+!*.wav
 
 test/
