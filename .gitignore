@@ -2,7 +2,6 @@
 jetpack_server
 jetpack_client
 .vscode/
-.jetpack/
 
 coding-style-reports.log
 !*.wav
