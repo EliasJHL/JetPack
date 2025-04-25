@@ -6,6 +6,5 @@ jetpack_client
 
 coding-style-reports.log
 !*.wav
-*.map
 
 test/
